@@ -1,5 +1,0 @@
-targets(
-    run 'nosetests'
-    verbose 'nosetests -s'
-    noop py 'print "test"'
-)

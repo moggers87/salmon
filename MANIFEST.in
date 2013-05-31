@@ -1,5 +1,4 @@
 include *.py
-include *.vel
 include LICENSE
 include README
 recursive-include examples *
