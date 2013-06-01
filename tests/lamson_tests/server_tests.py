@@ -3,7 +3,7 @@
 from nose.tools import *
 from mock import *
 import os
-from lamson import server, queue, routing
+from salmon import server, queue, routing
 from message_tests import *
 import re
 
@@ -66,7 +66,7 @@ def raises_exception(*x, **kw):
     raise RuntimeError("Raised on purpose.")
 
 
-@patch('lamson.routing.Router', new=Mock())
+@patch('salmon.routing.Router', new=Mock())
 def test_queue_receiver():
     receiver = server.QueueReceiver('run/queue')
     run_queue = queue.Queue('run/queue')
@@ -82,7 +82,7 @@ def test_queue_receiver():
 
 
 @patch('threading.Thread', new=Mock())
-@patch('lamson.routing.Router', new=Mock())
+@patch('salmon.routing.Router', new=Mock())
 def test_SMTPReceiver():
     receiver = server.SMTPReceiver(port=9999)
     receiver.start()

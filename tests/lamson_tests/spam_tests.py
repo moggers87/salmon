@@ -2,9 +2,9 @@
 # until an alternative can be found.
 
 # from nose.tools import *
-# from lamson import spam
-# from lamson_tests.message_tests import *
-# from lamson.routing import Router
+# from salmon import spam
+# from salmon_tests.message_tests import *
+# from salmon.routing import Router
 # import os
 # 
 # ham_db = "tests/sddb"

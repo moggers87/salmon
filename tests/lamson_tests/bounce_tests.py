@@ -1,6 +1,6 @@
 from nose.tools import *
-from lamson import mail
-from lamson.routing import Router
+from salmon import mail
+from salmon.routing import Router
 
 
 def test_bounce_analyzer_on_bounce():

@@ -1,5 +1,5 @@
-from lamson import commands, utils, mail, routing, encoding
-from lamson.testing import spelling
+from salmon import commands, utils, mail, routing, encoding
+from salmon.testing import spelling
 from nose.tools import *
 import os
 import shutil
@@ -44,7 +44,7 @@ def test_help_command():
     commands.help_command(**{'for': 'invalid_command'})
     assert sys.exit.called
 
-@patch('lamson.queue.Queue')
+@patch('salmon.queue.Queue')
 @patch('sys.exit', new=Mock())
 def test_queue_command(MockQueue):
     mq = MockQueue()
@@ -96,12 +96,12 @@ def test_gen_command():
 
 
 def test_routes_command():
-    commands.routes_command(TRAILING=['lamson.handlers.log',
-                                      'lamson.handlers.queue'])
+    commands.routes_command(TRAILING=['salmon.handlers.log',
+                                      'salmon.handlers.queue'])
 
     # test with the -test option
-    commands.routes_command(TRAILING=['lamson.handlers.log',
-                                      'lamson.handlers.queue'],
+    commands.routes_command(TRAILING=['salmon.handlers.log',
+                                      'salmon.handlers.queue'],
                             test="anything@localhost")
 
     # test with the -test option but no matches
@@ -110,8 +110,8 @@ def test_routes_command():
 
 
 @patch('sys.exit', new=Mock())
-@patch('lamson.utils.daemonize', new=Mock())
-@patch('lamson.server.SMTPReceiver')
+@patch('salmon.utils.daemonize', new=Mock())
+@patch('salmon.server.SMTPReceiver')
 def test_log_command(MockSMTPReceiver):
     ms = MockSMTPReceiver()
     ms.start.function()
@@ -136,9 +136,9 @@ def test_sendmail_command():
     commands.sendmail_command(port=8899)
 
 @patch('sys.exit', new=Mock())
-@patch('lamson.utils.daemonize', new=Mock())
-@patch('lamson.utils.import_settings', new=Mock())
-@patch('lamson.utils.drop_priv', new=Mock())
+@patch('salmon.utils.daemonize', new=Mock())
+@patch('salmon.utils.import_settings', new=Mock())
+@patch('salmon.utils.drop_priv', new=Mock())
 @patch('sys.path', new=Mock())
 def test_start_command():
     # normal start
@@ -196,8 +196,8 @@ def test_stop_command():
 
 
 @patch('glob.glob', new=lambda x: ['run/fake.pid'])
-@patch('lamson.utils.daemonize', new=Mock())
-@patch('lamson.utils.import_settings', new=Mock())
+@patch('salmon.utils.daemonize', new=Mock())
+@patch('salmon.utils.import_settings', new=Mock())
 @patch('os.kill', new=Mock())
 @patch('sys.exit', new=Mock())
 @patch('sys.path', new=Mock())
@@ -223,7 +223,7 @@ def test_cleanse_command():
 def raises_EncodingError(*args):
     raise encoding.EncodingError
 
-@patch('lamson.encoding.from_message')
+@patch('salmon.encoding.from_message')
 def test_cleans_command_with_encoding_error(from_message):
     from_message.side_effect = raises_EncodingError
     commands.cleanse_command(input='run/queue', output='run/cleansed')

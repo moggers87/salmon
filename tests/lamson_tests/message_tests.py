@@ -4,7 +4,7 @@ import warnings
 from nose.tools import *
 import re
 import os
-from lamson import mail, encoding
+from salmon import mail, encoding
 import email
 
 sample_message = """From: somedude@localhost
@@ -199,7 +199,7 @@ def test_craft_from_sample():
                           Body="The body as one attachment.")
     sample.update({"Test": "update"})
 
-    sample.attach(filename="tests/lamson_tests/message_tests.py",
+    sample.attach(filename="tests/salmon_tests/message_tests.py",
                   content_type="text/plain",
                   disposition="attachment")
     

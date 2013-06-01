@@ -1,5 +1,5 @@
-from lamson.routing import route, route_like
-from lamson.bounce import bounce_to
+from salmon.routing import route, route_like
+from salmon.bounce import bounce_to
 
 
 SOFT_RAN=False

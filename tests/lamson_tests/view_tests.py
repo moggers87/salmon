@@ -1,5 +1,5 @@
 from nose.tools import *
-from lamson import view
+from salmon import view
 import jinja2
 
 

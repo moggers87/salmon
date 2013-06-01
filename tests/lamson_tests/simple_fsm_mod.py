@@ -1,4 +1,4 @@
-from lamson.routing import *
+from salmon.routing import *
 
 @state_key_generator
 def simple_key_gen(module_name, message):

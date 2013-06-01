@@ -44,7 +44,7 @@ spell checking with PyEnchant.
 * Easily configurable to use alternative sending and receiving systems, database
 libraries, or any other systems you need to talk to.
 * Yet, you don't *have* to configure everything to get stated.  A simple
-lamson gen command lets you get an application up and running quick.
+salmon gen command lets you get an application up and running quick.
 * Finally, many helpful commands for general SMTP server debugging and cleaning.
 
 

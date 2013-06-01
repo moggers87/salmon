@@ -1,7 +1,7 @@
 from nose.tools import *
-from lamson.confirm import *
-from lamson.testing import *
-from lamson import mail, queue
+from salmon.confirm import *
+from salmon.testing import *
+from salmon import mail, queue
 import shutil
 import os
 

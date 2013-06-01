@@ -1,6 +1,6 @@
-from lamson import server
-from lamson.routing import Router
-from lamson.testing import *
+from salmon import server
+from salmon.routing import Router
+from salmon.testing import *
 from nose.tools import *
 import os
 
@@ -9,7 +9,7 @@ relay = relay(port=8899)
 def setup():
     Router.clear_routes()
     Router.clear_states()
-    Router.load(['lamson_tests.simple_fsm_mod'])
+    Router.load(['salmon_tests.simple_fsm_mod'])
 
 
 def test_clear_queue():
@@ -31,7 +31,7 @@ def test_delivered():
     assert delivered("zedshaw@localhost"), "Test message not delivered."
     assert delivered("zedshaw@localhost"), "Test message not delivered."
     assert not delivered("badman@localhost")
-    assert_in_state('lamson_tests.simple_fsm_mod', 'zedshaw@localhost', 'tester@localhost', 'START')
+    assert_in_state('salmon_tests.simple_fsm_mod', 'zedshaw@localhost', 'tester@localhost', 'START')
 
 def test_RouterConversation():
     client = RouterConversation('tester@localhost', 'Test router conversations.')
@@ -43,6 +43,6 @@ def test_spelling():
     if 'PYENCHANT_LIBRARY_PATH' not in os.environ:
         os.environ['PYENCHANT_LIBRARY_PATH'] = '/opt/local/lib/libenchant.dylib'
 
-    template = "tests/lamson_tests/templates/template.txt"
+    template = "tests/salmon_tests/templates/template.txt"
     contents = open(template).read()
     assert spelling(template, contents) 

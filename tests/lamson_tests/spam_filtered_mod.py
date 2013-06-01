@@ -1,5 +1,5 @@
-from lamson.routing import route, route_like
-from lamson.spam import spam_filter
+from salmon.routing import route, route_like
+from salmon.spam import spam_filter
 
 
 ham_db = "tests/sddb"

@@ -4,6 +4,6 @@ include README
 recursive-include examples *
 recursive-include doc *
 recursive-include bin *
-recursive-include lamson *
+recursive-include salmon *
 recursive-include scripts *
 recursive-include tests *

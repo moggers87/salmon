@@ -1,4 +1,4 @@
-# This file contains python variables that configure Lamson for email processing.
+# This file contains python variables that configure Salmon for email processing.
 import logging
 
 relay_config = {'host': 'localhost', 'port': 8825}
@@ -9,7 +9,7 @@ handlers = []
 
 router_defaults = {'host': 'localhost'}
 
-template_config = {'dir': 'lamson_tests', 'module': '.'}
+template_config = {'dir': 'salmon_tests', 'module': '.'}
 
 BLOG_BASE="app/data/posts"
 

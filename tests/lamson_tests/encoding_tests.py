@@ -2,7 +2,7 @@ from __future__ import with_statement
 from nose.tools import *
 import re
 import os
-from lamson import encoding, mail
+from salmon import encoding, mail
 import mailbox
 import email
 from email import encoders
@@ -172,11 +172,11 @@ def test_MIMEPart():
     text2 = encoding.MIMEPart("text/plain")
     text2.set_payload("The second payload.")
 
-    image_data = open("tests/lamson.png").read()
+    image_data = open("tests/salmon.png").read()
     img1 = encoding.MIMEPart("image/png")
     img1.set_payload(image_data)
     img1.set_param('attachment','', header='Content-Disposition')
-    img1.set_param('filename','lamson.png', header='Content-Disposition')
+    img1.set_param('filename','salmon.png', header='Content-Disposition')
     encoders.encode_base64(img1)
     
     multi = encoding.MIMEPart("multipart/mixed")
@@ -215,13 +215,13 @@ def test_attach_text():
 
 def test_attach_file():
     mail = encoding.MailBase()
-    png = open("tests/lamson.png").read()
-    mail.attach_file("lamson.png", png, "image/png", "attachment")
+    png = open("tests/salmon.png").read()
+    mail.attach_file("salmon.png", png, "image/png", "attachment")
     msg = encoding.to_message(mail)
 
     payload = msg.get_payload(0)
     assert payload.get_payload(decode=True) == png
-    assert payload.get_filename() == "lamson.png", payload.get_filename()
+    assert payload.get_filename() == "salmon.png", payload.get_filename()
 
 
 
@@ -260,7 +260,7 @@ def test_specially_borked_lua_message():
 def raises_TypeError(*args):
     raise TypeError()
 
-@patch('lamson.encoding.MIMEPart.__init__')
+@patch('salmon.encoding.MIMEPart.__init__')
 @raises(encoding.EncodingError)
 def test_to_message_encoding_error(mp_init):
     mp_init.side_effect = raises_TypeError

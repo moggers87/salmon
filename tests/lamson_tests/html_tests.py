@@ -1,6 +1,6 @@
 from nose.tools import *
 from config import testing
-from lamson import html, view, mail
+from salmon import html, view, mail
 
 
 

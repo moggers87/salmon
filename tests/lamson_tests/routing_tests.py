@@ -1,7 +1,7 @@
 from nose.tools import *
-from lamson.routing import *
-from lamson.mail import MailRequest
-from lamson import queue, routing, encoding
+from salmon.routing import *
+from salmon.mail import MailRequest
+from salmon import queue, routing, encoding
 from mock import *
 
 
@@ -40,7 +40,7 @@ def test_RoutingBase():
     assert len(Router.ORDER) == 0
     assert len(Router.REGISTERED) == 0
 
-    Router.load(['lamson_tests.simple_fsm_mod'])
+    Router.load(['salmon_tests.simple_fsm_mod'])
     import simple_fsm_mod
 
     assert len(Router.ORDER) > 0
@@ -76,7 +76,7 @@ def test_RoutingBase():
     assert_raises(RuntimeError, Router.deliver, explosion)
 
     Router.reload()
-    assert 'lamson_tests.simple_fsm_mod' in Router.HANDLERS
+    assert 'salmon_tests.simple_fsm_mod' in Router.HANDLERS
     assert len(Router.ORDER)
     assert len(Router.REGISTERED)
 
@@ -129,7 +129,7 @@ def test_route___get___raises():
     br.wont_work("raises")
 
 @patch('__builtin__.reload', new=Mock(side_effect=ImportError))
-@patch('lamson.routing.LOG', new=Mock())
+@patch('salmon.routing.LOG', new=Mock())
 def test_reload_raises():
     Router.LOG_EXCEPTIONS=True
     Router.reload()

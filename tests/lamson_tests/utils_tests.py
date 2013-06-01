@@ -1,5 +1,5 @@
 from nose.tools import *
-from lamson import utils, view
+from salmon import utils, view
 from mock import *
 
 

@@ -1,4 +1,4 @@
-from lamson import queue, server, mail
+from salmon import queue, server, mail
 from nose.tools import *
 import shutil
 import os
