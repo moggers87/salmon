@@ -18,11 +18,15 @@ def test_router():
 
     routing.Router.deliver(msg)
 
-def test_receiver():
-    receiver = server.SMTPReceiver(host="localhost", port=8824)
+def test_SMTPreceiver():
+    receiver = server.SMTPReceiver(host="localhost", port=8895)
     msg = test_mail_request()
     receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
 
+def test_LMTPreceiver():
+    receiver = server.LMTPReceiver(host="localhost", port=8894)
+    msg = test_mail_request()
+    receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
 
 def test_relay_deliver():
     relay = server.Relay("localhost", port=8899)

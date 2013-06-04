@@ -17,7 +17,7 @@ config = {
     'maintainer_email': 'moggers87+git@moggers87.co.uk',
     'version': '0',
     'scripts': ['bin/salmon'],
-    'install_requires': ['chardet', 'jinja2', 'mock', 'nose', 'python-daemon', 'python-modargs'],
+    'install_requires': ['chardet','jinja2','mock','nose','python-daemon','python-modargs','lmtpd'],
     'packages': ['salmon', 'salmon.handlers'],
     'name': 'salmon',
     'license': 'GPLv3'
