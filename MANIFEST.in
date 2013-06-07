@@ -1,9 +1,8 @@
 include *.py
 include LICENSE
-include README
+include README.md
 recursive-include examples *
 recursive-include doc *
 recursive-include bin *
 recursive-include salmon *
-recursive-include scripts *
 recursive-include tests *
