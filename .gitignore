@@ -6,4 +6,5 @@ ENV
 build
 dist
 *.egg-info
+*.egg
 tests/*.db
