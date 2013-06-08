@@ -11,7 +11,7 @@ config = {
     'description': 'A Python mail server forked from Lamson',
     'long_description': 'Salmon is a modern Pythonic mail server built like a web application server.',
     'author': 'Zed A. Shaw',
-    'url': 'http://pypi.python.org/pypi/salmon-mail',
+    'url': 'https://github.com/moggers87/salmon',
     'download_url': 'http://pypi.python.org/pypi/salmon-mail',
     'maintainer': 'Matt Molyneaux',
     'maintainer_email': 'moggers87+git@moggers87.co.uk',
