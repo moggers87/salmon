@@ -301,29 +301,11 @@ def gen_command(project=None, FORCE=False):
         return
 
     prototype = ZipFile(resource_stream(__name__, 'data/prototype.zip'))
-    # looks like the very handy ZipFile.extractall is only in python 2.6
 
     if not os.path.exists(project):
         os.makedirs(project)
 
-    files = prototype.namelist()
-
-    for gen_f in files:
-        if str(gen_f).endswith('/'):
-            target = os.path.join(project, gen_f)
-            if not os.path.exists(target):
-                print "mkdir: %s" % target
-                os.makedirs(target)
-        else:
-            target = os.path.join(project, gen_f)
-            if os.path.exists(target): 
-                continue
-
-            print "copy: %s" % target
-            out = open(target, 'w')
-            out.write(prototype.read(gen_f))
-            out.close()
-
+    prototype.extractall(project)
 
 def web_command(basedir=".", port=8888, host='127.0.0.1'):
     """
