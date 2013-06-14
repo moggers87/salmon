@@ -186,7 +186,7 @@ class SMTPReceiver(smtpd.SMTPServer):
             # looks like they want to return an error, so send it out
             return str(err)
             undeliverable_message(Data, "Handler raised SMTPError on purpose: %s" % err)
-        except:
+        except Exception:
             logging.exception("Exception while processing message from Peer: %r, From: %r, to To %r." %
                           (Peer, From, To))
             undeliverable_message(Data, "Error in message %r:%r:%r, look in logs." % (Peer, From, To))
@@ -239,7 +239,7 @@ class LMTPReceiver(lmtpd.LMTPServer):
             # looks like they want to return an error, so send it out
             # and yes, you should still use SMTPError in your handlers
             return str(err)
-        except:
+        except Exception:
             logging.exception("Exception while processing message from Peer: %r, From: %r, to To %r." %
                           (Peer, From, To))
             undeliverable_message(Data, "Error in message %r:%r:%r, look in logs." % (Peer, From, To))
@@ -312,7 +312,7 @@ class QueueReceiver(object):
             # looks like they want to return an error, so send it out
             logging.exception("Raising SMTPError when running in a QueueReceiver is unsupported.")
             undeliverable_message(msg.original, err.message)
-        except:
+        except Exception:
             logging.exception("Exception while processing message from Peer: "
                               "%r, From: %r, to To %r." % (Peer, From, To))
             undeliverable_message(msg.original, "Router failed to catch exception.")

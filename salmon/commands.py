@@ -355,7 +355,7 @@ def cleanse_command(input=None, output=None):
 
     try:
         inbox = mailbox.mbox(input)
-    except:
+    except IOError:
         inbox = mailbox.Maildir(input, factory=None)
 
     outbox = mailbox.Maildir(output)

@@ -44,7 +44,7 @@ def spelling(file_name, contents, language="en_US"):
     try:
         from enchant.checker import SpellChecker 
         from enchant.tokenize import EmailFilter, URLFilter 
-    except:
+    except ImportError:
         print "Failed to load PyEnchant.  Make sure it's installed and salmon spell works."
         return True
 

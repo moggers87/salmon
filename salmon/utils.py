@@ -12,7 +12,7 @@ import daemon
 
 try:
     from daemon import pidlockfile 
-except:
+except ImportError:
     from lockfile import pidlockfile 
 
 import imp

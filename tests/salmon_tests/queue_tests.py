@@ -115,7 +115,8 @@ def test_oversize_protections():
 def test_SafeMaildir_name_clash():
     try:
         shutil.rmtree("run/queue")
-    except: pass
+    except EnvironmentError:
+        pass
     sq = queue.SafeMaildir('run/queue')
     sq.add("TEST")
 
@@ -137,7 +138,8 @@ def test_SafeMaildir_throws_errno_failure():
 def test_SafeMaildir_reraise_weird_errno():
     try:
         shutil.rmtree("run/queue")
-    except: pass
+    except EnvironmentError:
+        pass
 
     os.stat.side_effect = raise_OSError
     sq = queue.SafeMaildir('run/queue')

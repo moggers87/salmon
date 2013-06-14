@@ -378,7 +378,7 @@ class RoutingBase(object):
                           message.route_to, func.__module__, func.__name__)
         except SMTPError:
             raise
-        except:
+        except Exception:
             self.set_state(func.__module__, message, 'ERROR')
 
             if self.UNDELIVERABLE_QUEUE:
@@ -417,7 +417,7 @@ class RoutingBase(object):
                         # they didn't specify a key generator, so use the
                         # default one for now
                         self.HANDLERS[module] = DEFAULT_STATE_KEY
-                except:
+                except ImportError:
                     if self.LOG_EXCEPTIONS:
                         LOG.exception("ERROR IMPORTING %r MODULE:" % module)
                     else:
@@ -434,7 +434,7 @@ class RoutingBase(object):
                 if module in self.HANDLERS:
                     try:
                         reload(sys.modules[module])
-                    except:
+                    except (TypeError, NameError, ImportError):
                         if self.LOG_EXCEPTIONS:
                             LOG.exception("ERROR RELOADING %r MODULE:" % module)
                         else:
