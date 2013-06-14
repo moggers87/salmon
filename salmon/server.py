@@ -10,11 +10,14 @@ import asyncore
 import threading
 import socket
 import logging
-from salmon import queue, mail, routing
 import time
 import traceback
+from salmon import queue, mail, routing, version
 from salmon.bounce import PRIMARY_STATUS_CODES, SECONDARY_STATUS_CODES, COMBINED_STATUS_CODES
 
+ver = version.VERSION['version'] # yo dawg
+smtpd.__version__ = "Salmon Mail router SMTPD, version %s" % ver
+lmtpd.__version__ = "Salmon Mail router LMTPD, version %s" % ver
 
 def undeliverable_message(raw_message, failure_type):
     """
