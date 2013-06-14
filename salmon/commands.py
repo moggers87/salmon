@@ -380,8 +380,8 @@ def version_command():
     from salmon import version
 
     print "Salmon-Version: ", version.VERSION['version']
-    print "Repository-Revision:", version.VERSION['rev'][0]
-    print "Repository-Hash:", version.VERSION['rev'][1]
+    print "Repository-Revision:", version.VERSION['rev']
+    print "Repository-Hash:", version.VERSION['rev'][:7]
     print "Version-File:", version.__file__
     print ""
     print "Salmon is Copyright (C) Zed A. Shaw 2008-2009.  Licensed GPLv3."
