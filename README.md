@@ -89,7 +89,7 @@ Status
 
 As this project has only just been forked, there may be bugs that have been
 fixed upstream, but can't be backported due to licencing issues.  The source is
-well documented, has nearly full test coverage, and runs on Python 2.5 and 2.6.
+well documented, has nearly full test coverage, and runs on Python 2.6 and 2.7.
 
 
 License
@@ -139,7 +139,7 @@ behave correctly given that constraint then please voice your concerns.
 Development
 ===========
 
-Salmon is written entirely in Python and runs on Python 2.5 or 2.6 but not 3k
+Salmon is written entirely in Python and runs on Python 2.6 or 2.7 but not 3k
 yet.  It uses only pure Python except where some libraries have compiled
 extensions (such as Jinja2).  It should hopefully run on any platform that
 supports Python and has Unix semantics.
