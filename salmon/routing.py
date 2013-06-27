@@ -50,7 +50,6 @@ The @state_key_generator is different since it's not intended to go on a handler
 but instead on a simple function, so it shouldn't be combined with the others.
 """
 
-from __future__ import with_statement
 from functools import wraps
 import re
 import logging
