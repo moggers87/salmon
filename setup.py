@@ -15,7 +15,7 @@ config = {
     'download_url': 'http://pypi.python.org/pypi/salmon-mail',
     'maintainer': 'Matt Molyneaux',
     'maintainer_email': 'moggers87+git@moggers87.co.uk',
-    'version': '0',
+    'version': '1',
     'scripts': ['bin/salmon'],
     'install_requires': [
         'chardet',
@@ -24,7 +24,7 @@ config = {
         'nose',
         'python-daemon',
         'python-modargs',
-        'lmtpd',
+        'lmtpd >= 3',
         'clevercss',
         'markdown',
         'pydns'
