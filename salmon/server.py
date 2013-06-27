@@ -218,7 +218,7 @@ class LMTPReceiver(lmtpd.LMTPServer):
         """
         self.host = host
         self.port = port
-        lmtpd.LMTPServer.__init__(self, (self.host, self.port), None)
+        lmtpd.LMTPServer.__init__(self, (self.host, self.port))
 
     def start(self):
         """
