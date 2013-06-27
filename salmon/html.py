@@ -27,7 +27,7 @@ you need.  Don't make one HtmlMail for each message.
 from BeautifulSoup import BeautifulSoup
 import clevercss
 from salmon import mail, view
-from markdown2 import markdown
+from markdown import markdown
 
 
 class HtmlMail(object):
