@@ -1,7 +1,9 @@
-from nose.tools import *
 from salmon.routing import *
 from salmon.mail import MailRequest
 from salmon import queue, routing, encoding
+from setup_env import setup_salmon_dirs, teardown_salmon_dirs
+
+from nose.tools import *
 from mock import *
 
 
@@ -36,6 +38,7 @@ def test_ShelveStorage():
     assert store.get(test_MemoryStorage.__module__, "tester@localhost") == "START"
 
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_RoutingBase():
     assert len(Router.ORDER) == 0
     assert len(Router.REGISTERED) == 0

@@ -1,23 +1,19 @@
 from nose.tools import *
-from salmon.confirm import *
-from salmon.testing import *
-from salmon import mail, queue
 import shutil
 import os
 
+from setup_env import setup_salmon_dirs, teardown_salmon_dirs
+from salmon.confirm import *
+from salmon.testing import *
+from salmon import mail, queue
 
-def teardown():
-    if os.path.exists('run/confirm'):
-        shutil.rmtree('run/confirm')
+def setup_module(module):
+    setup_salmon_dirs()
+    module.storage = ConfirmationStorage()
+    module.engine = ConfirmationEngine('run/confirm', storage)
 
-    if os.path.exists('run/queue'):
-        shutil.rmtree('run/queue')
-
-
-teardown()
-storage = ConfirmationStorage()
-engine = ConfirmationEngine('run/confirm', storage)
-
+def teardown_module(module):
+    teardown_salmon_dirs()
 
 def test_ConfirmationStorage():
     storage.store('testing', 'somedude@localhost',

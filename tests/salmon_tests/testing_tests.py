@@ -1,6 +1,8 @@
+from setup_env import setup_salmon_dirs, teardown_salmon_dirs
 from salmon import server
 from salmon.routing import Router
 from salmon.testing import *
+
 from nose.tools import *
 import os
 
@@ -12,6 +14,7 @@ def setup():
     Router.load(['salmon_tests.simple_fsm_mod'])
 
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_clear_queue():
     queue().push("Test")
     assert queue().count() > 0
@@ -19,12 +22,13 @@ def test_clear_queue():
     clear_queue()
     assert queue().count() == 0
 
-
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_relay():
     clear_queue()
     relay.send('test@localhost', 'zedshaw@localhost', 'Test message', 'Test body')
     assert queue().keys()
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_delivered():
     clear_queue()
     relay.send("zedshaw@localhost", "tester@localhost", Subject="Test subject.", Body="Test body.")
@@ -33,6 +37,7 @@ def test_delivered():
     assert not delivered("badman@localhost")
     assert_in_state('salmon_tests.simple_fsm_mod', 'zedshaw@localhost', 'tester@localhost', 'START')
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_RouterConversation():
     client = RouterConversation('tester@localhost', 'Test router conversations.')
     client.begin()

@@ -1,4 +1,6 @@
 from salmon import queue, server, mail
+from setup_env import setup_salmon_dirs, teardown_salmon_dirs
+
 from nose.tools import *
 import shutil
 import os
@@ -15,6 +17,7 @@ def teardown():
     setup()
 
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_push():
     q = queue.Queue("run/queue", safe=USE_SAFE)
     q.clear()
@@ -29,6 +32,7 @@ def test_push():
     return q
 
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_pop():
     q = test_push()
     key, msg = q.pop()
@@ -45,6 +49,7 @@ def test_pop():
     assert not q.pop()[0]
 
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_get():
     q = test_push()
     msg = mail.MailResponse(To="test@localhost", From="test@localhost",
@@ -55,6 +60,7 @@ def test_get():
     msg = q.get(key)
     assert msg, "Didn't get a message for key %r" % key
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_remove():
     q = test_push()
     msg = mail.MailResponse(To="test@localhost", From="test@localhost",
@@ -66,8 +72,7 @@ def test_remove():
     q.remove(key)
     assert q.count() == 1, "Wrong count %d should be 1" % q.count()
 
-
-
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_safe_maildir():
     global USE_SAFE
     USE_SAFE=True
@@ -76,7 +81,7 @@ def test_safe_maildir():
     test_get()
     test_remove()
 
-
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_oversize_protections():
     # first just make an oversize limited queue
     overq = queue.Queue("run/queue", pop_limit=10)

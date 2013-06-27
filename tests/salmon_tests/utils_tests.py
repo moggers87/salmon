@@ -1,5 +1,7 @@
-from nose.tools import *
+from setup_env import setup_salmon_dirs, teardown_salmon_dirs
 from salmon import utils, view
+
+from nose.tools import *
 from mock import *
 
 
@@ -22,8 +24,7 @@ def test_import_settings():
     assert settings
     assert settings.receiver_config
 
-
-
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 @patch('daemon.DaemonContext.open')
 def test_daemonize_not_fully(dc_open):
     context = utils.daemonize("run/tests.pid", ".", False, False, do_open=False)

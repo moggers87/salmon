@@ -1,9 +1,10 @@
 # Copyright (C) 2008 Zed A. Shaw.  Licensed under the terms of the GPLv3.
+from salmon import server, queue, routing
+from setup_env import setup_salmon_dirs, teardown_salmon_dirs
 
 from nose.tools import *
 from mock import *
 import os
-from salmon import server, queue, routing
 from message_tests import *
 import re
 
@@ -69,7 +70,7 @@ def test_relay_reply():
 def raises_exception(*x, **kw):
     raise RuntimeError("Raised on purpose.")
 
-
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 @patch('salmon.routing.Router', new=Mock())
 def test_queue_receiver():
     receiver = server.QueueReceiver('run/queue')

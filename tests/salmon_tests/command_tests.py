@@ -1,5 +1,7 @@
 from salmon import commands, utils, mail, routing, encoding
 from salmon.testing import spelling
+from setup_env import setup_salmon_dirs, teardown_salmon_dirs
+
 from nose.tools import *
 import os
 import shutil
@@ -109,6 +111,7 @@ def test_routes_command():
     commands.routes_command(TRAILING=[], test="anything@localhost")
 
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 @patch('sys.exit', new=Mock())
 @patch('salmon.utils.daemonize', new=Mock())
 @patch('salmon.server.SMTPReceiver')
@@ -135,6 +138,7 @@ def test_sendmail_command():
     sys.stdin.read.return_value = str(msg)
     commands.sendmail_command(port=8899)
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 @patch('sys.exit', new=Mock())
 @patch('salmon.utils.daemonize', new=Mock())
 @patch('salmon.utils.import_settings', new=Mock())
@@ -169,6 +173,7 @@ def test_start_command():
 def raise_OSError(*x, **kw):
     raise OSError('Fail')
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 @patch('sys.exit', new=Mock())
 @patch('os.kill', new=Mock())
 @patch('glob.glob', new=lambda x: ['run/fake.pid'])
@@ -195,6 +200,7 @@ def test_stop_command():
     commands.stop_command(pid="run/fake.pid", KILL=True)
 
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 @patch('glob.glob', new=lambda x: ['run/fake.pid'])
 @patch('salmon.utils.daemonize', new=Mock())
 @patch('salmon.utils.import_settings', new=Mock())
@@ -215,7 +221,7 @@ def test_web_command():
 def test_version_command():
     commands.version_command()
 
-
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_cleanse_command():
     commands.cleanse_command(input='run/queue', output='run/cleansed')
     assert os.path.exists('run/cleansed')
@@ -223,12 +229,14 @@ def test_cleanse_command():
 def raises_EncodingError(*args):
     raise encoding.EncodingError
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 @patch('salmon.encoding.from_message')
 def test_cleans_command_with_encoding_error(from_message):
     from_message.side_effect = raises_EncodingError
     commands.cleanse_command(input='run/queue', output='run/cleansed')
 
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_blast_command():
     commands.blast_command(input='run/queue', port=8899)
 

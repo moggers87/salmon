@@ -1,8 +1,9 @@
-from __future__ import with_statement
+from setup_env import setup_salmon_dirs, teardown_salmon_dirs
+from salmon import encoding, mail
+
 from nose.tools import *
 import re
 import os
-from salmon import encoding, mail
 import mailbox
 import email
 from email import encoders
@@ -111,6 +112,7 @@ def test_to_message_from_message_with_spam():
     assert fails/total < 0.01, "There were %d failures out of %d total." % (fails, total)
 
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_to_file_from_file():
     mb = mailbox.mbox("tests/spam")
     msg = encoding.from_message(mb[0])
