@@ -8,6 +8,6 @@ You can delete it by sending an email to:
 {{ post_name }}-delete@{{host}}
 
 ---
-OneShotBlog(TM)
+EmailToBlog
 http://{{host}}/
-A Lamson project example http://lamsonproject.org/
+A Salmon project example

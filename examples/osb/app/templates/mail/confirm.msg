@@ -22,6 +22,6 @@ We'll make it all happen right when you confirm your request.
 Thanks!
 
 ---
-OneShotBlog(TM)
+EmailToBlog
 http://{{host}}/
-A Lamson project example http://lamsonproject.org/
+A Salmon project example

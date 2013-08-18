@@ -1,7 +1,7 @@
 from __future__ import with_statement
 from email.utils import parseaddr
-from lamson import view, queue
-from lamson.routing import route, stateless
+from salmon import view, queue
+from salmon.routing import route, stateless
 import logging
 from config import settings
 from app.model import post
@@ -57,7 +57,7 @@ def COMMENTING(message, user_id=None, domain=None, post_name=None, host=None):
         # stuff it here for now, but we'll just build the file rolling
         comments = queue.Queue("%s/comments" % user_dir)
         comments.push(message)
-        
+
         contents = markdown(message.body())
         comment_file = "%s/%s-comments.html" % (user_dir, post_name)
         snippet = view.render(locals(), "web/comments.html")

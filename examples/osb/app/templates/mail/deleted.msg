@@ -5,6 +5,6 @@ http://{{host}}/posts/{{address}}/{{post_name}}.html
 Was DELETED, hopefully by you.  Maybe we should confirm this?
 
 ---
-OneShotBlog(TM)
+EmailToBlog
 http://{{host}}/
-A Lamson project example http://lamsonproject.org/
+A Salmon project example

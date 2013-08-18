@@ -1,6 +1,6 @@
 from nose.tools import *
-from lamson.testing import *
-from lamson import view
+from salmon.testing import *
+from salmon import view
 import os
 from glob import glob
 

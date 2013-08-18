@@ -1,6 +1,6 @@
 from nose.tools import *
-from lamson.mail import MailRequest
-from lamson import view
+from salmon.mail import MailRequest
+from salmon import view
 import os
 import time
 from app.model import post

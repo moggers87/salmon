@@ -1,7 +1,7 @@
 from config import settings
-from lamson.routing import Router
-from lamson.server import Relay, QueueReceiver
-from lamson import view
+from salmon.routing import Router
+from salmon.server import Relay, QueueReceiver
+from salmon import view
 import logging
 import logging.config
 import jinja2
@@ -17,7 +17,7 @@ settings.relay = Relay(host=settings.relay_config['host'],
 settings.receiver = QueueReceiver('run/undeliverable', settings.queue_config['sleep'])
 
 Router.defaults(**settings.router_defaults)
-Router.load(['lamson.handlers.forward'])
+Router.load(['salmon.handlers.forward'])
 Router.RELOAD=True
 Router.UNDELIVERABLE_QUEUE=None
 

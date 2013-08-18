@@ -1,6 +1,6 @@
 import os
 import logging
-from lamson import view, queue
+from salmon import view, queue
 import email
 from config.settings import BLOG_BASE
 from markdown import markdown

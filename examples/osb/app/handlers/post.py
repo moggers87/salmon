@@ -1,8 +1,8 @@
 from app.model import post
 from email.utils import parseaddr
 from config.settings import relay, CONFIRM
-from lamson import view, queue
-from lamson.routing import route, stateless
+from salmon import view, queue
+from salmon.routing import route, stateless
 import logging
 
 
@@ -43,7 +43,7 @@ def POSTING(message, post_name=None, host=None, action=None):
 
     if not action:
         post.post(post_name, address, host, message)
-        msg = view.respond(locals(), 'mail/page_ready.msg', 
+        msg = view.respond(locals(), 'mail/page_ready.msg',
                            From="noreply@%(host)s",
                            To=message['from'],
                            Subject="Your page '%(post_name)s' is ready.")
@@ -55,7 +55,7 @@ def POSTING(message, post_name=None, host=None, action=None):
     elif action == "delete":
         post.delete(post_name, address)
 
-        msg = view.respond(locals(), 'mail/deleted.msg', 
+        msg = view.respond(locals(), 'mail/deleted.msg',
                            From="noreply@%(host)s",
                            To=message['from'],
                            Subject="Your page '%(post_name)s' was deleted.")

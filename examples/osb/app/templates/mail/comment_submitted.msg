@@ -10,6 +10,6 @@ It will show up shortly, so don't go crazy if it takes a little
 while.
 
 ---
-OneShotBlog(TM)
+EmailToBlog
 http://{{host}}/
-A Lamson project example http://lamsonproject.org/
+A Salmon project example

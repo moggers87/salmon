@@ -1,6 +1,6 @@
 from nose.tools import *
-from lamson.testing import *
-from lamson.routing import Router
+from salmon.testing import *
+from salmon.routing import Router
 from app.model import post
 import time
 

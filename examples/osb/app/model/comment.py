@@ -1,4 +1,4 @@
-from lamson import queue
+from salmon import queue
 
 
 def attach_headers(message, user_id, post_name, domain):

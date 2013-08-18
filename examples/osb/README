@@ -1,12 +1,12 @@
-OSB is a One-Shot-Blog application that makes blog pages for people
-using email messages.  It is meant as a demonsration of the newer
-routing and Lamson design until I can update the mailing list
+OSB is a Email-To-Blog application that makes blog pages for people
+using email messages.  It is meant as a demonstration of the newer
+routing and Salmon design until we can update the mailing list
 application.
 
 To try it do this:
 
-lamson log
-lamson start
+salmon log
+salmon start
 nosetests
 mutt -F muttrc
 mutt -F pendingrc

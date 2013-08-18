@@ -1,5 +1,5 @@
 from nose.tools import *
-from lamson.testing import *
+from salmon.testing import *
 import os
 import time
 import shutil

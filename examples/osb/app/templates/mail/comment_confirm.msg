@@ -2,7 +2,7 @@ Hi there, you seem to want to comment on this post:
 
 {{user_id}}-AT-{{domain}}-{{post_name}}@{{host}}
 
-Since we don't know who you are, we can't just let you go 
+Since we don't know who you are, we can't just let you go
 commenting without some kind of verification.  Someone could
 trying to comment in your name or sign you up for something
 you don't want.
@@ -21,6 +21,6 @@ We'll make it all happen right when you confirm your request.
 Thanks!
 
 ---
-OneShotBlog(TM)
+EmailToBlog
 http://{{host}}/
-A Lamson project example http://lamsonproject.org/
+A Salmon project example

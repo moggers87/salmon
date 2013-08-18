@@ -1,5 +1,5 @@
-# This file contains python variables that configure Lamson for email processing.
-from lamson import queue, routing, confirm
+# This file contains python variables that configure Salmon for email processing.
+from salmon import queue, routing, confirm
 import logging
 import shelve
 

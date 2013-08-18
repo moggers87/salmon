@@ -1,5 +1,5 @@
 from nose.tools import *
-from lamson import mail
+from salmon import mail
 from app.model import comment
 
 def test_attach_headers():

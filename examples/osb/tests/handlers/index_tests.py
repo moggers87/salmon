@@ -1,5 +1,5 @@
 from nose.tools import *
-from lamson.testing import *
+from salmon.testing import *
 from handlers import post_tests
 import os
 

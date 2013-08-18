@@ -15,7 +15,7 @@ to:
 It will be removed shortly after that, but not immediately.  We'll
 notify you when it is finally removed.
 
-You can get more information on things you can do with the LamsonProject
+You can get more information on things you can do with the Salmon project
 OSB at:
 
 http://{{host}}/help.html
@@ -23,6 +23,6 @@ http://{{host}}/help.html
 Thanks!
 
 ---
-OneShotBlog(TM)
+EmailToBlog
 http://{{host}}/
-A Lamson project example http://lamsonproject.org/
+A Salmon project example
