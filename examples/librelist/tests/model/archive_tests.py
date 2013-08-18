@@ -1,6 +1,6 @@
 from nose.tools import *
-from lamson.testing import *
-from lamson.mail import MailRequest, MailResponse
+from salmon.testing import *
+from salmon.mail import MailRequest, MailResponse
 from app.model import archive, mailinglist
 import simplejson as json
 import shutil

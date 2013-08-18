@@ -1,6 +1,6 @@
 from nose.tools import *
-from lamson.testing import *
-from lamson.mail import MailRequest, MailResponse
+from salmon.testing import *
+from salmon.mail import MailRequest, MailResponse
 from app.model.confirmation import DjangoConfirmStorage
 from mock import patch
 

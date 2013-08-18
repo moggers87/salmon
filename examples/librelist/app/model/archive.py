@@ -1,5 +1,5 @@
 from __future__ import with_statement
-from lamson import queue
+from salmon import queue
 from config import settings
 from datetime import datetime
 import os

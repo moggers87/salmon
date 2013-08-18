@@ -2,8 +2,8 @@ from nose.tools import *
 from app.model.mailinglist import *
 from email.utils import parseaddr
 from webapp.librelist.models import MailingList, Subscription
-from lamson.mail import MailRequest, MailResponse
-from lamson.testing import *
+from salmon.mail import MailRequest, MailResponse
+from salmon.testing import *
 
 user_full_address = '"Zed A. Shaw" <zedshaw@zedshaw.com>'
 user_name, user_address = parseaddr(user_full_address)

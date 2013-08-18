@@ -1,5 +1,5 @@
 from nose.tools import *
-from lamson.testing import *
+from salmon.testing import *
 from config import settings
 import time
 from app.model import archive, confirmation
