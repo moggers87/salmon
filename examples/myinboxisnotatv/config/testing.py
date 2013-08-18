@@ -1,7 +1,7 @@
 from config import settings
-from lamson import view
-from lamson.routing import Router
-from lamson.server import Relay
+from salmon import view
+from salmon.routing import Router
+from salmon.server import Relay
 import jinja2
 import logging
 import logging.config

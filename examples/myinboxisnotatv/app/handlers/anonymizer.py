@@ -1,8 +1,8 @@
 from config.settings import relay, BOUNCES, SPAM, CONFIRM
-from lamson.routing import route, Router, route_like
-from lamson.bounce import bounce_to
-from lamson.spam import spam_filter
-from lamson import view, queue, confirm
+from salmon.routing import route, Router, route_like
+from salmon.bounce import bounce_to
+from salmon.spam import spam_filter
+from salmon import view, queue, confirm
 from app.model import filter, addressing
 import logging
 

@@ -1,8 +1,8 @@
 import sys
 sys.path.append(".")
 
-from lamson.mail import MailRequest, MailResponse
-from lamson.queue import Queue
+from salmon.mail import MailRequest, MailResponse
+from salmon.queue import Queue
 import config.testing
 from app.model import archive
 import os
