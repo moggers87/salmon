@@ -1,7 +1,7 @@
-# This file contains python variables that configure Lamson for email processing.
+# This file contains python variables that configure Salmon for email processing.
 import logging
 import shelve
-from lamson import confirm
+from salmon import confirm
 
 relay_config = {'host': 'localhost', 'port': 8825}
 

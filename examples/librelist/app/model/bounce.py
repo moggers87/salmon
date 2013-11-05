@@ -1,4 +1,4 @@
-from lamson import view, encoding, queue
+from salmon import view, encoding, queue
 from config import settings
 
 

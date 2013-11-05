@@ -1,6 +1,6 @@
 from nose.tools import *
-from lamson.testing import *
-from lamson import mail
+from salmon.testing import *
+from salmon import mail
 from config import settings
 from app.model import filter, addressing
 

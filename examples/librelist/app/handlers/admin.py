@@ -1,11 +1,11 @@
 from email.utils import parseaddr
 from config.settings import relay, SPAM, CONFIRM
 import logging
-from lamson import view, queue
-from lamson.routing import route, stateless, route_like, state_key_generator
-from lamson.bounce import bounce_to
-from lamson.server import SMTPError
-from lamson.spam import spam_filter
+from salmon import view, queue
+from salmon.routing import route, stateless, route_like, state_key_generator
+from salmon.bounce import bounce_to
+from salmon.server import SMTPError
+from salmon.spam import spam_filter
 from app.model import mailinglist, bounce, archive
 from app.handlers import bounce
 

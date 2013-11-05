@@ -1,7 +1,7 @@
 from nose.tools import *
 from app.model.state_storage import UserStateStorage
 from webapp.librelist.models import UserState
-from lamson.routing import ROUTE_FIRST_STATE
+from salmon.routing import ROUTE_FIRST_STATE
 
 
 def setup():

@@ -1,12 +1,12 @@
 from nose.tools import *
-from lamson.testing import *
-from lamson.mail import MailRequest
-from lamson.routing import Router
+from salmon.testing import *
+from salmon.mail import MailRequest
+from salmon.routing import Router
 from app.handlers.admin import module_and_to
 from app.model import mailinglist
 from handlers import admin_tests
 from email.utils import parseaddr
-from lamson import bounce
+from salmon import bounce
 from config import settings
 
 sender = admin_tests.sender

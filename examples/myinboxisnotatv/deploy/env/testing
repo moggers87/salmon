@@ -3,7 +3,7 @@
 
 
 LOG4SH_CONFIGURATION=deploy/log4sh.properties
-SOURCE=$HOME/projects/lamson/examples/librelist
+SOURCE=$HOME/projects/salmon/examples/librelist
 TARGET=$HOME/deploy/testing
 BACKUP=$HOME/deploy/backup/testing
 FAILS=$HOME/deploy/fails/testing
@@ -14,7 +14,7 @@ function stop {
     pushd $1
     assert_in $1
 
-    lamson stop -ALL run
+    salmon stop -ALL run
     popd
 }
 
@@ -24,7 +24,7 @@ function start {
     pushd $1
     assert_in $1
 
-    lamson start
+    salmon start
     popd
 }
 

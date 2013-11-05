@@ -1,4 +1,4 @@
-from lamson.routing import StateStorage, ROUTE_FIRST_STATE
+from salmon.routing import StateStorage, ROUTE_FIRST_STATE
 from webapp.librelist.models import UserState
 
 class UserStateStorage(StateStorage):
@@ -44,7 +44,7 @@ class UserStateStorage(StateStorage):
 
     def set_all(self, sender, to_state):
         """
-        This isn't part of normal lamson code, it's used to 
+        This isn't part of normal salmon code, it's used to 
         control the states for all of the app.handlers.admin
         lists during a bounce.
         """

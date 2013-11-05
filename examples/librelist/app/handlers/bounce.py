@@ -1,6 +1,6 @@
 from config.settings import relay, CONFIRM
-from lamson.routing import route, Router, route_like
-from lamson.bounce import bounce_to
+from salmon.routing import route, Router, route_like
+from salmon.bounce import bounce_to
 from app.model import mailinglist, bounce
 from app import handlers
 from email.utils import parseaddr

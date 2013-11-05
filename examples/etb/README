@@ -1,0 +1,17 @@
+OSB is a Email-To-Blog application that makes blog pages for people
+using email messages.  It is meant as a demonstration of the newer
+routing and Salmon design until we can update the mailing list
+application.
+
+To try it do this:
+
+salmon log
+salmon start
+nosetests
+mutt -F muttrc
+mutt -F pendingrc
+
+Then you'll see all the gear.  You can use mutt -F muttrc to actually
+interact with the running server.
+
+

@@ -1,4 +1,4 @@
-from lamson import mail
+from salmon import mail
 from app.model import addressing
 
 

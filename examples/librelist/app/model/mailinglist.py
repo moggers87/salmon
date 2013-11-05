@@ -1,7 +1,7 @@
 from webapp.librelist.models import *
 from django.db.models import Q
 from email.utils import parseaddr
-from lamson.mail import MailResponse
+from salmon.mail import MailResponse
 from config import settings
 from lib import metaphone
 import Stemmer

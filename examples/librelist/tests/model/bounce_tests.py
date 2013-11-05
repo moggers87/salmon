@@ -1,6 +1,6 @@
 from nose.tools import *
-from lamson.testing import *
-from lamson.mail import MailRequest
+from salmon.testing import *
+from salmon.mail import MailRequest
 from app.model import bounce
 
 

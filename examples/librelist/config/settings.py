@@ -1,7 +1,7 @@
-# This file contains python variables that configure Lamson for email processing.
+# This file contains python variables that configure Salmon for email processing.
 import logging
 import os
-from lamson import confirm, encoding
+from salmon import confirm, encoding
 
 
 encoding.VALUE_IS_EMAIL_ADDRESS = lambda v: '@' in v or '-AT-' in v
