@@ -5,32 +5,22 @@ try:
 except ImportError:
     from distutils.core import setup
 
+install_requires = [
+    'chardet',
+    'jinja2',
+    'mock',
+    'nose',
+    'python-modargs',
+    'lmtpd >= 3',
+    'clevercss',
+    'markdown',
+    'pydns'
+]
+
 if sys.platform != 'win32': # Can daemonize
-    install_requires = [
-        'chardet',
-        'jinja2',
-        'mock',
-        'nose',
-        'python-daemon',
-        'python-modargs',
-        'lmtpd >= 3',
-        'clevercss',
-        'markdown',
-        'pydns'
-    ]
+    install_requires.append('python-daemon')
 else:
-    install_requires = [
-        'chardet',
-        'jinja2',
-        'mock',
-        'nose',
-        'lockfile',
-        'python-modargs',
-        'lmtpd >= 3',
-        'clevercss',
-        'markdown',
-        'pydns'
-    ]
+    install_requires.append('lockfile')
 
 config = {
     'package_data': {

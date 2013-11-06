@@ -10,8 +10,6 @@ import sys, os
 import logging
 if sys.platform != 'win32': # Can daemonize
     import daemon
-else:
-    import lockfile
 
 try:
     from daemon import pidlockfile 
