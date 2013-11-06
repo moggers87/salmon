@@ -1,8 +1,36 @@
+import sys
 
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
+
+if sys.platform != 'win32': # Can daemonize
+    install_requires = [
+        'chardet',
+        'jinja2',
+        'mock',
+        'nose',
+        'python-daemon',
+        'python-modargs',
+        'lmtpd >= 3',
+        'clevercss',
+        'markdown',
+        'pydns'
+    ]
+else:
+    install_requires = [
+        'chardet',
+        'jinja2',
+        'mock',
+        'nose',
+        'lockfile',
+        'python-modargs',
+        'lmtpd >= 3',
+        'clevercss',
+        'markdown',
+        'pydns'
+    ]
 
 config = {
     'package_data': {
@@ -17,18 +45,7 @@ config = {
     'maintainer_email': 'moggers87+git@moggers87.co.uk',
     'version': '1',
     'scripts': ['bin/salmon'],
-    'install_requires': [
-        'chardet',
-        'jinja2',
-        'mock',
-        'nose',
-        'python-daemon',
-        'python-modargs',
-        'lmtpd >= 3',
-        'clevercss',
-        'markdown',
-        'pydns'
-        ],
+    'install_requires': install_requires,
     'packages': ['salmon', 'salmon.handlers'],
     'name': 'salmon-mail',
     'license': 'GPLv3',
