@@ -8,7 +8,10 @@ can be improved feel free to work up a patch.
 from salmon import server, routing
 import sys, os
 import logging
-import daemon
+if sys.platform != 'win32': # Can daemonize
+    import daemon
+else:
+    import lockfile
 
 try:
     from daemon import pidlockfile 
