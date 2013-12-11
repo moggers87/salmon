@@ -1,0 +1,11 @@
+language: python
+
+python:
+    - "pypy"
+    - "3.3"
+    - "2.7"
+    - "2.6"
+
+install: "python setup.py develop"
+
+script: nosetests
