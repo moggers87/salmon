@@ -141,7 +141,7 @@ class MailBase(object):
             # kinda shit, suggestions welcome
             output = []
             for header in self.headers.keys():
-               if normalize_header(k) not in mail.content_encoding:
+               if normalize_header(header) not in self.content_encoding:
                     output.append(header)
             return output
 
