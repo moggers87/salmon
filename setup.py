@@ -14,7 +14,8 @@ install_requires = [
     'lmtpd >= 3',
     'clevercss',
     'markdown',
-    'pydns'
+    'pydns',
+    'BeautifulSoup',
 ]
 
 if sys.platform != 'win32': # Can daemonize

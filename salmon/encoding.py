@@ -133,17 +133,9 @@ class MailBase(object):
     def __nonzero__(self):
         return self.body != None or len(self.headers) > 0 or len(self.parts) > 0
 
-    def keys(self, all=False):
+    def keys(self):
         """Returns header keys."""
-        if all:
-            return self.headers.keys()
-        else:
-            # kinda shit, suggestions welcome
-            output = []
-            for header in self.headers.keys():
-               if normalize_header(header) not in self.content_encoding:
-                    output.append(header)
-            return output
+        return self.headers.keys()
 
     def attach_file(self, filename, data, ctype, disposition):
         """
@@ -189,6 +181,7 @@ class MIMEPart(MIMEBase):
     """
     def __init__(self, type_, **params):
         self.maintype, self.subtype = type_.split('/')
+        # classes from email.* are all old-style :(
         MIMEBase.__init__(self, self.maintype, self.subtype, **params)
 
     def add_text(self, content):
