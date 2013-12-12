@@ -75,6 +75,10 @@ from email.mime.base import MIMEBase
 from email.utils import parseaddr
 import sys
 
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 DEFAULT_ENCODING = "utf-8"
 DEFAULT_ERROR_HANDLING = "strict"
@@ -101,7 +105,7 @@ class MailBase(object):
     class, but it's more raw.
     """
     def __init__(self, items=()):
-        self.headers = dict(items)
+        self.headers = OrderedDict(items)
         self.parts = []
         self.body = None
         self.content_encoding = {'Content-Type': (None, {}), 
@@ -129,9 +133,17 @@ class MailBase(object):
     def __nonzero__(self):
         return self.body != None or len(self.headers) > 0 or len(self.parts) > 0
 
-    def keys(self):
-        """Returns the sorted keys."""
-        return sorted(self.headers.keys())
+    def keys(self, all=False):
+        """Returns header keys."""
+        if all:
+            return self.headers.keys()
+        else:
+            # kinda shit, suggestions welcome
+            output = []
+            for header in self.headers.keys():
+               if normalize_header(k) not in mail.content_encoding:
+                    output.append(header)
+            return output
 
     def attach_file(self, filename, data, ctype, disposition):
         """
@@ -230,8 +242,7 @@ def from_message(message):
 
     # copy over any keys that are not part of the content information
     for k in message.keys():
-        if normalize_header(k) not in mail.content_encoding:
-            mail[k] = header_from_mime_encoding(message[k])
+        mail[k] = header_from_mime_encoding(message[k])
   
     decode_message_body(mail, message)
 

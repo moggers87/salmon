@@ -22,6 +22,9 @@ if sys.platform != 'win32': # Can daemonize
 else:
     install_requires.append('lockfile')
 
+if sys.version_info[:2] == (2,6):
+    install_requires.append('ordereddict')
+
 config = {
     'package_data': {
         'salmon': ['data/prototype.zip']
