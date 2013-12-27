@@ -11,7 +11,7 @@ install_requires = [
     'mock',
     'nose',
     'python-modargs',
-    'lmtpd >= 3',
+    'lmtpd >= 4',
     'clevercss',
     'markdown',
     'pydns',

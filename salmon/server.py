@@ -203,29 +203,30 @@ class SMTPReceiver(smtpd.SMTPServer):
 class LMTPReceiver(lmtpd.LMTPServer):
     """Receives emails and hands it to the Router for further processing."""
 
-    def __init__(self, host='127.0.0.1', port=8824):
+    def __init__(self, host='127.0.0.1', port=8824, socket=None):
         """
         Initializes to bind on the given port and host/ipaddress. Remember that
         LMTP isn't for use over a WAN, so bind it to either a LAN address or
-        localhost
+        localhost. If socket is not None, it will be assumed to be a path name
+        and a UNIX socket will be set up instead.
 
         This uses lmtpd.LMTPServer in the __init__, which means that you have to 
         call this far after you use python-daemonize or else daemonize will
         close the socket.
-
-        Please note that the LMTP lib doesn't support Unix sockets yet, so
-        neither do we
         """
-        self.host = host
-        self.port = port
-        lmtpd.LMTPServer.__init__(self, (self.host, self.port))
+        if socket is None:
+            self.socket = "%s:%d" % (host, port)
+            lmtpd.LMTPServer.__init__(self, (host, port))
+        else:
+            self.socket = socket
+            lmtpd.LMTPServer.__init__(self, socket)
 
     def start(self):
         """
         Kicks everything into gear and starts listening on the port.  This
         fires off threads and waits until they are done.
         """
-        logging.info("LMTPReceiver started on %s:%d." % (self.host, self.port))
+        logging.info("LMTPReceiver started on %s.", self.socket)
         self.poller = threading.Thread(target=asyncore.loop,
                 kwargs={'timeout':0.1, 'use_poll':True})
         self.poller.start()
