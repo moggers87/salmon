@@ -11,6 +11,6 @@ import logging
 @stateless
 def START(message, to=None, host=None):
     """This is stateless and handles every email no matter what, logging what it receives."""
-    logging.debug("MESSAGE to %s@%s:\n%s" % (to, host, str(message)))
+    logging.debug("MESSAGE to %s@%s:\n%s", to, host, str(message))
 
 

@@ -112,7 +112,7 @@ class Relay(object):
         try:
             relay_host = self.configure_relay(hostname)
         except socket.error:
-            logging.exception("Failed to connect to host %s:%d" % (hostname, self.port))
+            logging.exception("Failed to connect to host %s:%d", hostname, self.port)
             return
 
         relay_host.sendmail(sender, recipient, str(message))
@@ -172,7 +172,7 @@ class SMTPReceiver(smtpd.SMTPServer):
         Kicks everything into gear and starts listening on the port.  This
         fires off threads and waits until they are done.
         """
-        logging.info("SMTPReceiver started on %s:%d." % (self.host, self.port))
+        logging.info("SMTPReceiver started on %s:%d.", self.host, self.port)
         self.poller = threading.Thread(target=asyncore.loop,
                 kwargs={'timeout':0.1, 'use_poll':True})
         self.poller.start()
@@ -183,15 +183,15 @@ class SMTPReceiver(smtpd.SMTPServer):
         """
 
         try:
-            logging.debug("Message received from Peer: %r, From: %r, to To %r." % (Peer, From, To))
+            logging.debug("Message received from Peer: %r, From: %r, to To %r.", Peer, From, To)
             routing.Router.deliver(mail.MailRequest(Peer, From, To, Data))
         except SMTPError, err:
             # looks like they want to return an error, so send it out
             return str(err)
             undeliverable_message(Data, "Handler raised SMTPError on purpose: %s" % err)
         except Exception:
-            logging.exception("Exception while processing message from Peer: %r, From: %r, to To %r." %
-                          (Peer, From, To))
+            logging.exception("Exception while processing message from Peer: %r, From: %r, to To %r.".
+                          Peer, From, To)
             undeliverable_message(Data, "Error in message %r:%r:%r, look in logs." % (Peer, From, To))
 
 
@@ -236,17 +236,20 @@ class LMTPReceiver(lmtpd.LMTPServer):
         """
 
         try:
-            logging.debug("Message received from Peer: %r, From: %r, to To %r." % (Peer, From, To))
+            logging.debug("Message received from Peer: %r, From: %r, to To %r.", Peer, From, To)
             routing.Router.deliver(mail.MailRequest(Peer, From, To, Data))
         except SMTPError, err:
             # looks like they want to return an error, so send it out
             # and yes, you should still use SMTPError in your handlers
             return str(err)
         except Exception:
-            logging.exception("Exception while processing message from Peer: %r, From: %r, to To %r." %
-                          (Peer, From, To))
+            logging.exception("Exception while processing message from Peer: %r, From: %r, to To %r.",
+                          Peer, From, To)
             undeliverable_message(Data, "Error in message %r:%r:%r, look in logs." % (Peer, From, To))
 
+    def close(self):
+        """Doesn't do anything except log who called this, since nobody should.  Ever."""
+        logging.error(traceback.format_exc())
 
 class QueueReceiver(object):
     """
@@ -274,9 +277,8 @@ class QueueReceiver(object):
         while loop with a sleep.
         """
 
-        logging.info("Queue receiver started on queue dir %s" %
-                     (self.queue_dir))
-        logging.debug("Sleeping for %d seconds..." % self.sleep)
+        logging.info("Queue receiver started on queue dir %s", self.queue_dir)
+        logging.debug("Sleeping for %d seconds...", self.sleep)
 
         inq = queue.Queue(self.queue_dir)
 
@@ -309,7 +311,7 @@ class QueueReceiver(object):
             From = msg['from']
             To = [msg['to']]
 
-            logging.debug("Message received from Peer: %r, From: %r, to To %r." % (Peer, From, To))
+            logging.debug("Message received from Peer: %r, From: %r, to To %r.", Peer, From, To)
             routing.Router.deliver(msg)
         except SMTPError, err:
             # looks like they want to return an error, so send it out
@@ -317,10 +319,5 @@ class QueueReceiver(object):
             undeliverable_message(msg.original, err.message)
         except Exception:
             logging.exception("Exception while processing message from Peer: "
-                              "%r, From: %r, to To %r." % (Peer, From, To))
+                              "%r, From: %r, to To %r.", Peer, From, To)
             undeliverable_message(msg.original, "Router failed to catch exception.")
-
-
-
-
-
