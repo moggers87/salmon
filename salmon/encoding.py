@@ -104,9 +104,10 @@ class MailBase(object):
     encoding an email.  You actually can do all your email processing with this
     class, but it's more raw.
     """
-    def __init__(self, items=()):
+    def __init__(self, items=(), parent=None):
         self.headers = OrderedDict(items)
         self.parts = []
+        self.parent = parent
         self.body = None
         self.content_encoding = {'Content-Type': (None, {}), 
                                  'Content-Disposition': (None, {}),
@@ -145,7 +146,7 @@ class MailBase(object):
         assert filename, "You can't attach a file without a filename."
         assert ctype.lower() == ctype, "Hey, don't be an ass.  Use a lowercase content type."
 
-        part = MailBase()
+        part = MailBase(parent=self)
         part.body = data
         part.content_encoding['Content-Type'] = (ctype, {'name': filename})
         part.content_encoding['Content-Disposition'] = (disposition,
@@ -160,7 +161,7 @@ class MailBase(object):
         """
         assert ctype.lower() == ctype, "Hey, don't be an ass.  Use a lowercase content type."
 
-        part = MailBase()
+        part = MailBase(parent=self)
         part.body = data
         part.content_encoding['Content-Type'] = (ctype, {})
         self.parts.append(part)
@@ -219,13 +220,13 @@ class MIMEPart(MIMEBase):
                                               self['Content-Disposition'],
                                                             self.is_multipart())
 
-def from_message(message):
+def from_message(message, parent=None):
     """
     Given a MIMEBase or similar Python email API message object, this
     will canonicalize it and give you back a pristine MailBase.
     If it can't then it raises a EncodingError.
     """
-    mail = MailBase()
+    mail = MailBase(parent=parent)
 
     # parse the content information out of message
     for k in CONTENT_ENCODING_KEYS:
@@ -243,7 +244,7 @@ def from_message(message):
         # recursively go through each subpart and decode in the same way
         for msg in message.get_payload():
             if msg != message:  # skip the multipart message itself
-                mail.parts.append(from_message(msg))
+                mail.parts.append(from_message(msg, parent=mail))
 
     return mail
 
