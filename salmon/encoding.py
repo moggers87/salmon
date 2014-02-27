@@ -75,11 +75,6 @@ from email.mime.base import MIMEBase
 from email.utils import parseaddr
 import sys
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict
-
 DEFAULT_ENCODING = "utf-8"
 DEFAULT_ERROR_HANDLING = "strict"
 CONTENT_ENCODING_KEYS = set(['Content-Type', 'Content-Transfer-Encoding',
@@ -105,7 +100,7 @@ class MailBase(object):
     class, but it's more raw.
     """
     def __init__(self, items=(), parent=None):
-        self.headers = OrderedDict(items)
+        self.headers = HeaderDict(items)
         self.parts = []
         self.parent = parent
         self.body = None
@@ -172,6 +167,69 @@ class MailBase(object):
             for x in p.walk():
                 yield x
 
+class HeaderDict(object):
+    """
+    A dictionary-like object for email headers. It deals with things such as
+    multiple headers of the same name and preserving order of keys.
+
+    Very similar to how headers work in Python's email.message.Message
+    """
+    def __init__(self, items=()):
+        self._data = [(name, data) for name, data in items]
+
+    def __contains__(self, name):
+        return name in self.keys()
+
+    def __delitem__(self, name):
+        newitems = []
+        for key, value in self._data:
+            if key != name:
+                newitems.append((key, value))
+        self._data = newitems
+
+    def __getitem__(self, name):
+        return self.get(name)
+
+    def __iter__(self):
+        for name, value in self._data:
+            yield name
+
+    def __len__(self):
+        return len(self._data)
+
+    def __reverse__(self):
+        raise NotImplementedError # just in case
+
+    def __setitem__(self, name, data):
+        self._data.append((name, data))
+
+    def get(self, name, failobj=None):
+        for key, value in self._data:
+            if key == name:
+                return value
+        return failobj
+
+    def get_all(self, name, failobj=None):
+        data = []
+        for key, value in self._data:
+            if key == name:
+                data.apped(value)
+        return data
+
+    def keys(self):
+        return [name for name, data in self._data]
+
+    def items(self):
+        return self._data[:]
+
+    def replace_item(self, name, value):
+        for item in self._data:
+            if name == item[0]:
+                index = self._data.index(item)
+                self._data[index] = value
+
+    def values(self):
+        return [data for name, data in self._data]
 
 class MIMEPart(MIMEBase):
     """
