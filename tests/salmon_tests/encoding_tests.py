@@ -31,6 +31,42 @@ DECODED_HEADERS = encoding.header_from_mime_encoding(BAD_HEADERS)
 
 NORMALIZED_HEADERS = [encoding.header_to_mime_encoding(x) for x in DECODED_HEADERS]
 
+def test_HeaderDict():
+    items = [("Subject","Test"), ("Subject","Second subject!"), ("From","moggers@localhost"), ("To","tsyesika@remotehost")]
+
+    #__init__
+    headers = encoding.HeaderDict(items)
+
+    #__getitem__
+    assert_equal(headers["From"], "moggers@localhost")
+    assert_is_none(headers["Cheese"])
+    assert_equal(len(headers.get_all("Subject")), 2)
+
+    #__contains__
+    contains = "Subject" in headers
+    not_contains = "Cheese" in headers
+    assert_true(contains)
+    assert_false(not_contains)
+
+    #__delitem__
+    del headers["To"]
+    assert_false("To" in headers)
+
+    #__setitem__
+    headers["To"] = "tsyesika@remotehost"
+    assert_true("To" in headers)
+
+    headers.replace_item("To", "tsyes@host")
+    assert_equal(headers["To"], "tsyes@host")
+
+    #__len__
+    assert_equal(len(headers), len(items))
+    assert_equal(len(headers.items()), len(items))
+    assert_equal(len(headers.values()), len(items))
+
+    #__iter__
+    h2 = encoding.HeaderDict(headers)
+    assert_equal(headers, h2)
 
 def test_MailBase():
     the_subject = u'p\xf6stal'

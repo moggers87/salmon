@@ -175,6 +175,9 @@ class HeaderDict(object):
     Very similar to how headers work in Python's email.message.Message
     """
     def __init__(self, items=()):
+        if hasattr(items, "items"):
+            items = items.items()
+
         self._data = [(name, data) for name, data in items]
 
     def __contains__(self, name):
@@ -187,6 +190,10 @@ class HeaderDict(object):
                 newitems.append((key, value))
         self._data = newitems
 
+    def __eq__(self, other):
+        return (isinstance(other, self.__class__)
+                and self.items() == other.items())
+
     def __getitem__(self, name):
         return self.get(name)
 
@@ -196,6 +203,9 @@ class HeaderDict(object):
 
     def __len__(self):
         return len(self._data)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __reverse__(self):
         raise NotImplementedError # just in case
@@ -213,7 +223,7 @@ class HeaderDict(object):
         data = []
         for key, value in self._data:
             if key == name:
-                data.apped(value)
+                data.append(value)
         return data
 
     def keys(self):
@@ -226,7 +236,7 @@ class HeaderDict(object):
         for item in self._data:
             if name == item[0]:
                 index = self._data.index(item)
-                self._data[index] = value
+                self._data[index] = (name, value)
 
     def values(self):
         return [data for name, data in self._data]
