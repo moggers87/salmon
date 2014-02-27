@@ -109,7 +109,7 @@ class MailBase(object):
                                  'Content-Transfer-Encoding': (None, {})}
 
     def __getitem__(self, key):
-        return self.headers.get(normalize_header(key), None)
+        return self.headers.get(normalize_header(key))
 
     def __len__(self):
         return len(self.headers)

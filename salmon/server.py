@@ -190,7 +190,7 @@ class SMTPReceiver(smtpd.SMTPServer):
             return str(err)
             undeliverable_message(Data, "Handler raised SMTPError on purpose: %s" % err)
         except Exception:
-            logging.exception("Exception while processing message from Peer: %r, From: %r, to To %r.".
+            logging.exception("Exception while processing message from Peer: %r, From: %r, to To %r.",
                           Peer, From, To)
             undeliverable_message(Data, "Error in message %r:%r:%r, look in logs." % (Peer, From, To))
 
