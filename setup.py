@@ -34,7 +34,7 @@ config = {
     'download_url': 'http://pypi.python.org/pypi/salmon-mail',
     'maintainer': 'Matt Molyneaux',
     'maintainer_email': 'moggers87+git@moggers87.co.uk',
-    'version': '1',
+    'version': '2',
     'scripts': ['bin/salmon'],
     'install_requires': install_requires,
     'packages': ['salmon', 'salmon.handlers'],

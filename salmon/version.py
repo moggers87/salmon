@@ -1,1 +1,1 @@
-VERSION={'version': '1', 'rev': '7e7e288042ce6aa78b4d43d7fcef6c44742bca4f'}
+VERSION={'version': '2', 'rev': 'http://github.com/moggers87/salmon/tree/2'}
