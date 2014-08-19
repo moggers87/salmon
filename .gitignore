@@ -2,7 +2,7 @@
 .*.sw*
 logs
 run
-ENV
+env
 build
 dist
 *.egg-info

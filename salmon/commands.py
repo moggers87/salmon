@@ -25,18 +25,17 @@ with *args.
 See python-modargs for more details.
 """
 
-from salmon import server, utils, mail, routing, queue, encoding
 from modargs import args
-from pkg_resources import resource_stream
-from zipfile import ZipFile
+from salmon import server, utils, mail, routing, queue, encoding
+import email
 import glob
-import salmon
+import mailbox
 import os
+import salmon
+import shutil
 import signal
 import sys
 import time
-import mailbox
-import email
 
 def log_command(port=8825, host='127.0.0.1', chroot=False,
                 chdir=".", uid=False, gid=False, umask=False, pid="./run/log.pid",
@@ -293,19 +292,16 @@ def gen_command(project=None, FORCE=False):
 
     salmon gen -project STR -FORCE False
     """
-    project = project
+    template = os.path.join(salmon.__path__[0], "data", "prototype")
 
     if os.path.exists(project) and not FORCE:
         print "Project %s exists, delete it first." % project
         sys.exit(1)
         return
+    elif FORCE:
+        shutil.rmtree(project, ignore_errors=True)
 
-    prototype = ZipFile(resource_stream(__name__, 'data/prototype.zip'))
-
-    if not os.path.exists(project):
-        os.makedirs(project)
-
-    prototype.extractall(project)
+    shutil.copytree(template, project)
 
 def web_command(basedir=".", port=8888, host='127.0.0.1'):
     """

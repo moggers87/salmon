@@ -24,9 +24,6 @@ else:
     install_requires.append('lockfile')
 
 config = {
-    'package_data': {
-        'salmon': ['data/prototype.zip']
-    },
     'description': 'A Python mail server forked from Lamson',
     'long_description': 'Salmon is a modern Pythonic mail server built like a web application server.',
     'author': 'Zed A. Shaw',
@@ -38,6 +35,7 @@ config = {
     'scripts': ['bin/salmon'],
     'install_requires': install_requires,
     'packages': ['salmon', 'salmon.handlers'],
+    'include_package_data': True,
     'name': 'salmon-mail',
     'license': 'GPLv3',
     'classifiers': [
