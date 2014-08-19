@@ -111,15 +111,16 @@ def sendmail_command(port=8825, host='127.0.0.1', debug=0, TRAILING=None):
 
 
 def start_command(pid='./run/smtp.pid', FORCE=False, chroot=False, chdir=".",
-                  boot="config.boot", uid=False, gid=False, umask=False, debug=False):
+                  boot="config.boot", uid=False, gid=False, umask=False, debug=False,
+                  daemon=True):
     """
     Runs a salmon server out of the current directory:
 
     salmon start -pid ./run/smtp.pid -FORCE False -chroot False -chdir "." \\
-            -umask False -uid False -gid False -boot config.boot
+            -umask False -uid False -gid False -boot config.boot -daemon True
     """
     loader = lambda: utils.import_settings(True, from_dir=os.getcwd(), boot_module=boot)
-    utils.start_server(pid, FORCE, chroot, chdir, uid, gid, umask, loader, debug)
+    utils.start_server(pid, FORCE, chroot, chdir, uid, gid, umask, loader, debug, daemon)
 
 
 def stop_command(pid='./run/smtp.pid', KILL=False, ALL=False):
