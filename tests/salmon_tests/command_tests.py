@@ -147,7 +147,7 @@ def test_sendmail_command():
 def test_start_command():
     # normal start
     commands.start_command()
-    assert utils.daemonize.called
+    assert utils.daemonize.call_count == 1
     assert utils.import_settings.called
 
     # start with pid file existing already
@@ -168,6 +168,10 @@ def test_start_command():
     commands.start_command(uid=1000, gid=1000, pid="run/fake.pid", FORCE=True)
     assert utils.drop_priv.called
 
+    # non daemon start
+    daemonize_call_count = utils.daemonize.call_count
+    commands.start_command(pid="run/fake.pid", daemon=False, FORCE=True)
+    assert utils.daemonize.call_count == daemonize_call_count  # same count -> not called
 
 
 def raise_OSError(*x, **kw):

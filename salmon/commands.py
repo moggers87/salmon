@@ -39,7 +39,7 @@ import time
 
 def log_command(port=8825, host='127.0.0.1', chroot=False,
                 chdir=".", uid=False, gid=False, umask=False, pid="./run/log.pid",
-               FORCE=False, debug=False):
+                FORCE=False, debug=False, daemon=True):
     """
     Runs a logging only server on the given hosts and port.  It logs
     each message it receives and also stores it to the run/queue 
@@ -48,7 +48,7 @@ def log_command(port=8825, host='127.0.0.1', chroot=False,
     salmon log -port 8825 -host 127.0.0.1 \\
             -pid ./run/log.pid -chroot False  \\
             -chdir "." -umask False -uid False -gid False \\
-            -FORCE False
+            -FORCE False -daemon True
 
     If you specify a uid/gid then this means you want to first change to
     root, set everything up, and then drop to that UID/GID combination.
@@ -59,7 +59,7 @@ def log_command(port=8825, host='127.0.0.1', chroot=False,
     uid or gid without doing the priv drop operation.
     """
     loader = lambda: utils.make_fake_settings(host, port)
-    utils.start_server(pid, FORCE, chroot, chdir, uid, gid, umask, loader, debug)
+    utils.start_server(pid, FORCE, chroot, chdir, uid, gid, umask, loader, debug, daemon)
 
 
 def send_command(port=8825, host='127.0.0.1', username=False, password=False,
@@ -110,15 +110,16 @@ def sendmail_command(port=8825, host='127.0.0.1', debug=0, TRAILING=None):
 
 
 def start_command(pid='./run/smtp.pid', FORCE=False, chroot=False, chdir=".",
-                  boot="config.boot", uid=False, gid=False, umask=False, debug=False):
+                  boot="config.boot", uid=False, gid=False, umask=False, debug=False,
+                  daemon=True):
     """
     Runs a salmon server out of the current directory:
 
     salmon start -pid ./run/smtp.pid -FORCE False -chroot False -chdir "." \\
-            -umask False -uid False -gid False -boot config.boot
+            -umask False -uid False -gid False -boot config.boot -daemon True
     """
     loader = lambda: utils.import_settings(True, from_dir=os.getcwd(), boot_module=boot)
-    utils.start_server(pid, FORCE, chroot, chdir, uid, gid, umask, loader, debug)
+    utils.start_server(pid, FORCE, chroot, chdir, uid, gid, umask, loader, debug, daemon)
 
 
 def stop_command(pid='./run/smtp.pid', KILL=False, ALL=False):
