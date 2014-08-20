@@ -1,7 +1,10 @@
 from nose.tools import *
+
 from salmon import mail
 from salmon.routing import Router
 from setup_env import setup_salmon_dirs, teardown_salmon_dirs
+from handlers import bounce_filtered_mod
+
 
 def test_bounce_analyzer_on_bounce():
     bm = mail.MailRequest(None,None,None, open("tests/bounce.msg").read())
@@ -47,8 +50,7 @@ def test_bounce_analyzer_on_regular():
 
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_bounce_to_decorator():
-    import bounce_filtered_mod
-    msg = mail.MailRequest(None,None,None, open("tests/bounce.msg").read())
+    msg = mail.MailRequest(None, None, None, open("tests/bounce.msg").read())
 
     Router.deliver(msg)
     assert Router.in_state(bounce_filtered_mod.START, msg)

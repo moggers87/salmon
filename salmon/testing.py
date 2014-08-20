@@ -20,12 +20,10 @@ The spelling function will use PyEnchant to spell check a string.  If it finds
 any errors it prints them out, and returns False.
 """
 
-
-from salmon import server, utils, routing, mail
+from salmon import server, routing, mail
 from salmon.queue import Queue
 from nose.tools import assert_equal
 import re
-import logging
 
 TEST_QUEUE = "run/queue"
 
@@ -42,17 +40,17 @@ def spelling(file_name, contents, language="en_US"):
     works right.
     """
     try:
-        from enchant.checker import SpellChecker 
-        from enchant.tokenize import EmailFilter, URLFilter 
+        from enchant.checker import SpellChecker
+        from enchant.tokenize import EmailFilter, URLFilter
     except ImportError:
         print "Failed to load PyEnchant.  Make sure it's installed and salmon spell works."
         return True
 
     failures = 0
-    chkr = SpellChecker(language, filters=[EmailFilter, URLFilter]) 
+    chkr = SpellChecker(language, filters=[EmailFilter, URLFilter])
     chkr.set_text(contents)
     for err in chkr:
-        print "%s: %s \t %r" % (file_name, err.word, contents[err.wordpos-20:err.wordpos+20])
+        print "%s: %s \t %r" % (file_name, err.word, contents[err.wordpos - 20:err.wordpos + 20])
         failures += 1
 
     if failures:
@@ -60,8 +58,6 @@ def spelling(file_name, contents, language="en_US"):
         return False
     else:
         return True
-
-
 
 
 def relay(hostname="127.0.0.1", port=8824):
@@ -146,9 +142,10 @@ class TestConversation(object):
                     print "-----"
                     print inq.get(key)
 
-            assert msg, "Expected %r when sending to %r with '%s:%s' message." % (expect, 
-                                          To, self.Subject or Subject, Body)
+            assert msg, "Expected %r when sending to %r with '%s:%s' message." % (expect,
+                                                                                  To, self.Subject or Subject, Body)
         return msg
+
 
 class RouterConversation(TestConversation):
     """
@@ -156,6 +153,7 @@ class RouterConversation(TestConversation):
     internally to the Router, rather than connecting with a relay.
     Use it in tests that are not integration tests.
     """
+
     def __init__(self, From, Subject):
         self.From = From
         self.Subject = Subject
@@ -165,7 +163,6 @@ class RouterConversation(TestConversation):
         sample = mail.MailResponse(From=From, To=To, Subject=Subject, Body=Body)
         msg = mail.MailRequest('localhost', sample['From'], sample['To'], str(sample))
         routing.Router.deliver(msg)
-
 
 
 def assert_in_state(module, To, From, state):
