@@ -39,7 +39,7 @@ def test_HeaderDict():
 
     #__getitem__
     assert_equal(headers["From"], "moggers@localhost")
-    assert_is_none(headers["Cheese"])
+    assert_true(headers["Cheese"] is None)
     assert_equal(len(headers.get_all("Subject")), 2)
 
     #__contains__
@@ -71,9 +71,11 @@ def test_HeaderDict():
 def test_MailBase():
     the_subject = u'p\xf6stal'
     m = encoding.MailBase()
-    
+
     m['To'] = "testing@localhost"
     m['Subject'] = the_subject
+    m['Content-Type'] = 'text/plain; charset=iso-8859-1'
+    m['MIME-Version'] = '1.0'
 
     assert m['To'] == "testing@localhost"
     assert m['TO'] == m['To']
@@ -82,7 +84,7 @@ def test_MailBase():
     assert m['Subject'] == the_subject
     assert m['subject'] == m['Subject']
     assert m['sUbjeCt'] == m['Subject']
-    
+
     msg = encoding.to_message(m)
     m2 = encoding.from_message(msg)
 
@@ -90,7 +92,7 @@ def test_MailBase():
 
     for k in m:
         assert m[k] == m2[k], "%s: %r != %r" % (k, m[k], m2[k])
-    
+
     for k in m.keys():
         assert k in m
         del m[k]
@@ -109,7 +111,7 @@ def test_dumb_shit():
 def test_header_from_mime_encoding():
     assert not encoding.header_from_mime_encoding(None)
     assert_equal(len(BAD_HEADERS), len(encoding.header_from_mime_encoding(BAD_HEADERS)))
-    
+
     for i, header in enumerate(BAD_HEADERS):
         assert_equal(DECODED_HEADERS[i], encoding.header_from_mime_encoding(header))
 
@@ -135,7 +137,7 @@ def test_to_message_from_message_with_spam():
 
                 assert not m[k].startswith(u"=?")
                 assert not m2[k].startswith(u"=?")
-                assert m.body == m2.body, "Bodies don't match" 
+                assert m.body == m2.body, "Bodies don't match"
 
                 assert_equal(len(m.parts), len(m2.parts), "Not the same number of parts.")
 
@@ -160,7 +162,7 @@ def test_to_file_from_file():
 
     with open(outfile) as outfp:
         msg2 = encoding.from_file(outfp)
-    
+
     outdata = open(outfile).read()
 
     assert_equal(len(msg), len(msg2))

@@ -253,17 +253,16 @@ class MIMEPart(MIMEBase):
         # classes from email.* are all old-style :(
         MIMEBase.__init__(self, self.maintype, self.subtype, **params)
 
-    def add_text(self, content):
+    def add_text(self, content, charset=None):
         # this is text, so encode it in canonical form
+        charset = charset or 'ascii'
         try:
-            encoded = content.encode('ascii')
-            charset = 'ascii'
+            encoded = content.encode(charset)
         except UnicodeError:
             encoded = content.encode('utf-8')
             charset = 'utf-8'
 
         self.set_payload(encoded, charset=charset)
-
 
     def extract_payload(self, mail):
         if mail.body == None: return  # only None, '' is still ok
@@ -274,7 +273,7 @@ class MIMEPart(MIMEBase):
         assert ctype, "Extract payload requires that mail.content_encoding have a valid Content-Type."
 
         if ctype.startswith("text/"):
-            self.add_text(mail.body)
+            self.add_text(mail.body, charset=ctype_params.get('charset'))
         else:
             if cdisp:
                 # replicate the content-disposition settings
@@ -317,7 +316,6 @@ def from_message(message, parent=None):
     return mail
 
 
-
 def to_message(mail):
     """
     Given a MailBase message, this will construct a MIMEPart 
@@ -344,10 +342,17 @@ def to_message(mail):
                             (ctype, params, exc.message))
 
     for k in mail.keys():
+
         if k in ADDRESS_HEADERS_WHITELIST:
-            out[k.encode('ascii')] = header_to_mime_encoding(mail[k])
+            value = header_to_mime_encoding(mail[k])
         else:
-            out[k.encode('ascii')] = header_to_mime_encoding(mail[k], not_email=True)
+            value = header_to_mime_encoding(mail[k], not_email=True)
+
+        if k.lower() in [key.lower() for key in CONTENT_ENCODING_KEYS]:
+            del out[k]
+            out[k] = value
+        else:
+            out[k.encode('ascii')] = value
 
     out.extract_payload(mail)
 

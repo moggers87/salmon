@@ -1,18 +1,12 @@
-from salmon.routing import *
-from salmon.mail import MailRequest
-from salmon import queue, routing, encoding
-from setup_env import setup_salmon_dirs, teardown_salmon_dirs
-
 from nose.tools import *
 from mock import *
 
+from salmon.routing import *
+from salmon.mail import MailRequest
+from salmon import routing
+from setup_env import setup_salmon_dirs, teardown_salmon_dirs
+from setup_env import setup_router
 
-def setup():
-    Router.clear_states()
-    Router.clear_routes()
-
-def teardown():
-    setup()
 
 def test_MemoryStorage():
     store = MemoryStorage()
@@ -43,8 +37,8 @@ def test_RoutingBase():
     assert len(Router.ORDER) == 0
     assert len(Router.REGISTERED) == 0
 
-    Router.load(['salmon_tests.simple_fsm_mod'])
-    import simple_fsm_mod
+    setup_router(['salmon_tests.handlers.simple_fsm_mod'])
+    from handlers import simple_fsm_mod
 
     assert len(Router.ORDER) > 0
     assert len(Router.REGISTERED) > 0
@@ -79,7 +73,7 @@ def test_RoutingBase():
     assert_raises(RuntimeError, Router.deliver, explosion)
 
     Router.reload()
-    assert 'salmon_tests.simple_fsm_mod' in Router.HANDLERS
+    assert 'salmon_tests.handlers.simple_fsm_mod' in Router.HANDLERS
     assert len(Router.ORDER)
     assert len(Router.REGISTERED)
 
