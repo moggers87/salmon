@@ -17,13 +17,14 @@ Authentication-Results: mx.google.com;
 	smtp.mail=larrybythesea@sbcglobal.net
 X-Mailer: QMail
 X-Priority: 3 (Normal)
+MIME-Version: 1.0
 To: <anonymous@anonymous.com>
 Date: Mon, 18 May 2009 19:50:49 +0300
 Message-ID: <01C9D7B7.00BC73B5@localhost>
 Subject: Small love party tonight
 Reply-To: <larrybythesea@sbcglobal.net>
 From: <larrybythesea@sbcglobal.net>
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 X-Spambayes-Trained: spam
 Status: O
@@ -66,8 +67,7 @@ User-Agent: Mozilla/5.0 (Windows; U; Win95; en-GB;
 MIME-Version: 1.0
 To: <anonymous@anonymous.com>
 Subject: Veja no seu pc
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8bit
 X-Spambayes-Trained: spam
 Status: O
@@ -78,7 +78,7 @@ Veja canais de TV no seu PC - Super Novidade!
 ================================
 http://www.flyclored.eti.br/t
 ================================
-PROGRAMAÇÃO VIVO. Nova tecnologia que utiliza a banda da sua Internet para
+PROGRAMAï¿½ï¿½O VIVO. Nova tecnologia que utiliza a banda da sua Internet para
 conectar canais de TV 
 
 Veja canais de TV enquanto navega pela Internet
@@ -106,9 +106,9 @@ Authentication-Results: mx.google.com;
 	irisryan@ms39.hinet.net) smtp.mail=irisryan@ms39.hinet.net
 Received: from 192.83.179.44 by 87.248.128.134; Sat, 25 Apr 2009 15:02:48 -0200
 Message-ID: <BNTAFICTEPORGZYQTNJLLCHCN.CYKYOirisryan@ms39.hinet.net>
-From: "L/C¥N¹Ô»È¦æ´«³æ" <irisryan@ms39.hinet.net>
+From: "L/Cï¿½Nï¿½Ô»È¦æ´«ï¿½ï¿½" <irisryan@ms39.hinet.net>
 To: party.peng@gmail.com
-Subject: ¸Ñ¨M±z ¸êª÷©PÂà ªº»Ý¨D
+Subject: ï¿½Ñ¨Mï¿½z ï¿½ï¿½ï¿½ï¿½Pï¿½ï¿½ ï¿½ï¿½ï¿½Ý¨D
 Date: Sat, 25 Apr 2009 18:57:48 +0200
 X-Mailer: The Bat! (v1.52f) Business
 MIME-Version: 1.0
@@ -218,7 +218,7 @@ DomainKey-Signature: a=rsa-sha1; q=dns; c=simple; s=dns; d=poucopeso.com;
 Message-ID: <0b6a01c9c327$b93be1a0$4b9a9c7b@repw>
 From: "Emagreca 4 KG" <ueneyromehbj@poucopeso.com>
 To: <anonymous@anonymous.com>
-Subject: Emagreça agora
+Subject: Emagreï¿½a agora
 Date: Wed, 22 Apr 2009 05:52:53 -0300
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
@@ -239,9 +239,9 @@ Content-Type: text/plain;
 	charset="iso-8859-1"
 Content-Transfer-Encoding: 7Bit
 
-Pegue seu calendário e marque a data de hoje.
-Depois, conte 11 dias e risque este dia também.
-11 dias passam muito rápido, então porque não
+Pegue seu calendï¿½rio e marque a data de hoje.
+Depois, conte 11 dias e risque este dia tambï¿½m.
+11 dias passam muito rï¿½pido, entï¿½o porque nï¿½o
 se apresentar mais magro(a) no final dos 11 dias?
 http://www.poucopeso.com
 ------=_NextPart_000_0B67_01C9C30E.93EEA9A0
@@ -249,9 +249,9 @@ Content-Type: text/plain;;
 	charset="iso-8859-1"
 Content-Transfer-Encoding: 7Bit
 
-Pegue seu calendário e marque a data de hoje.
-Depois, conte 11 dias e risque este dia também.
-11 dias passam muito rápido, então porque não
+Pegue seu calendï¿½rio e marque a data de hoje.
+Depois, conte 11 dias e risque este dia tambï¿½m.
+11 dias passam muito rï¿½pido, entï¿½o porque nï¿½o
 se apresentar mais magro(a) no final dos 11 dias?
 http://www.poucopeso.com
 ------=_NextPart_000_0B67_01C9C30E.93EEA9A0--
@@ -417,10 +417,10 @@ Content-Transfer-Encoding: quoted-printable
 <STYLE></STYLE>
 </HEAD>
 <BODY bgColor=3D#ffffff>
-<DIV align=3Dcenter><FONT face=3DArial size=3D2>Order today and start shedd=
+<DIV align=3D center><FONT face=3DArial size=3D2>Order today and start shedd=
 ing those pounds today</FONT></DIV>
-<DIV align=3Dcenter><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV align=3Dcenter><FONT face=3DArial size=3D2>
+<DIV align=3D center><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV align=3D center><FONT face=3DArial size=3D2>
 <A href=3D"http://acrossright.com">Come on and click</A></FONT></DIV></BODY=
 ></HTML>
 ------=_NextPart_000_0007_01C9C17A.A2D66420--
@@ -447,9 +447,9 @@ Received: from 211.73.20.192 by (HELLO 200.21.53.154 ) (200.21.53.154) by
 	hotmail.com with WTETKKIO login by Microsoft Outlook Express
 	5.00.2615.200 SMTP ; Wed, 27 May 2009 04:03:45 -0300
 Message-ID: <DZCKMXLCMMTDQSXTBTQEMFHVZ.DANMNAlindaanthony@yahoo.com.sg>
-From: "¬ü°êWET¼í·Æ²G-®É©|±¡½ìºë«~-" <lindaanthony@yahoo.com.sg>
+From: "ï¿½ï¿½ï¿½WETï¿½ï¿½Æ²G-ï¿½É©|ï¿½ï¿½ï¿½ï¿½ï¿½~-" <lindaanthony@yahoo.com.sg>
 To: minglun.wu@gmail.com
-Subject: ¡mªñ¿Ë¶Ã­Û¡n³Ì³ßÅw·È¶i©j©jªº©Ð¶¡¤F¡A¦]©j©jºÎ¤ÈÄ±³£¤£¬ï¦çªA¡I²n¡I
+Subject: ï¿½mï¿½ï¿½Ë¶Ã­Û¡nï¿½Ì³ï¿½ï¿½wï¿½È¶iï¿½jï¿½jï¿½ï¿½ï¿½Ð¶ï¿½ï¿½Fï¿½Aï¿½]ï¿½jï¿½jï¿½Î¤ï¿½Ä±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½Iï¿½nï¿½I
 Date: Wed, 27 May 2009 02:04:45 -0500
 X-Mailer: Microsoft Outlook, Build 10.0.2616
 MIME-Version: 1.0
@@ -1981,7 +1981,7 @@ Daqqpqm Media Inc<br/>
 6146 West 50th St 4th floor<br/>
 
 New York, NY 10001<br/><br />
-© 2009 Cevoladity Media Inc.</font></p></div>
+ï¿½ 2009 Cevoladity Media Inc.</font></p></div>
             </td>
         </tr>
     </table>
@@ -2154,7 +2154,7 @@ X-Spambayes-Trained: spam
                                                                                         <tr>
 
                                                                                                 <td align="center">
-                                                                                                <p style="font-family:Arial, Helvetica, sans-serif; font-size:12px; color:#;">© 2009
+                                                                                                <p style="font-family:Arial, Helvetica, sans-serif; font-size:12px; color:#;">ï¿½ 2009
                                                                                                 <a style="font-family:Arial, Helvetica, sans-serif;font-size:12px;color:#247694;text-decoration:none;line-height:16px;" href="http://jbazq.kavmewov.cn/?hag=AED096232B63DBEE4C040&lqw=aed096232b6" target="_blank">Zqlopuw Hyzamy, LLC
                                                                                                 </a>, 6880 Jujn Oveniu., Aaucoo, RX 05412</p>
                                                                                                   <p style="font-family:Arial, Helvetica, sans-serif; font-size:12px; color:#;">Welcome to Hjli Apet Weekly, which you asked to receive while visiting Oake.com, the Ihitjn Ejwufa or a website in the Honupiql.com family. Click &quot;unsubscribe&quot; above if you do not wish to continue to receive it. </p>
