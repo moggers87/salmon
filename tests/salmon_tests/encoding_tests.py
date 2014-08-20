@@ -39,7 +39,7 @@ def test_HeaderDict():
 
     #__getitem__
     assert_equal(headers["From"], "moggers@localhost")
-    assert_is_none(headers["Cheese"])
+    assert_true(headers["Cheese"] is None)
     assert_equal(len(headers.get_all("Subject")), 2)
 
     #__contains__
