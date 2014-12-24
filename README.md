@@ -25,11 +25,6 @@ canonicalizes them for easier processing.
 servers.
 * Properly decodes internationalized mail into Python unicode, and translates
 Python unicode back into nice clean ascii and/or UTF-8 mail.
-* Salmon can use SQLAlchemy, TokyoCabinet, or any other database abstraction
-layer or technology you can get libraries for.  It supports SQLAlchemy by
-default.
-* It uses Jinja2 by default, but you can swap in Mako if you like, or any other
-template framework with a similar API.
 * Supports working with Maildir queues to defer work and distribute it to
 multiple machines.
 * Can run as an non-root user on port 25 to reduce the risk of intrusion.
@@ -72,8 +67,8 @@ that were of most concern:
     uses this copyrighted work at any time for any reason.
 
 I read that to mean that I could make a contribution but then have said work
-denied to me because Mr. Shaw didn't like the colour of my socks. So I went and
-found the latest version that was available under the GNU GPL version 3.
+denied to me because the orginal author didn't like the colour of my socks. So
+I went and found the latest version that was available under the GNU GPL version 3.
 
 Salmon is an anagram of Lamson, if you hadn't worked it out already.
 
@@ -106,8 +101,7 @@ Contributing
 Pull requests and issues are most welcome.
 
 I will not accept code that has been submitted for inclusion in the original
-project, due to the terms of its licence. Unless you have permission from Zed
-Shaw.
+project due to the terms of its licence.
 
 Testing
 =======
@@ -140,20 +134,10 @@ Development
 ===========
 
 Salmon is written entirely in Python and runs on Python 2.6 or 2.7 but not 3k
-yet.  It uses only pure Python except where some libraries have compiled
-extensions (such as Jinja2).  It should hopefully run on any platform that
-supports Python and has Unix semantics.
+yet.  It should hopefully run on any platform that supports Python and has Unix
+semantics.
 
-The code is consistently documented and written to be read in an instructional
-manner where possible.  If a piece of code does not make sense, then ask for
-help and it will be clarified.  The code is also small and has a full test suite
-with about 95% coverage, so you should be able to find out just about anything
-you need to hack on Salmon in the Salmon source.
+If you find yourself lost in source code, just yell.
 
-Given the above statements, it should be possible for anyone to take the Salmon
-source and read through it in an evening or two.  You should also be able to
-understand what's going on, and learn anything you don't by asking questions.
-
-If this isn't the case, then feel free to ask for help understanding it.
-
-
+PEP-8 should be followed where possible, but feel free to ignore the 80 character
+limit it imposes.
