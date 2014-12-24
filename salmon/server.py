@@ -19,6 +19,7 @@ ver = version.VERSION['version'] # yo dawg
 smtpd.__version__ = "Salmon Mail router SMTPD, version %s" % ver
 lmtpd.__version__ = "Salmon Mail router LMTPD, version %s" % ver
 
+
 def undeliverable_message(raw_message, failure_type):
     """
     Used universally in this file to shove totally screwed messages
@@ -30,15 +31,6 @@ def undeliverable_message(raw_message, failure_type):
         logging.error("Failed to deliver message because of %r, put it in "
                       "undeliverable queue with key %r", failure_type, key)
 
-class IncomingMessage(object):
-    """
-    Lightweight class that contains message data and metadata
-    """
-    def __init__(self, Peer, From, To, Data):
-        self.Peer = Peer
-        self.From = From
-        self.To = To
-        self.Data = Data
 
 class SMTPError(Exception):
     """
@@ -194,7 +186,7 @@ class SMTPReceiver(smtpd.SMTPServer):
 
         try:
             logging.debug("Message received from Peer: %r, From: %r, to To %r.", Peer, From, To)
-            routing.Router.deliver(IncomingMail(Peer, From, To, Data))
+            routing.Router.deliver(mail.IncomingMessage(Peer, From, To, Data))
         except SMTPError, err:
             # looks like they want to return an error, so send it out
             return str(err)
@@ -248,7 +240,7 @@ class LMTPReceiver(lmtpd.LMTPServer):
 
         try:
             logging.debug("Message received from Peer: %r, From: %r, to To %r.", Peer, From, To)
-            routing.Router.deliver(IncomingMail(Peer, From, To, Data))
+            routing.Router.deliver(mail.IncomingMessage(Peer, From, To, Data))
         except SMTPError, err:
             # looks like they want to return an error, so send it out
             # and yes, you should still use SMTPError in your handlers

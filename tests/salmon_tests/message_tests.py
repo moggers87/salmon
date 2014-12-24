@@ -250,12 +250,3 @@ def test_decode_header_randomness():
     assert_equal(mail._decode_header_randomness("z@localhost"),
                  set(["z@localhost"]))
     assert_raises(encoding.EncodingError, mail._decode_header_randomness, 1)
-
-
-def test_msg_is_deprecated():
-    warnings.simplefilter("ignore")
-    msg = mail.MailRequest(None, None, None, "")
-    assert_equal(msg.msg, msg.base)
-    resp = mail.MailResponse()
-    assert_equal(resp.msg, resp.base)
-

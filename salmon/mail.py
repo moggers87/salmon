@@ -36,6 +36,17 @@ def _decode_header_randomness(addr):
         raise encoding.EncodingError("Address must be a string or a list not: %r", type(addr))
 
 
+class IncomingMessage(object):
+    """
+    Lightweight class that contains message data and metadata
+    """
+    def __init__(self, Peer, From, To, Data):
+        self.Peer = Peer
+        self.From = From
+        self.To = To
+        self.Data = Data
+
+
 class MailRequest(object):
     """
     This is what older users of Salmon are accustomed to.  The information

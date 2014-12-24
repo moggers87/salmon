@@ -12,7 +12,7 @@ from salmon.mail import MailRequest
 
 class MailRequestEncoder(object):
     """
-    Overwrites the IncomingMail object with a traditional Salmon
+    Overwrites the IncomingMessage object with a traditional Salmon
     MailRequest object.
     """
     def __init__(self, func):
