@@ -7,17 +7,21 @@ except ImportError:
 
 install_requires = [
     'chardet',
-    'mock',
-    'nose',
-    'python-modargs',
     'lmtpd>=4',
     'pydns',
+    'python-modargs',
 ]
 
 if sys.platform != 'win32': # Can daemonize
     install_requires.append('python-daemon')
 else:
     install_requires.append('lockfile')
+
+test_requires = [
+    'jinja2',
+    'mock',
+    'nose',
+]
 
 config = {
     'description': 'A Python mail server forked from Lamson',
@@ -30,6 +34,7 @@ config = {
     'version': '2',
     'scripts': ['bin/salmon'],
     'install_requires': install_requires,
+    'test_requires': test_requires,
     'packages': ['salmon', 'salmon.handlers'],
     'include_package_data': True,
     'name': 'salmon-mail',
