@@ -30,6 +30,16 @@ def undeliverable_message(raw_message, failure_type):
         logging.error("Failed to deliver message because of %r, put it in "
                       "undeliverable queue with key %r", failure_type, key)
 
+class IncomingMessage(object):
+    """
+    Lightweight class that contains message data and metadata
+    """
+    def __init__(self, Peer, From, To, Data):
+        self.Peer = Peer
+        self.From = From
+        self.To = To
+        self.Data = Data
+
 class SMTPError(Exception):
     """
     You can raise this error when you want to abort with a SMTP error code to
@@ -184,7 +194,7 @@ class SMTPReceiver(smtpd.SMTPServer):
 
         try:
             logging.debug("Message received from Peer: %r, From: %r, to To %r.", Peer, From, To)
-            routing.Router.deliver(mail.MailRequest(Peer, From, To, Data))
+            routing.Router.deliver(IncomingMail(Peer, From, To, Data))
         except SMTPError, err:
             # looks like they want to return an error, so send it out
             return str(err)
@@ -238,7 +248,7 @@ class LMTPReceiver(lmtpd.LMTPServer):
 
         try:
             logging.debug("Message received from Peer: %r, From: %r, to To %r.", Peer, From, To)
-            routing.Router.deliver(mail.MailRequest(Peer, From, To, Data))
+            routing.Router.deliver(IncomingMail(Peer, From, To, Data))
         except SMTPError, err:
             # looks like they want to return an error, so send it out
             # and yes, you should still use SMTPError in your handlers

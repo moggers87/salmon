@@ -38,7 +38,7 @@ def _decode_header_randomness(addr):
 
 class MailRequest(object):
     """
-    This is what's handed to your handlers for you to process.  The information
+    This is what older users of Salmon are accustomed to.  The information
     you get out of this is *ALWAYS* in Python unicode and should be usable 
     by any API.  Modifying this object will cause other handlers that deal
     with it to get your modifications, but in general you don't want to do
@@ -146,13 +146,6 @@ class MailRequest(object):
             return True
         else:
             return False
-
-    @property
-    def msg(self):
-        warnings.warn("The .msg attribute is deprecated, use .base instead.  This will be gone in Lamson 1.0",
-                          category=DeprecationWarning, stacklevel=2)
-        return self.base
-
 
 
 class MailResponse(object):
@@ -330,9 +323,3 @@ class MailResponse(object):
 
     def keys(self):
         return self.base.keys()
-
-    @property
-    def msg(self):
-        warnings.warn("The .msg attribute is deprecated, use .base instead.  This will be gone in Lamson 1.0",
-                          category=DeprecationWarning, stacklevel=2)
-        return self.base
