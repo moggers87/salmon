@@ -1,8 +1,8 @@
-from setup_env import setup_salmon_dirs, teardown_salmon_dirs
-from salmon import utils, view
-
-from nose.tools import *
 from mock import *
+from nose.tools import *
+
+from salmon import utils, view
+from setup_env import setup_salmon_dirs, teardown_salmon_dirs
 
 
 def test_make_fake_settings():
@@ -12,6 +12,7 @@ def test_make_fake_settings():
     assert settings.relay == None
     settings.receiver.close()
 
+
 def test_import_settings():
     loader = view.LOADER
 
@@ -19,10 +20,6 @@ def test_import_settings():
     assert settings
     assert settings.receiver_config
 
-    view.LOADER = loader
-    settings = utils.import_settings(False, from_dir='examples/osb')
-    assert settings
-    assert settings.receiver_config
 
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 @patch('daemon.DaemonContext.open')

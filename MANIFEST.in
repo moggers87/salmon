@@ -3,7 +3,6 @@ include LICENSE
 include README.md
 recursive-include bin *
 recursive-include doc *
-recursive-include examples *
 recursive-include salmon *
 recursive-include tests *
 global-exclude *.pyc
