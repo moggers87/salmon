@@ -7,15 +7,11 @@ except ImportError:
 
 install_requires = [
     'chardet',
-    'jinja2',
     'mock',
     'nose',
     'python-modargs',
-    'lmtpd >= 4',
-    'clevercss',
-    'markdown',
+    'lmtpd>=4',
     'pydns',
-    'BeautifulSoup',
 ]
 
 if sys.platform != 'win32': # Can daemonize
