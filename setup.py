@@ -20,7 +20,6 @@ else:
 test_requires = [
     'jinja2',
     'mock',
-    'nose',
 ]
 
 config = {
@@ -34,7 +33,9 @@ config = {
     'version': '2',
     'scripts': ['bin/salmon'],
     'install_requires': install_requires,
-    'test_requires': test_requires,
+    'tests_require': test_requires,
+    'setup_requires': ['nose'],
+    'test_suite': 'nose.collector',
     'packages': ['salmon', 'salmon.handlers'],
     'include_package_data': True,
     'name': 'salmon-mail',
