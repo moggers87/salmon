@@ -84,7 +84,7 @@ After you have installed salmon you can use the salmon command to probe the syst
 For example:
 
 ```
-#: $ salmon sowens$ salmon 
+#: salmon 
 Available commands:
 
 blast, cleanse, gen, help, log, queue, restart, routes, send, sendmail, start, status, stop, version, web
