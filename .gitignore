@@ -8,3 +8,6 @@ dist
 *.egg-info
 *.egg
 tests/*.db
+.project
+.pydevproject
+
