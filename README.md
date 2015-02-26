@@ -128,7 +128,7 @@ So let's make a log directory and run salmon again.  Perhaps it will work now:
 1020816403 25463 67429   0 10:07AM ttys003    0:00.00 grep salmon
 $: ls logs
 salmon.err	salmon.out
-#:salmon sowens$ vi logs/salmon.err
+#: vi logs/salmon.err
 ```
 Unfortunately not quite yet.  But at least we know where to look to find out what went wrong.  
 The last command above looks at the log file and we can see:
