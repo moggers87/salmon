@@ -56,7 +56,141 @@ There's a setup.py
 Project Information
 ===================
 
-We, uh, don't really have any docs yet.
+More documentation is forthcoming, but you probably want to know how to at least 
+try out your installation.  This presumes that you have already installed a 
+fairly recent copy of python and that you have grabbed the source using
+git clone.  If you don't know how to do those things, there is documentation 
+on the web that you can use to get python and git installed.  Do that first then
+come back here.
+
+So to begin with once you download the source you will need to change directory
+to the root of the project folder in this documentation we will refer to that path
+using the following tag ${salmon-dir}.  Also as a convention we will prefix
+command line statements with '#: '.  When you see '#: ' at the beginning of an example
+it indicates a command you type in.  Other output in the example will be devoid of the
+'#: ' prefix, indicating machine output.
+
+```
+#: cd ${salmon-dir}
+```
+
+Next you will want to run the python install on salmon.
+
+```
+#: sudo python setup.py install
+```
+
+After you have installed salmon you can use the salmon command to probe the system further.
+For example:
+
+```
+#: $ salmon sowens$ salmon 
+Available commands:
+
+blast, cleanse, gen, help, log, queue, restart, routes, send, sendmail, start, status, stop, version, web
+
+Use salmon help -for <command> to find out more.
+```
+To start the system use 
+
+```
+#: salmon start
+Traceback (most recent call last):
+  File "/usr/local/bin/salmon", line 5, in <module>
+    pkg_resources.run_script('salmon-mail==2', 'salmon')
+  File "/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/pkg_resources.py", line 489, in run_script
+    self.require(requires)[0].run_script(script_name, ns)
+  File "/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/pkg_resources.py", line 1207, in run_script
+    execfile(script_filename, namespace, namespace)
+  File "/Library/Python/2.7/site-packages/salmon_mail-2-py2.7.egg/EGG-INFO/scripts/salmon", line 7, in <module>
+    args.parse_and_run_command(sys.argv[1:], commands, default_command="help")
+  File "build/bdist.macosx-10.7-intel/egg/modargs/args.py", line 381, in parse_and_run_command
+  File "build/bdist.macosx-10.7-intel/egg/modargs/args.py", line 286, in command_module
+  File "/Library/Python/2.7/site-packages/salmon_mail-2-py2.7.egg/salmon/commands.py", line 122, in start_command
+    utils.start_server(pid, FORCE, chroot, chdir, uid, gid, umask, loader, debug, daemon)
+  File "/Library/Python/2.7/site-packages/salmon_mail-2-py2.7.egg/salmon/utils.py", line 107, in start_server
+    daemonize(pid, chdir, chroot, umask, files_preserve=[])
+  File "/Library/Python/2.7/site-packages/salmon_mail-2-py2.7.egg/salmon/utils.py", line 45, in daemonize
+    context.stdout = open(os.path.join(chdir, "logs/salmon.out"),"a+")                                                                                                       
+IOError: [Errno 2] No such file or directory: './logs/salmon.out'
+```
+
+Notice that it doesn't work yet.  Salmon doesn't create the logs directory by default nor does it have a
+default home directory.  When you invoke salmon start, it is expecting a writable directory in whatever 
+folder you happen to be in at the time you invoke the command.
+
+So let's make a log directory and run salmon again.  Perhaps it will work now:
+
+```
+#: mkdir logs
+#: salmon start
+#: ps -efwww | grep salmon
+1020816403 25463 67429   0 10:07AM ttys003    0:00.00 grep salmon
+$: ls logs
+salmon.err	salmon.out
+#:salmon sowens$ vi logs/salmon.err
+```
+Unfortunately not quite yet.  But at least we know where to look to find out what went wrong.  
+The last command above looks at the log file and we can see:
+
+```
+Traceback (most recent call last):
+  File "/usr/local/bin/salmon", line 5, in <module>
+    pkg_resources.run_script('salmon-mail==2', 'salmon')
+  File "/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/pkg_resources.py", line 489, in run_script
+    self.require(requires)[0].run_script(script_name, ns)
+  File "/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/pkg_resources.py", line 1207, in run_script
+    execfile(script_filename, namespace, namespace)
+  File "/Library/Python/2.7/site-packages/salmon_mail-2-py2.7.egg/EGG-INFO/scripts/salmon", line 7, in <module>
+    args.parse_and_run_command(sys.argv[1:], commands, default_command="help")
+  File "build/bdist.macosx-10.7-intel/egg/modargs/args.py", line 381, in parse_and_run_command
+  File "build/bdist.macosx-10.7-intel/egg/modargs/args.py", line 286, in command_module
+  File "/Library/Python/2.7/site-packages/salmon_mail-2-py2.7.egg/salmon/commands.py", line 122, in start_command
+    utils.start_server(pid, FORCE, chroot, chdir, uid, gid, umask, loader, debug, daemon)
+  File "/Library/Python/2.7/site-packages/salmon_mail-2-py2.7.egg/salmon/utils.py", line 107, in start_server
+    daemonize(pid, chdir, chroot, umask, files_preserve=[])
+  File "/Library/Python/2.7/site-packages/salmon_mail-2-py2.7.egg/salmon/utils.py", line 56, in daemonize
+    context.open()
+  File "/Library/Python/2.7/site-packages/python_daemon-2.0.5-py2.7.egg/daemon/daemon.py", line 372, in open
+    self.pidfile.__enter__()
+  File "/Library/Python/2.7/site-packages/lockfile-0.10.2-py2.7.egg/lockfile/__init__.py", line 238, in __enter__
+    self.acquire()
+  File "/Library/Python/2.7/site-packages/lockfile-0.10.2-py2.7.egg/lockfile/pidlockfile.py", line 94, in acquire
+    raise LockFailed("failed to create %s" % self.path)
+lockfile.LockFailed: failed to create ./run/smtp.pid
+```
+
+Looks like we also need to create a run directory.
+
+```
+#: mkdir run
+#: salmon start
+#: cat logs/salmon.err
+Traceback (most recent call last):
+  File "/usr/local/bin/salmon", line 5, in <module>
+    pkg_resources.run_script('salmon-mail==2', 'salmon')
+  File "/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/pkg_resources.py", line 489, in run_script
+    self.require(requires)[0].run_script(script_name, ns)
+  File "/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python/pkg_resources.py", line 1207, in run_script
+    execfile(script_filename, namespace, namespace)
+  File "/Library/Python/2.7/site-packages/salmon_mail-2-py2.7.egg/EGG-INFO/scripts/salmon", line 7, in <module>
+    args.parse_and_run_command(sys.argv[1:], commands, default_command="help")
+  File "build/bdist.macosx-10.7-intel/egg/modargs/args.py", line 381, in parse_and_run_command
+  File "build/bdist.macosx-10.7-intel/egg/modargs/args.py", line 286, in command_module
+  File "/Library/Python/2.7/site-packages/salmon_mail-2-py2.7.egg/salmon/commands.py", line 122, in start_command
+    utils.start_server(pid, FORCE, chroot, chdir, uid, gid, umask, loader, debug, daemon)
+  File "/Library/Python/2.7/site-packages/salmon_mail-2-py2.7.egg/salmon/utils.py", line 111, in start_server
+    settings = settings_loader()
+  File "/Library/Python/2.7/site-packages/salmon_mail-2-py2.7.egg/salmon/commands.py", line 121, in <lambda>
+    loader = lambda: utils.import_settings(True, from_dir=os.getcwd(), boot_module=boot)
+  File "/Library/Python/2.7/site-packages/salmon_mail-2-py2.7.egg/salmon/utils.py", line 28, in import_settings
+    settings = __import__("config.settings", globals(), locals()).settings
+ImportError: No module named config.settings
+```
+
+Looks like we need a module named config.settings.  Well, that is as far as I can get right now
+stay tuned for more fun with Salmon.
+
 
 Fork
 -----
