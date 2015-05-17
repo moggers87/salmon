@@ -31,8 +31,13 @@ import shlex
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'sphinx.ext.viewcode',
 ]
+
+# Add upper salmon directory to pythonpath so autodoc works
+sys.path.append(os.path.abspath('..'))
+sys.path.append(os.path.abspath('../tests'))  # for a config
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

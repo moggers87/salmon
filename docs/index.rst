@@ -65,6 +65,27 @@ Specific Features
 * :doc:`html_email_generation` -- Using Salmon's HTML email generation library
   to send out HTML to annoy everyone with.
 
+Source documentation
+--------------------
+
+.. currentmodule:: salmon
+
+.. autosummary::
+   :toctree: generated/
+
+   salmon.handlers
+   salmon.bounce
+   salmon.commands
+   salmon.confirm
+   salmon.encoding
+   salmon.mail
+   salmon.queue
+   salmon.routing
+   salmon.server
+   salmon.testing
+   salmon.utils
+   salmon.version
+   salmon.view
 
 Indices and tables
 ==================
