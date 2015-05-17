@@ -138,25 +138,25 @@ process:
 # Handle the bounces in your handlers, making sure to return back to the ``START`` state for the local MTA (remember, the local MTA is a person for bounce handling).
 
 Here's some simple code that does exactly this by just ignoring bounces from
-the `myinboxisnota.tv <http://myinboxisnota.tv/>`_ example:
+the `myinboxisnota.tv <http://myinboxisnota.tv/>`_ example::
 
-<pre class="code prettyprint">
-from config.settings import BOUNCES
-from salmon.routing import route
-from salmon.bounce import bounce_to
+.. code-block:: python
 
-@route(".+")
-def IGNORE_BOUNCE(message):
-    bounces = queue.Queue(BOUNCES)
-    bounces.push(message)
-    return START
+    from config.settings import BOUNCES
+    from salmon.routing import route
+    from salmon.bounce import bounce_to
 
-@route("start@(host)")
-@bounce_to(soft=IGNORE_BOUNCE, hard=IGNORE_BOUNCE)
-def START(message, host=None):
-    CONFIRM.send(relay, "start", message, "mail/start_confirm.msg", locals())
-    return CONFIRMING
-</pre>
+    @route(".+")
+    def IGNORE_BOUNCE(message):
+        bounces = queue.Queue(BOUNCES)
+        bounces.push(message)
+        return START
+
+    @route("start@(host)")
+    @bounce_to(soft=IGNORE_BOUNCE, hard=IGNORE_BOUNCE)
+    def START(message, host=None):
+        CONFIRM.send(relay, "start", message, "mail/start_confirm.msg", locals())
+        return CONFIRMING
 
 This example is stripped down from the real code so you can see what's going
 on.  If we walk through this you can see what happens:
