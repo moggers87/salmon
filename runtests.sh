@@ -6,7 +6,10 @@ mkdir logs run
 
 # run tests
 python setup.py test
+return_code=$?
 
 # stop logging server
 ./bin/salmon stop -pid "./log.pid"
 rm -r logs run
+
+exit $return_code
