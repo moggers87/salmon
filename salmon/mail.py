@@ -46,8 +46,11 @@ class IncomingMessage(object):
         self.To = To
         self.Data = Data
 
+        # this is where your parsed email object should go (`self` in the case of subclasses)
+        self.Email = None
 
-class MailRequest(object):
+
+class MailRequest(IncomingMessage):
     """
     This is what older users of Salmon are accustomed to.  The information
     you get out of this is *ALWAYS* in Python unicode and should be usable 
@@ -65,12 +68,13 @@ class MailRequest(object):
         possible.  It will parse the From into a list and take the first
         one.
         """
+        super(MailRequest, self).__init__(Peer, From, To, Data)
 
-        self.original = Data
         self.base = encoding.from_string(Data)
-        self.Peer = Peer
         self.From = From or self.base['from']
         self.To = To or self.base[ROUTABLE_TO_HEADER]
+
+        self.Email = self
 
         if 'from' not in self.base: 
             self.base['from'] = self.From
