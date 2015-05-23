@@ -5,14 +5,15 @@ to do some serious surgery go use that.  This works as a good
 API for the 90% case of "put mail in, get mail out" queues.
 """
 
-import mailbox
-from salmon import mail
+import errno
 import hashlib
+import logging
+import mailbox
+import os
 import socket
 import time
-import os
-import errno
-import logging
+
+from salmon import mail
 
 # we calculate this once, since the hostname shouldn't change for every
 # email we put in a queue
@@ -143,7 +144,7 @@ class Queue(object):
         msg_data = msg_file.read()
 
         try:
-            return mail.MailRequest(self.dir, None, None, msg_data)
+            return mail.IncomingMessage(self.dir, None, None, msg_data)
         except Exception, exc:
             logging.exception("Failed to decode message: %s; msg_data: %r",   exc, msg_data)
             return None

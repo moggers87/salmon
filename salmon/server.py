@@ -19,6 +19,7 @@ ver = version.VERSION['version'] # yo dawg
 smtpd.__version__ = "Salmon Mail router SMTPD, version %s" % ver
 lmtpd.__version__ = "Salmon Mail router LMTPD, version %s" % ver
 
+
 def undeliverable_message(raw_message, failure_type):
     """
     Used universally in this file to shove totally screwed messages
@@ -29,6 +30,7 @@ def undeliverable_message(raw_message, failure_type):
 
         logging.error("Failed to deliver message because of %r, put it in "
                       "undeliverable queue with key %r", failure_type, key)
+
 
 class SMTPError(Exception):
     """
@@ -138,7 +140,7 @@ class Relay(object):
 
     def reply(self, original, From, Subject, Body):
         """Calls self.send but with the from and to of the original message reversed."""
-        self.send(original['from'], From=From, Subject=Subject, Body=Body)
+        self.send(original.From, From=From, Subject=Subject, Body=Body)
 
     def send(self, To, From, Subject, Body):
         """
@@ -184,7 +186,7 @@ class SMTPReceiver(smtpd.SMTPServer):
 
         try:
             logging.debug("Message received from Peer: %r, From: %r, to To %r.", Peer, From, To)
-            routing.Router.deliver(mail.MailRequest(Peer, From, To, Data))
+            routing.Router.deliver(mail.IncomingMessage(Peer, From, To, Data))
         except SMTPError, err:
             # looks like they want to return an error, so send it out
             return str(err)
@@ -238,7 +240,7 @@ class LMTPReceiver(lmtpd.LMTPServer):
 
         try:
             logging.debug("Message received from Peer: %r, From: %r, to To %r.", Peer, From, To)
-            routing.Router.deliver(mail.MailRequest(Peer, From, To, Data))
+            routing.Router.deliver(mail.IncomingMessage(Peer, From, To, Data))
         except SMTPError, err:
             # looks like they want to return an error, so send it out
             # and yes, you should still use SMTPError in your handlers
@@ -308,17 +310,13 @@ class QueueReceiver(object):
         """
 
         try:
-            Peer = self.queue_dir # this is probably harmless but I should check it
-            From = msg['from']
-            To = [msg['to']]
-
-            logging.debug("Message received from Peer: %r, From: %r, to To %r.", Peer, From, To)
+            logging.debug("Message received from Peer: %r, From: %r, to To %r.", msg.Peer, msg.From, msg.To)
             routing.Router.deliver(msg)
         except SMTPError, err:
             # looks like they want to return an error, so send it out
             logging.exception("Raising SMTPError when running in a QueueReceiver is unsupported.")
-            undeliverable_message(msg.original, err.message)
+            undeliverable_message(msg.Data, err.message)
         except Exception:
             logging.exception("Exception while processing message from Peer: "
-                              "%r, From: %r, to To %r.", Peer, From, To)
-            undeliverable_message(msg.original, "Router failed to catch exception.")
+                              "%r, From: %r, to To %r.", msg.Peer, msg.From, msg.To)
+            undeliverable_message(msg.Data, "Router failed to catch exception.")

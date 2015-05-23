@@ -40,7 +40,7 @@ no state is maintained.
 * @nolocking -- Use this if you want this handler to run parallel without any
 locking around Salmon internals.  SUPER DANGEROUS, add @stateless as well.
 * @state_key_generator -- Used on a function that knows how to make your state
-keys for the module, for example if module_name + message.route_to is needed to maintain
+keys for the module, for example if module_name + message.To is needed to maintain
 state.
 
 It's best to put @route or @route_like as the first decorator, then the others 
@@ -266,7 +266,7 @@ class RoutingBase(object):
     def get_state(self, module_name, message):
         """Returns the state that this module is in for the given message (using its from)."""
         key = self.state_key(module_name, message)
-        return self.STATE_STORE.get(key, message.route_from)
+        return self.STATE_STORE.get(key, message.From)
 
     
     def in_state(self, func, message):
@@ -303,12 +303,12 @@ class RoutingBase(object):
         state (a string).  This is also how you can force another FSM to a required state.
         """
         key = self.state_key(module_name, message)
-        self.STATE_STORE.set(key, message.route_from, state)
+        self.STATE_STORE.set(key, message.From, state)
 
-    def _collect_matches(self, message, route_to):
+    def _collect_matches(self, message):
         in_state_found = False
 
-        for functions, matchkw in self.match(route_to):
+        for functions, matchkw in self.match(message.To):
             for func in functions:
                 if salmon_setting(func, 'stateless'):
                     yield func, matchkw
@@ -319,11 +319,11 @@ class RoutingBase(object):
     def _enqueue_undeliverable(self, message):
         if self.UNDELIVERABLE_QUEUE:
             LOG.debug("Message to %r from %r undeliverable, putting in undeliverable queue (# of recipients: %d).",
-                      message.route_to, message.route_from, len(message.route_to))
+                      message.To, message.From, len(message.To))
             self.UNDELIVERABLE_QUEUE.push(message)
         else:
             LOG.debug("Message to %r from %r didn't match any handlers. (# recipients: %d)",
-                      message.route_to, message.route_from, len(message.route_to))
+                      message.To, message.From, len(message.To))
 
     def deliver(self, message):
         """
@@ -348,17 +348,16 @@ class RoutingBase(object):
 
         called_count = 0
 
-        for routing_on in message.route_to:
-            for func, matchkw in self._collect_matches(message, routing_on):
-                LOG.debug("Matched %r against %s.", routing_on, func.__name__)
+        for func, matchkw in self._collect_matches(message):
+            LOG.debug("Matched %r against %s.", message.To, func.__name__)
 
-                if salmon_setting(func, 'nolocking'):
-                    self.call_safely(func, message,  matchkw)
-                else:
-                    with self.call_lock:
-                        self.call_safely(func, message, matchkw)
+            if salmon_setting(func, 'nolocking'):
+                self.call_safely(func, message,  matchkw)
+            else:
+                with self.call_lock:
+                    self.call_safely(func, message, matchkw)
 
-                called_count += 1
+            called_count += 1
 
         if called_count == 0:
             self._enqueue_undeliverable(message)
@@ -374,7 +373,7 @@ class RoutingBase(object):
         try:
             func(message, **kwargs)
             LOG.debug("Message to %s was handled by %s.%s",
-                          message.route_to, func.__module__, func.__name__)
+                          message.To, func.__module__, func.__name__)
         except SMTPError:
             raise
         except Exception:

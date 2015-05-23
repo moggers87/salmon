@@ -144,7 +144,7 @@ class ConfirmationEngine(object):
         It does the job of registering the original message and the
         expected confirmation into the storage.
         """
-        from_address = message.route_from
+        from_address = message.From
 
         pending_id = self.push_pending(message)
         secret = self.make_random_secret()

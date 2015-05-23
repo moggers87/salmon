@@ -10,6 +10,8 @@ return_code=$?
 
 # stop logging server
 ./bin/salmon stop -pid "./log.pid"
-rm -r logs run
+if [ $return_code == 0 ]; then
+    rm -r logs run
+fi
 
 exit $return_code
