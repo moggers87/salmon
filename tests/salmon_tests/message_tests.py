@@ -221,26 +221,26 @@ def test_craft_from_sample():
         assert part.get_payload(), "outmsg parts don't have payload."
 
 
-def test_route_to_from_works():
-    msg = mail.MailRequest("fakepeer", "from@localhost",
+def test_to_from_works():
+    msg = mail.IncomingMessage("fakepeer", "from@localhost",
                                    [u"<to1@localhost>", u"to2@localhost"], "")
-    assert '<' not in msg.route_to, msg.route_to
+    assert '<' not in msg.To, msg.To
 
-    msg = mail.MailRequest("fakepeer", "from@localhost",
+    msg = mail.IncomingMessage("fakepeer", "from@localhost",
                                    [u"to1@localhost", u"to2@localhost"], "")
-    assert '<' not in msg.route_to, msg.route_to
+    assert '<' not in msg.To, msg.To
     
-    msg = mail.MailRequest("fakepeer", "from@localhost",
+    msg = mail.IncomingMessage("fakepeer", "from@localhost",
                                    [u"to1@localhost", u"<to2@localhost>"], "")
-    assert '<' not in msg.route_to, msg.route_to
+    assert '<' not in msg.To, msg.To
 
-    msg = mail.MailRequest("fakepeer", "from@localhost",
+    msg = mail.IncomingMessage("fakepeer", "from@localhost",
                                    [u"to1@localhost"], "")
-    assert '<' not in msg.route_to, msg.route_to
+    assert '<' not in msg.To, msg.To
 
-    msg = mail.MailRequest("fakepeer", "from@localhost",
+    msg = mail.IncomingMessage("fakepeer", "from@localhost",
                                    [u"<to1@localhost>"], "")
-    assert '<' not in msg.route_to, msg.route_to
+    assert '<' not in msg.To, msg.To
 
 
 def test_decode_header_randomness():

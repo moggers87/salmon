@@ -42,8 +42,15 @@ class IncomingMessage(object):
     """
     def __init__(self, Peer, From, To, Data):
         self.Peer = Peer
-        self.From = From
-        self.To = To
+        try:
+            self.From = _decode_header_randomness(From).pop()
+        except KeyError:
+            self.From = None
+        try:
+            self.To = _decode_header_randomness(To).pop()
+        except KeyError:
+            self.To = None
+
         self.Data = Data
 
         # this is where your parsed email object should go
@@ -79,9 +86,7 @@ class MailRequest(IncomingMessage):
         """
         super(MailRequest, self).__init__(Peer, From, To, Data)
 
-        self.Email = encoding.from_string(Data)
-        self.From = From or self.Email['from']
-        self.To = To or self.Email[ROUTABLE_TO_HEADER]
+        self.Email = encoding.from_string(self.Data)
 
         if 'from' not in self.Email:
             self.Email['from'] = self.From
@@ -89,13 +94,8 @@ class MailRequest(IncomingMessage):
             # do NOT use ROUTABLE_TO here
             self.Email['to'] = self.To
 
-        self.route_to = _decode_header_randomness(self.To)
-        self.route_from = _decode_header_randomness(self.From)
-
-        if self.route_from:
-            self.route_from = self.route_from.pop()
-        else:
-            self.route_from = None
+        self.From = self.From or self.Email['from']
+        self.To = self.To or self.Email[ROUTABLE_TO_HEADER]
 
         self.bounce = None
 

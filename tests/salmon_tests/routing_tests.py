@@ -77,14 +77,15 @@ def test_RoutingBase():
     assert len(Router.ORDER)
     assert len(Router.REGISTERED)
 
-
-    message = MailRequest('fakepeer', 'zedshaw@localhost',
-                          ['users-subscribe@localhost',
-                           'users-confirm-1@localhost'], "Fake body.")
-
-    Router.deliver(message)
-
-    assert Router.in_state(simple_fsm_mod.POSTING, message), "Router state: %r" % Router.get_state('simple_fsm_mod', message)
+    # this isn't possible any more and I'm pretty sure our SMTPd will never get a message with multiple To headers
+    # TODO: double check the same is true for QueueReceiver
+    #message = MailRequest('fakepeer', 'zedshaw@localhost',
+    #                      ['users-subscribe@localhost',
+    #                       'users-confirm-1@localhost'], "Fake body.")
+    #
+    #Router.deliver(message)
+    #
+    #assert Router.in_state(simple_fsm_mod.POSTING, message), "Router state: %r" % Router.get_state('simple_fsm_mod', message)
 
 
 def test_Router_undeliverable_queue():
