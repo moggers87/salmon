@@ -19,7 +19,7 @@ class MailRequestEncoder(object):
         self.func = func
 
     def __call__(self, message, **kwargs):
-        request = MailRequest(message.Peer, message.From, messaage.To, message.Data)
+        request = MailRequest(message)
         return self.func(request, **kwargs)
 
 class EmailEncoder(object):

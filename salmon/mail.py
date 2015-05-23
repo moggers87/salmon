@@ -74,17 +74,27 @@ class MailRequest(IncomingMessage):
     with it to get your modifications, but in general you don't want to do
     more than maybe tag a few headers.
     """
-    def __init__(self, Peer, From, To, Data):
+    def __init__(self, Peer, From=None, To=None, Data=None):
         """
         Peer is the remote peer making the connection (sometimes the queue
         name).  From and To are what you think they are.  Data is the raw
         full email as received by the server.
 
+        Peer can also be an instance of IncomingMessage and will be
+        upgraded into a MailRequest.
+
         NOTE:  It does not handle multiple From headers, if that's even
         possible.  It will parse the From into a list and take the first
         one.
         """
-        super(MailRequest, self).__init__(Peer, From, To, Data)
+        if isinstance(Peer, IncomingMessage):
+            old_msg = Peer
+            self.Peer = old_msg.Peer
+            self.From = old_msg.From
+            self.To = old_msg.To
+            self.Data = old_msg.Data
+        else:
+            super(MailRequest, self).__init__(Peer, From, To, Data)
 
         self.Email = encoding.from_string(self.Data)
 
