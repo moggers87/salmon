@@ -46,8 +46,17 @@ class IncomingMessage(object):
         self.To = To
         self.Data = Data
 
-        # this is where your parsed email object should go (`self` in the case of subclasses)
+        # this is where your parsed email object should go
         self.Email = None
+
+    def __str__(self):
+        """
+        Return original string usable for storage into a queue or transmission.
+        """
+        return self.Data
+
+    def __repr__(self):
+        return "From: %r" % [self.Peer, self.From, self.To]
 
 
 class MailRequest(IncomingMessage):
@@ -70,17 +79,15 @@ class MailRequest(IncomingMessage):
         """
         super(MailRequest, self).__init__(Peer, From, To, Data)
 
-        self.base = encoding.from_string(Data)
-        self.From = From or self.base['from']
-        self.To = To or self.base[ROUTABLE_TO_HEADER]
+        self.Email = encoding.from_string(Data)
+        self.From = From or self.Email['from']
+        self.To = To or self.Email[ROUTABLE_TO_HEADER]
 
-        self.Email = self
-
-        if 'from' not in self.base: 
-            self.base['from'] = self.From
-        if 'to' not in self.base:
+        if 'from' not in self.Email:
+            self.Email['from'] = self.From
+        if 'to' not in self.Email:
             # do NOT use ROUTABLE_TO here
-            self.base['to'] = self.To
+            self.Email['to'] = self.To
 
         self.route_to = _decode_header_randomness(self.To)
         self.route_from = _decode_header_randomness(self.From)
@@ -95,7 +102,7 @@ class MailRequest(IncomingMessage):
 
     def all_parts(self):
         """Returns all multipart mime parts.  This could be an empty list."""
-        return self.base.parts
+        return self.Email.parts
 
 
     def body(self):
@@ -105,47 +112,44 @@ class MailRequest(IncomingMessage):
         it's not then it just returns the body.  If returns
         None then this message has nothing for a body.
         """
-        if self.base.parts:
-            return self.base.parts[0].body
+        if self.Email.parts:
+            return self.Email.parts[0].body
         else:
-            return self.base.body
+            return self.Email.body
 
 
     def __contains__(self, key):
-        return self.base.__contains__(key)
+        return self.Email.__contains__(key)
 
     def __getitem__(self, name):
-        return self.base.__getitem__(name)
+        return self.Email.__getitem__(name)
 
     def __setitem__(self, name, val):
-        self.base.__setitem__(name, val)
+        self.Email.__setitem__(name, val)
 
     def __delitem__(self, name):
-        del self.base[name]
+        del self.Email[name]
 
     def __str__(self):
         """
         Converts this to a string usable for storage into a queue or 
         transmission.
         """
-        return encoding.to_string(self.base)
-
-    def __repr__(self):
-        return "From: %r" % [self.Peer, self.From, self.To]
+        return encoding.to_string(self.Email)
 
     def keys(self):
-        return self.base.keys()
+        return self.Email.keys()
 
     def to_message(self):
         """
         Converts this to a Python email message you can use to
         interact with the python mail APIs.
         """
-        return encoding.to_message(self.base)
+        return encoding.to_message(self.Email)
 
     def walk(self):
         """Recursively walks all attached parts and their children."""
-        for x in self.base.walk():
+        for x in self.Email.walk():
             yield x
 
     def is_bounce(self, threshold=0.3):
@@ -161,6 +165,12 @@ class MailRequest(IncomingMessage):
             return True
         else:
             return False
+
+    @property
+    def base(self):
+        warnings.warn("MailRequest.base is deprecated, use MailRequest.Email instead",
+                category=DeprecationWarning, stacklevel=2)
+        return self.Email
 
     @property
     def original(self):

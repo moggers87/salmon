@@ -140,7 +140,7 @@ class Relay(object):
 
     def reply(self, original, From, Subject, Body):
         """Calls self.send but with the from and to of the original message reversed."""
-        self.send(original['from'], From=From, Subject=Subject, Body=Body)
+        self.send(original.From, From=From, Subject=Subject, Body=Body)
 
     def send(self, To, From, Subject, Body):
         """
