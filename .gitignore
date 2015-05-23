@@ -5,6 +5,6 @@ run
 env
 build
 dist
-*.egg-info
-*.egg
+*.egg*
 tests/*.db
+.coverage
