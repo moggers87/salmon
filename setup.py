@@ -18,6 +18,7 @@ else:
     install_requires.append('lockfile')
 
 test_requires = [
+    'coverage',
     'jinja2',
     'mock',
 ]
