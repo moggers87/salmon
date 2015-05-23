@@ -162,6 +162,12 @@ class MailRequest(IncomingMessage):
         else:
             return False
 
+    @property
+    def original(self):
+        warnings.warn("MailRequest.original is deprecated, use MailRequest.Data instead",
+                category=DeprecationWarning, stacklevel=2)
+        return self.Data
+
 
 class MailResponse(object):
     """
