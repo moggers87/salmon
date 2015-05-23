@@ -19,7 +19,7 @@ install_requires = [
 ]
 
 if sys.platform != 'win32': # Can daemonize
-    install_requires.append('python-daemon')
+    install_requires.append('python-daemon<1.7')
 else:
     install_requires.append('lockfile')
 
