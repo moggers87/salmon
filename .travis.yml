@@ -7,10 +7,4 @@ python:
 
 install: python setup.py develop
 
-before_script:
-    - mkdir logs run
-    - ./bin/salmon log -pid "./log.pid" -port 8899
-
-script: python setup.py test
-
-after_script: ./bin/salmon stop -pid "./log.pid"
+script: ./runtests.sh
