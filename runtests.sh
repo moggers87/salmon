@@ -5,7 +5,7 @@ mkdir logs run
 ./bin/salmon log -pid "./log.pid" -port 8899
 
 # run tests
-python setup.py test
+python setup.py nosetests
 return_code=$?
 
 # stop logging server
