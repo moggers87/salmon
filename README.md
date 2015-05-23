@@ -139,6 +139,8 @@ behave correctly given that constraint then please voice your concerns.
 Development
 ===========
 
+**N.B.** New development is happening on the `salmon-next` branch.
+
 Salmon is written entirely in Python and runs on Python 2.6 or 2.7 but not 3k
 yet.  It uses only pure Python except where some libraries have compiled
 extensions (such as Jinja2).  It should hopefully run on any platform that
