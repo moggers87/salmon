@@ -76,7 +76,7 @@ def test_mail_response_attachments():
                                  Body="Test from test_mail_response_attachments.")
     readme_data = open("./README.md").read()
 
-    assert_raises(AssertionError, sample.attach, filename="./README.md", disposition="inline")
+    assert_raises(AssertionError, sample.attach, data=readme_data, disposition="inline")
 
     sample.attach(filename="./README.md", content_type="text/plain", disposition="inline")
     assert len(sample.attachments) == 1
