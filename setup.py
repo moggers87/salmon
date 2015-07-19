@@ -6,13 +6,13 @@ except ImportError:
     from distutils.core import setup
 
 install_requires = [
+    'argparse',
     'chardet',
     'lmtpd>=4',
     'pydns',
-    'python-modargs',
 ]
 
-if sys.platform != 'win32': # Can daemonize
+if sys.platform != 'win32':  # Can daemonize
     install_requires.append('python-daemon<1.7')
 else:
     install_requires.append('lockfile')
@@ -32,7 +32,6 @@ config = {
     'maintainer': 'Matt Molyneaux',
     'maintainer_email': 'moggers87+git@moggers87.co.uk',
     'version': '2',
-    'scripts': ['bin/salmon'],
     'install_requires': install_requires,
     'tests_require': test_requires,
     'setup_requires': ['nose'],
@@ -50,7 +49,11 @@ config = {
         'Intended Audience :: Developers',
         'Topic :: Communications :: Email',
         'Topic :: Software Development :: Libraries :: Application Frameworks'
-        ]
+        ],
+    "entry_points": {
+        'console_scripts':
+            ['salmon = salmon.commands:main'],
+    },
 }
 
 setup(**config)
