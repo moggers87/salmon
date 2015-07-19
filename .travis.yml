@@ -14,3 +14,11 @@ before_script:
 script: python setup.py test
 
 after_script: ./bin/salmon stop -pid "./log.pid"
+
+notifications:
+    irc:
+        channels:
+            - "ircs://irc.megworld.co.uk:9000#inboxen"
+        use_notice: true
+
+sudo: false
