@@ -44,6 +44,11 @@ def test_status_command():
     command(pid='run/donotexist.pid')
 
 
+@raises(SystemExit)
+def test_main():
+    commands.main()
+
+
 @patch('salmon.queue.Queue')
 @patch('sys.exit', new=Mock())
 def test_queue_command(MockQueue):

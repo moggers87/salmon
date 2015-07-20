@@ -45,7 +45,6 @@ Have fun.
 
 
 def main():
-
     parser = argparse.ArgumentParser(description="Python mail server", epilog=copyright_notice, formatter_class=argparse.RawDescriptionHelpFormatter)
 
     parser.add_argument("-v", "--version", action="version", version=version_info)
