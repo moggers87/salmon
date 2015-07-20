@@ -11,19 +11,19 @@ import signal
 import sys
 
 
-COMMANDS = [
-    "start",
-    "stop",
-    "status",
-    "gen",
-    "log",
-    "queue",
-    "blast",
-    "cleanse",
-    "routes",
-    "send",
-    "sendmail",
-]
+COMMANDS = (
+    ("start", "starts aserver"),
+    ("stop", "stops a server"),
+    ("status", "displays status of server"),
+    ("gen", "generate new project"),
+    ("log", "start log server"),
+    ("queue", "manipulate a Queue"),
+    ("blast", "blast emails at a server"),
+    ("cleanse", "cleanse your emails"),
+    ("routes", "display routes"),
+    ("send", "send a new email"),
+    ("sendmail", "send an email from stdin"),
+)
 
 DEFAULT_PID_FILE = "./run/stmp.pid"
 
@@ -43,16 +43,25 @@ If you didn't get a copy of the LICENSE go to:
 Have fun.
 """
 
+uid_desc = """
+If you specify a uid/gid then this means you want to first change to
+root, set everything up, and then drop to that UID/GID combination.
+This is typically so you can bind to port 25 and then become "safe"
+to continue operating as a non-root user. If you give one or the other,
+this it will just change to that uid or gid without doing the priv drop
+operation.
+"""
+
 
 def main():
     parser = argparse.ArgumentParser(description="Python mail server", epilog=copyright_notice, formatter_class=argparse.RawDescriptionHelpFormatter)
 
     parser.add_argument("-v", "--version", action="version", version=version_info)
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(metavar="<command>")
 
-    for cmd in COMMANDS:
+    for cmd, help_txt in COMMANDS:
         function = globals()["{0}_command".format(cmd)]
-        cmd_parser = subparsers.add_parser(cmd, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        cmd_parser = subparsers.add_parser(cmd, description=function.func_doc, help=help_txt, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
         function(cmd_parser)
 
@@ -71,19 +80,6 @@ def log_command(parser):
     Runs a logging only server on the given hosts and port.  It logs
     each message it receives and also stores it to the run/queue
     so that you can make sure it was received in testing.
-
-    salmon log -port 8825 -host 127.0.0.1 \\
-            -pid ./run/log.pid -chroot False  \\
-            -chdir "." -umask False -uid False -gid False \\
-            -FORCE False -daemon True
-
-    If you specify a uid/gid then this means you want to first change to
-    root, set everything up, and then drop to that UID/GID combination.
-    This is typically so you can bind to port 25 and then become "safe"
-    to continue operating as a non-root user.
-
-    If you give one or the other, this it will just change to that
-    uid or gid without doing the priv drop operation.
     """
     def command(port, host, pid, chdir, chroot=None, uid=False, gid=False, umask=False, force=False, debug=False, daemon=True):
         loader = lambda: utils.make_fake_settings(host, port)
@@ -91,32 +87,28 @@ def log_command(parser):
 
     parser.set_defaults(func=command)
 
-    parser.add_argument("--port", default=8825, type=int, help="Port to listen on")
-    parser.add_argument("--host", default="127.0.0.1", help="Address to listen on")
-    parser.add_argument("--chroot", default=argparse.SUPPRESS, help="Path to chroot")
-    parser.add_argument("--chdir", default=".", help="Change to this directory when daemonising")
-    parser.add_argument("--uid", type=int, default=argparse.SUPPRESS, help="Run with this user id")
-    parser.add_argument("--gid", type=int, default=argparse.SUPPRESS, help="Run with this group id")
-    parser.add_argument("--umask", type=int, default=argparse.SUPPRESS, help="Set umask on server")
-    parser.add_argument("--pid", default="./run/log.pid", help="Path to pid file")
-    parser.add_argument("-f", "--force", action="store_true", help="Force server to run, ignoring pid file")
-    parser.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help="Debug mode")
+    parser.add_argument("--port", default=8825, type=int, help="port to listen on")
+    parser.add_argument("--host", default="127.0.0.1", help="address to listen on")
+    parser.add_argument("--chroot", default=argparse.SUPPRESS, help="path to chroot")
+    parser.add_argument("--chdir", default=".", help="change to this directory when daemonising")
+    parser.add_argument("--umask", type=int, default=argparse.SUPPRESS, help="set umask on server")
+    parser.add_argument("--pid", default="./run/log.pid", help="path to pid file")
+    parser.add_argument("-f", "--force", action="store_true", help="force server to run, ignoring pid file")
+    parser.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help="debug mode")
+
+    uid_group = parser.add_argument_group(title="UID/GID options", description=uid_desc)
+    uid_group.add_argument("--uid", type=int, default=argparse.SUPPRESS, help="run with this user id")
+    uid_group.add_argument("--gid", type=int, default=argparse.SUPPRESS, help="run with this group id")
 
     daemon_group = parser.add_mutually_exclusive_group()
-    daemon_group.add_argument("--no-daemon", default=argparse.SUPPRESS, dest="daemon", action="store_false", help="Start server in foreground")
-    daemon_group.add_argument("--daemon", default=argparse.SUPPRESS, dest="daemon", action="store_true", help="Start server as daemon (default)")
+    daemon_group.add_argument("--no-daemon", default=argparse.SUPPRESS, dest="daemon", action="store_false", help="start server in foreground")
+    daemon_group.add_argument("--daemon", default=argparse.SUPPRESS, dest="daemon", action="store_true", help="start server as daemon (default)")
 
 
 def send_command(parser):
     """
     Sends an email to someone as a test message.
     See the sendmail command for a sendmail replacement.
-
-    salmon send -port 8825 -host 127.0.0.1 -debug 1 \\
-            -sender EMAIL -to EMAIL -subject STR -body STR -attach False'
-
-    There is also a username, password, and starttls option for those
-    who need it.
     """
     def command(port, host, username=None, password=None, ssl=None, starttls=None, sender=None, to=None, subject=None, body=None, attach=False):
         message = mail.MailResponse(From=sender, To=to, Subject=subject, Body=body)
@@ -128,8 +120,8 @@ def send_command(parser):
 
     parser.set_defaults(func=command)
 
-    parser.add_argument("--port", default=8825, type=int, help="Port to listen on")
-    parser.add_argument("--host", default="127.0.0.1", help="Address to listen on")
+    parser.add_argument("--port", default=8825, type=int, help="port to listen on")
+    parser.add_argument("--host", default="127.0.0.1", help="address to listen on")
     parser.add_argument("--username", default=argparse.SUPPRESS, help="SMTP username")
     parser.add_argument("--password", default=argparse.SUPPRESS, help="SMTP password")
     parser.add_argument("--sender", metavar="EMAIL", default=argparse.SUPPRESS)
@@ -148,8 +140,6 @@ def sendmail_command(parser):
     Used as a testing sendmail replacement for use in programs
     like mutt as an MTA.  It reads the email to send on the stdin
     and then delivers it based on the port and host settings.
-
-    salmon sendmail -port 8825 -host 127.0.0.1 -debug 0 -- [recipients]
     """
     def command(port, host, recipients, debug=False):
         relay = server.Relay(host, port=port, debug=debug)
@@ -167,10 +157,7 @@ def sendmail_command(parser):
 
 def start_command(parser):
     """
-    Runs a salmon server out of the current directory:
-
-    salmon start -pid ./run/smtp.pid -FORCE False -chroot False -chdir "." \\
-            -umask False -uid False -gid False -boot config.boot -daemon True
+    Runs a salmon server out of the current directory
     """
     def command(pid, force, chdir, boot, chroot=False, uid=False, gid=False, umask=False, debug=False, daemon=True):
         loader = lambda: utils.import_settings(True, from_dir=os.getcwd(), boot_module=boot)
@@ -178,29 +165,26 @@ def start_command(parser):
 
     parser.set_defaults(func=command)
 
-    parser.add_argument("--boot", default="config.boot", help="Module with server definition")
-    parser.add_argument("--chroot", default=argparse.SUPPRESS, help="Path to chroot")
-    parser.add_argument("--chdir", default=".", help="Change to this directory when daemonising")
-    parser.add_argument("--uid", type=int, default=argparse.SUPPRESS, help="Run with this user id")
-    parser.add_argument("--gid", type=int, default=argparse.SUPPRESS, help="Run with this group id")
-    parser.add_argument("--umask", type=int, default=argparse.SUPPRESS, help="Set umask on server")
-    parser.add_argument("--pid", default=DEFAULT_PID_FILE, help="Path to pid file")
-    parser.add_argument("-f", "--force", action="store_true", help="Force server to run, ignoring pid file")
-    parser.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help="Debug mode")
+    parser.add_argument("--boot", default="config.boot", help="module with server definition")
+    parser.add_argument("--chroot", default=argparse.SUPPRESS, help="path to chroot")
+    parser.add_argument("--chdir", default=".", help="change to this directory when daemonising")
+    parser.add_argument("--umask", type=int, default=argparse.SUPPRESS, help="set umask on server")
+    parser.add_argument("--pid", default=DEFAULT_PID_FILE, help="path to pid file")
+    parser.add_argument("-f", "--force", action="store_true", help="force server to run, ignoring pid file")
+    parser.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help="debug mode")
+
+    uid_group = parser.add_argument_group(title="UID/GID options", description=uid_desc)
+    uid_group.add_argument("--uid", type=int, default=argparse.SUPPRESS, help="run with this user id")
+    uid_group.add_argument("--gid", type=int, default=argparse.SUPPRESS, help="run with this group id")
 
     daemon_group = parser.add_mutually_exclusive_group()
-    daemon_group.add_argument("--no-daemon", default=argparse.SUPPRESS, dest="daemon", action="store_false", help="Start server in foreground")
-    daemon_group.add_argument("--daemon", default=argparse.SUPPRESS, dest="daemon", action="store_true", help="Start server as daemon (default)")
+    daemon_group.add_argument("--no-daemon", default=argparse.SUPPRESS, dest="daemon", action="store_false", help="start server in foreground")
+    daemon_group.add_argument("--daemon", default=argparse.SUPPRESS, dest="daemon", action="store_true", help="start server as daemon (default)")
 
 
 def stop_command(parser):
     """
-    Stops a running salmon server.  Give -KILL True to have it
-    stopped violently.  The PID file is removed after the
-    signal is sent.  Give -ALL the name of a run directory and
-    it will stop all pid files it finds there.
-
-    salmon stop -pid ./run/smtp.pid -KILL False -ALL False
+    Stops a running salmon server
     """
     def command(pid, kill=False, all=False):
         pid_files = []
@@ -234,17 +218,15 @@ def stop_command(parser):
 
     parser.set_defaults(func=command)
 
-    parser.add_argument("--pid", default=DEFAULT_PID_FILE, help="Path to pid file")
-    parser.add_argument("-f", "--force", dest="kill", default=DEFAULT_PID_FILE, action="store_true", help="Force stop server")
-    parser.add_argument("--all", default=argparse.SUPPRESS, help="Stops all servers with .pid files in the specified directory")
+    parser.add_argument("--pid", default=DEFAULT_PID_FILE, help="path to pid file")
+    parser.add_argument("-f", "--force", dest="kill", default=DEFAULT_PID_FILE, action="store_true", help="force stop server")
+    parser.add_argument("--all", default=argparse.SUPPRESS, help="stops all servers with .pid files in the specified directory")
 
 
 def status_command(parser):
     """
     Prints out status information about salmon useful for finding out if it's
     running and where.
-
-    salmon status -pid ./run/smtp.pid
     """
     def command(pid):
         if os.path.exists(pid):
@@ -255,14 +237,12 @@ def status_command(parser):
 
     parser.set_defaults(func=command)
 
-    parser.add_argument("--pid", default=DEFAULT_PID_FILE, help="Path to pid file")
+    parser.add_argument("--pid", default=DEFAULT_PID_FILE, help="path to pid file")
 
 
 def queue_command(parser):
     """
     Lets you do most of the operations available to a queue.
-
-    salmon queue (-pop | -get | -remove | -count | -clear | -keys) -name run/queue
     """
     def command(name, pop=False, get=False, keys=False, remove=False, count=False, clear=False):
         print "Using queue: %r" % name
@@ -304,16 +284,6 @@ def routes_command(parser):
     after everything is loaded and ready to go.  Helps debug problems with
     messages not getting to your handlers.  Path has the search paths you want
     separated by a ':' character, and it's added to the sys.path.
-
-    salmon routes -path $PWD -- config.testing -test ""
-
-    It defaults to running your config.testing to load the routes.
-    If you want it to run the config.boot then give that instead:
-
-    salmon routes -- config.boot
-
-    You can also test a potential target by doing -test EMAIL.
-
     """
     def command(modules, path=os.getcwd(), test=""):
         sys.path += path.split(':')
@@ -353,8 +323,6 @@ def routes_command(parser):
 def gen_command(parser):
     """
     Generates various useful things for you to get you started.
-
-    salmon gen -project STR -FORCE False
     """
     def command(project, force=False):
         template = os.path.join(salmon.__path__[0], "data", "prototype")
@@ -431,6 +399,6 @@ def blast_command(parser):
     parser.set_defaults(func=command)
 
     parser.add_argument("input", help="input maildir or mbox")
-    parser.add_argument("--port", default=8823, type=int, help="Port to listen on")
-    parser.add_argument("--host", default="127.0.0.1", help="Address to listen on")
-    parser.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help="Debug mode")
+    parser.add_argument("--port", default=8823, type=int, help="port to listen on")
+    parser.add_argument("--host", default="127.0.0.1", help="address to listen on")
+    parser.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help="debug mode")
