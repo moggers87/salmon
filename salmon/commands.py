@@ -124,7 +124,7 @@ def send_command(parser):
         if attach:
             message.attach(attach)
 
-        relay = server.Relay(host, port=port, username=username, password=password, ssl=ssl, starttls=starttls, debug=True)
+        relay = server.Relay(host, port=port, username=username, password=password, ssl=ssl, starttls=starttls, debug=False)
         relay.deliver(message)
 
     parser.set_defaults(func=command)
