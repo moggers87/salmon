@@ -62,7 +62,7 @@ Fork
 -----
 
 Salmon is a fork of Lamson. In the summer of 2012 (2012-07-13 to be exact),
-Lamson was relicenced under a BSD variant that was revokable. The two clauses
+Lamson was relicensed under a BSD variant that was revokable. The two clauses
 that were of most concern:
 
     4. Contributors agree that any contributions are owned by the copyright holder
