@@ -37,29 +37,33 @@ def test_relay_deliver():
     relay.deliver(test_mail_response_html_and_plain_text())
     relay.deliver(test_mail_response_attachments())
 
-@patch('DNS.mxlookup')
-def test_relay_deliver_mx_hosts(DNS_mxlookup):
-    DNS_mxlookup.return_value = [[100, "localhost"]]
+@patch('salmon.server.resolver.query')
+def test_relay_deliver_mx_hosts(query):
+    query.return_value = [Mock()]
+    query.return_value[0].exchange = "localhost"
     relay = server.Relay(None, port=8899)
 
     msg = test_mail_response_plain_text()
-    msg['to'] = 'zedshaw@localhost'
+    msg['to'] = 'user@localhost'
     relay.deliver(msg)
-    assert DNS_mxlookup.called
+    assert query.called
 
-@patch('DNS.mxlookup')
-def test_relay_resolve_relay_host(DNS_mxlookup):
-    DNS_mxlookup.return_value = []
+@patch('salmon.server.resolver.query')
+def test_relay_resolve_relay_host(query):
+    from dns import resolver
+    query.side_effect = resolver.NoAnswer
     relay = server.Relay(None, port=8899)
-    host = relay.resolve_relay_host('zedshaw@localhost')
+    host = relay.resolve_relay_host('user@localhost')
     assert_equal(host, 'localhost')
-    assert DNS_mxlookup.called
+    assert query.called
 
-    DNS_mxlookup.reset_mock()
-    DNS_mxlookup.return_value = [[100, "mail.zedshaw.com"]]
-    host = relay.resolve_relay_host('zedshaw@zedshaw.com')
-    assert_equal(host, 'mail.zedshaw.com')
-    assert DNS_mxlookup.called
+    query.reset_mock()
+    query.side_effect = None  # reset_mock doens't clear return_value or side_effect
+    query.return_value = [Mock()]
+    query.return_value[0].exchange = "mx.example.com"
+    host = relay.resolve_relay_host('user@example.com')
+    assert_equal(host, 'mx.example.com')
+    assert query.called
 
 def test_relay_reply():
     relay = server.Relay("localhost", port=8899)
