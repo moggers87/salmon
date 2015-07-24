@@ -9,7 +9,7 @@ install_requires = [
     'argparse',
     'chardet',
     'lmtpd>=4',
-    'pydns',
+    'dnspython',
 ]
 
 if sys.platform != 'win32':  # Can daemonize

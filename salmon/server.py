@@ -3,17 +3,21 @@ The majority of the server related things Salmon needs to run, like receivers,
 relays, and queue processors.
 """
 
-import smtplib
-import smtpd
-import lmtpd
 import asyncore
-import threading
-import socket
 import logging
+import smtpd
+import smtplib
+import socket
+import threading
 import time
 import traceback
+
+from dns import resolver
+import lmtpd
+
 from salmon import queue, mail, routing, version
 from salmon.bounce import PRIMARY_STATUS_CODES, SECONDARY_STATUS_CODES, COMBINED_STATUS_CODES
+
 
 ver = version.VERSION['version'] # yo dawg
 smtpd.__version__ = "Salmon Mail router SMTPD, version %s" % ver
@@ -121,16 +125,16 @@ class Relay(object):
         relay_host.quit()
 
     def resolve_relay_host(self, To):
-        import DNS
-        address, target_host = To.split('@')
-        mx_hosts = DNS.mxlookup(target_host)
+        target_host = To.split("@")[1]
 
-        if not mx_hosts:
+        try:
+            mx_host = str(resolver.query(target_host, "mx")[0].exchange)
+        except resolver.NoAnswer:
             logging.debug("Domain %r does not have an MX record, using %r instead.", target_host, target_host)
             return target_host
-        else:
-            logging.debug("Delivering to MX record %r for target %r", mx_hosts[0], target_host)
-            return mx_hosts[0][1]
+
+        logging.debug("Delivering to MX record %r for target %r", mx_host, target_host)
+        return mx_host
 
 
     def __repr__(self):
