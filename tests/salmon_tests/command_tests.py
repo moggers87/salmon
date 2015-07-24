@@ -33,7 +33,6 @@ def get_command(command):
 
 
 def test_send_command():
-    return
     command = get_command(commands.send_command)
     command(sender='test@localhost', to='test@localhost', body='Test body', subject='Test subject', attach='setup.py', port=8899, host="127.0.0.1")
 
