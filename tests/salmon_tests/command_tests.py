@@ -43,7 +43,7 @@ def test_status_command():
     command(pid='run/log.pid')
     command(pid='run/donotexist.pid')
 
-
+@patch('sys.argv', ['salmon'])
 @raises(SystemExit)
 def test_main():
     commands.main()
