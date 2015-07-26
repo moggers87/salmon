@@ -1,25 +1,27 @@
-from salmon import commands, utils, mail, routing, encoding
-from salmon.testing import spelling
-from setup_env import setup_salmon_dirs, teardown_salmon_dirs
-
-from mock import *
-from nose.tools import *
-import imp
 import os
 import shutil
 import sys
+
+from mock import Mock, patch
+from nose.tools import raises, with_setup
+
+from salmon import commands, utils, mail, routing, encoding
+
+from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
 
 
 def setup():
     if os.path.exists("run/fake.pid"):
         os.unlink("run/fake.pid")
 
+
 def teardown():
     if os.path.exists("run/fake.pid"):
         os.unlink("run/fake.pid")
 
+
 def make_fake_pid_file():
-    f = open("run/fake.pid","w")
+    f = open("run/fake.pid", "w")
     f.write("0")
     f.close()
 
@@ -42,6 +44,7 @@ def test_status_command():
     command(pid='run/log.pid')
     command(pid='run/donotexist.pid')
 
+
 @patch('sys.argv', ['salmon'])
 @raises(SystemExit)
 def test_main():
@@ -53,24 +56,24 @@ def test_main():
 def test_queue_command(MockQueue):
     mq = MockQueue()
     mq.get.return_value = "A sample message"
-    mq.keys.return_value = ["key1","key2"]
+    mq.keys.return_value = ["key1", "key2"]
     mq.pop.return_value = ('key1', 'message1')
     mq.count.return_value = 1
 
     command = get_command(commands.queue_command)
-    
+
     command("run/queue", pop=True)
     assert mq.pop.called
-    
+
     command("run/queue", get='somekey')
     assert mq.get.called
-    
+
     command("run/queue", remove='somekey')
     assert mq.remove.called
-    
+
     command("run/queue", clear=True)
     assert mq.clear.called
-    
+
     command("run/queue", keys=True)
     assert mq.keys.called
 

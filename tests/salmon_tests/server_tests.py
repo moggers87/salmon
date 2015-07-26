@@ -1,12 +1,17 @@
 # Copyright (C) 2008 Zed A. Shaw.  Licensed under the terms of the GPLv3.
-from salmon import server, queue, routing
-from setup_env import setup_salmon_dirs, teardown_salmon_dirs
+from mock import Mock, patch
+from nose.tools import assert_equal, with_setup
 
-from nose.tools import *
-from mock import *
-import os
-from message_tests import *
-import re
+from salmon import mail, server, queue, routing
+
+from .message_tests import (
+    test_mail_request,
+    test_mail_response_attachments,
+    test_mail_response_html,
+    test_mail_response_html_and_plain_text,
+    test_mail_response_plain_text,
+)
+from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
 
 
 def test_router():
@@ -19,15 +24,18 @@ def test_router():
 
     routing.Router.deliver(msg)
 
+
 def test_SMTPreceiver():
     receiver = server.SMTPReceiver(host="localhost", port=8895)
     msg = test_mail_request()
     receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
 
+
 def test_LMTPreceiver():
     receiver = server.LMTPReceiver(host="localhost", port=8894)
     msg = test_mail_request()
     receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
+
 
 def test_relay_deliver():
     relay = server.Relay("localhost", port=8899)
@@ -36,6 +44,7 @@ def test_relay_deliver():
     relay.deliver(test_mail_response_html())
     relay.deliver(test_mail_response_html_and_plain_text())
     relay.deliver(test_mail_response_attachments())
+
 
 @patch('salmon.server.resolver.query')
 def test_relay_deliver_mx_hosts(query):
@@ -47,6 +56,7 @@ def test_relay_deliver_mx_hosts(query):
     msg['to'] = 'user@localhost'
     relay.deliver(msg)
     assert query.called
+
 
 @patch('salmon.server.resolver.query')
 def test_relay_resolve_relay_host(query):
@@ -65,14 +75,17 @@ def test_relay_resolve_relay_host(query):
     assert_equal(host, 'mx.example.com')
     assert query.called
 
+
 def test_relay_reply():
     relay = server.Relay("localhost", port=8899)
     print "Relay: %r" % relay
 
     relay.reply(test_mail_request(), 'from@localhost', 'Test subject', 'Body')
 
+
 def raises_exception(*x, **kw):
     raise RuntimeError("Raised on purpose.")
+
 
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 @patch('salmon.routing.Router', new=Mock())
@@ -85,9 +98,7 @@ def test_queue_receiver():
     assert run_queue.count() == 0
 
     routing.Router.deliver.side_effect = raises_exception
-    receiver.process_message(mail.MailRequest('localhost', 'test@localhost',
-                                              'test@localhost', 'Fake body.'))
-
+    receiver.process_message(mail.MailRequest('localhost', 'test@localhost', 'test@localhost', 'Fake body.'))
 
 
 @patch('threading.Thread', new=Mock())
@@ -99,10 +110,10 @@ def test_SMTPReceiver():
                              'Fake body.')
 
     routing.Router.deliver.side_effect = raises_exception
-    receiver.process_message('localhost', 'test@localhost', 'test@localhost',
-                             'Fake body.')
+    receiver.process_message('localhost', 'test@localhost', 'test@localhost', 'Fake body.')
 
     receiver.close()
+
 
 def test_SMTPError():
     err = server.SMTPError(550)
@@ -119,4 +130,3 @@ def test_SMTPError():
 
     err = server.SMTPError(999, "Bogus Error Code")
     assert str(err) == "999 Bogus Error Code"
-
