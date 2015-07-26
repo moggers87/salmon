@@ -133,8 +133,6 @@ behave correctly given that constraint then please voice your concerns.
 Development
 ===========
 
-**N.B.** New development is happening on the `salmon-next` branch.
-
 Salmon is written entirely in Python and runs on Python 2.6 or 2.7 but not 3k
 yet.  It should hopefully run on any platform that supports Python and has Unix
 semantics.
@@ -142,4 +140,4 @@ semantics.
 If you find yourself lost in source code, just yell.
 
 PEP-8 should be followed where possible, but feel free to ignore the 80 character
-limit it imposes.
+limit it imposes (150 is a good marker IMO).
