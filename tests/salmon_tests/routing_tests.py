@@ -1,11 +1,12 @@
-from nose.tools import *
-from mock import *
+from nose.tools import assert_raises, raises, with_setup
+from mock import Mock, patch
 
-from salmon.routing import *
+from salmon.routing import route, Router, StateStorage, MemoryStorage, ShelveStorage
 from salmon.mail import MailRequest
 from salmon import routing
-from setup_env import setup_salmon_dirs, teardown_salmon_dirs
-from setup_env import setup_router
+
+from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
+from .setup_env import setup_router
 
 
 def test_MemoryStorage():
@@ -19,6 +20,7 @@ def test_MemoryStorage():
     store.clear()
 
     assert store.get(test_MemoryStorage.__module__, "tester@localhost") == "START"
+
 
 def test_ShelveStorage():
     store = ShelveStorage("tests/states.db")
@@ -61,30 +63,21 @@ def test_RoutingBase():
     assert Router.in_state(simple_fsm_mod.START, message)
 
     Router.clear_states()
-    explosion = MailRequest('fakepeer',  '<hacker@localhost>',   'start-explode@localhost', "")
-    Router.LOG_EXCEPTIONS=True
+    Router.LOG_EXCEPTIONS = True
+    explosion = MailRequest('fakepeer', '<hacker@localhost>', 'start-explode@localhost', "")
     Router.deliver(explosion)
 
     assert Router.in_error(simple_fsm_mod.END, explosion)
 
     Router.clear_states()
-    Router.LOG_EXCEPTIONS=False
-    explosion = MailRequest('fakepeer',  'hacker@localhost',   'start-explode@localhost', "")
+    Router.LOG_EXCEPTIONS = False
+    explosion = MailRequest('fakepeer',  'hacker@localhost', 'start-explode@localhost', "")
     assert_raises(RuntimeError, Router.deliver, explosion)
 
     Router.reload()
     assert 'salmon_tests.handlers.simple_fsm_mod' in Router.HANDLERS
     assert len(Router.ORDER)
     assert len(Router.REGISTERED)
-
-
-    message = MailRequest('fakepeer', 'zedshaw@localhost',
-                          ['users-subscribe@localhost',
-                           'users-confirm-1@localhost'], "Fake body.")
-
-    Router.deliver(message)
-
-    assert Router.in_state(simple_fsm_mod.POSTING, message), "Router state: %r" % Router.get_state('simple_fsm_mod', message)
 
 
 def test_Router_undeliverable_queue():
@@ -98,21 +91,23 @@ def test_Router_undeliverable_queue():
     assert Router.UNDELIVERABLE_QUEUE.push.called
 
 
-
 @raises(NotImplementedError)
 def test_StateStorage_get_raises():
     s = StateStorage()
     s.get("raises", "raises")
+
 
 @raises(NotImplementedError)
 def test_StateStorage_set_raises():
     s = StateStorage()
     s.set("raises", "raises", "raises")
 
+
 @raises(NotImplementedError)
 def test_StateStorage_clear_raises():
     s = StateStorage()
     s.clear()
+
 
 @raises(TypeError)
 def test_route___get___raises():
@@ -125,26 +120,25 @@ def test_route___get___raises():
     br = BadRoute()
     br.wont_work("raises")
 
+
 @patch('__builtin__.reload', new=Mock(side_effect=ImportError))
 @patch('salmon.routing.LOG', new=Mock())
 def test_reload_raises():
-    Router.LOG_EXCEPTIONS=True
+    Router.LOG_EXCEPTIONS = True
     Router.reload()
     assert routing.LOG.exception.called
 
-    Router.LOG_EXCEPTIONS=False
+    Router.LOG_EXCEPTIONS = False
     routing.LOG.exception.reset_mock()
     assert_raises(ImportError, Router.reload)
     assert not routing.LOG.exception.called
 
     routing.LOG.exception.reset_mock()
-    Router.LOG_EXCEPTIONS=True
+    Router.LOG_EXCEPTIONS = True
     Router.load(['fake.handler'])
     assert routing.LOG.exception.called
 
-    Router.LOG_EXCEPTIONS=False
+    Router.LOG_EXCEPTIONS = False
     routing.LOG.exception.reset_mock()
     assert_raises(ImportError, Router.load, ['fake.handler'])
     assert not routing.LOG.exception.called
-
-

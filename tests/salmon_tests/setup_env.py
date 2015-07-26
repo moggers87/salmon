@@ -1,8 +1,9 @@
 import os
 from shutil import rmtree
+
 from salmon.routing import Router
 
-dirs = ["run", "logs"]
+from . import dirs
 
 
 def clear_dir(dir_path):

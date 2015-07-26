@@ -1,17 +1,22 @@
-from salmon import queue, server, mail
-from setup_env import setup_salmon_dirs, teardown_salmon_dirs
-
-from nose.tools import *
 import shutil
-import os
-from mock import *
 import mailbox
+import os
 
-USE_SAFE=False
+from mock import Mock, patch
+from nose.tools import assert_equal, raises, with_setup
+
+from salmon import queue, mail
+
+from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
+
+
+USE_SAFE = False
+
 
 def setup():
     if os.path.exists("run/big_queue"):
         shutil.rmtree("run/big_queue")
+
 
 def teardown():
     setup()
@@ -24,9 +29,9 @@ def test_push():
 
     # the queue doesn't really care if its a request or response, as long
     # as the object answers to str(msg)
-    msg = mail.MailResponse(To="test@localhost", From="test@localhost",
-                              Subject="Test", Body="Test")
+    msg = mail.MailResponse(To="test@localhost", From="test@localhost", Subject="Test", Body="Test")
     key = q.push(msg)
+
     assert key, "Didn't get a key for test_get push."
 
     return q
@@ -40,6 +45,9 @@ def test_pop():
     assert key, "Didn't get a key for test_get push."
     assert msg, "Didn't get a message for key %r" % key
 
+    assert hasattr(msg, "Data"), "IncomingMessage doesn't have Data attribute"
+    msg = mail.MailRequest(msg.Peer, msg.From, msg.To, msg.Data)
+
     assert msg['to'] == "test@localhost"
     assert msg['from'] == "test@localhost"
     assert msg['subject'] == "Test"
@@ -52,19 +60,20 @@ def test_pop():
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_get():
     q = test_push()
-    msg = mail.MailResponse(To="test@localhost", From="test@localhost",
-                              Subject="Test", Body="Test")
+    msg = mail.MailResponse(To="test@localhost", From="test@localhost", Subject="Test", Body="Test")
+
     key = q.push(str(msg))
     assert key, "Didn't get a key for test_get push."
 
     msg = q.get(key)
     assert msg, "Didn't get a message for key %r" % key
 
+
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_remove():
     q = test_push()
-    msg = mail.MailResponse(To="test@localhost", From="test@localhost",
-                              Subject="Test", Body="Test")
+    msg = mail.MailResponse(To="test@localhost", From="test@localhost", Subject="Test", Body="Test")
+
     key = q.push(str(msg))
     assert key, "Didn't get a key for test_get push."
     assert q.count() == 2, "Wrong count %d should be 2" % q.count()
@@ -72,14 +81,16 @@ def test_remove():
     q.remove(key)
     assert q.count() == 1, "Wrong count %d should be 1" % q.count()
 
+
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_safe_maildir():
     global USE_SAFE
-    USE_SAFE=True
+    USE_SAFE = True
     test_push()
     test_pop()
     test_get()
     test_remove()
+
 
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_oversize_protections():
@@ -125,10 +136,12 @@ def test_SafeMaildir_name_clash():
     sq = queue.SafeMaildir('run/queue')
     sq.add("TEST")
 
+
 def raise_OSError(*x, **kw):
     err = OSError('Fail')
     err.errno = 0
     raise err
+
 
 @patch('mailbox._create_carefully', new=Mock())
 @raises(OSError)
@@ -137,6 +150,7 @@ def test_SafeMaildir_throws_errno_failure():
     mailbox._create_carefully.side_effect = raise_OSError
     sq = queue.SafeMaildir('run/queue')
     sq.add("TEST")
+
 
 @patch('os.stat', new=Mock())
 @raises(OSError)
@@ -149,4 +163,3 @@ def test_SafeMaildir_reraise_weird_errno():
     os.stat.side_effect = raise_OSError
     sq = queue.SafeMaildir('run/queue')
     sq.add('TEST')
-

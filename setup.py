@@ -6,22 +6,22 @@ except ImportError:
     from distutils.core import setup
 
 install_requires = [
+    'argparse',
     'chardet',
-    'jinja2',
-    'mock',
-    'nose',
-    'python-modargs',
-    'lmtpd >= 4',
-    'clevercss',
-    'markdown',
-    'pydns',
-    'BeautifulSoup',
+    'lmtpd>=4',
+    'dnspython',
 ]
 
-if sys.platform != 'win32': # Can daemonize
+if sys.platform != 'win32':  # Can daemonize
     install_requires.append('python-daemon<1.7')
 else:
     install_requires.append('lockfile')
+
+test_requires = [
+    'coverage',
+    'jinja2',
+    'mock',
+]
 
 config = {
     'description': 'A Python mail server forked from Lamson',
@@ -32,8 +32,10 @@ config = {
     'maintainer': 'Matt Molyneaux',
     'maintainer_email': 'moggers87+git@moggers87.co.uk',
     'version': '2',
-    'scripts': ['bin/salmon'],
     'install_requires': install_requires,
+    'tests_require': test_requires,
+    'setup_requires': ['nose'],
+    'test_suite': 'nose.collector',
     'packages': ['salmon', 'salmon.handlers'],
     'include_package_data': True,
     'name': 'salmon-mail',
@@ -47,7 +49,11 @@ config = {
         'Intended Audience :: Developers',
         'Topic :: Communications :: Email',
         'Topic :: Software Development :: Libraries :: Application Frameworks'
-        ]
+        ],
+    "entry_points": {
+        'console_scripts':
+            ['salmon = salmon.commands:main'],
+    },
 }
 
 setup(**config)

@@ -65,15 +65,16 @@ If you find an instance where this is not the case, then submit it to the
 project as a test case.
 """
 
-import string
-from email.charset import Charset
-import chardet
-import re
-import email
 from email import encoders
+from email.charset import Charset
 from email.mime.base import MIMEBase
 from email.utils import parseaddr
+import email
+import re
+import string
 import sys
+
+import chardet
 
 DEFAULT_ENCODING = "utf-8"
 DEFAULT_ERROR_HANDLING = "strict"

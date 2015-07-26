@@ -1,21 +1,20 @@
-from mock import *
-from nose.tools import *
+from mock import patch
+from nose.tools import with_setup
 
-from salmon import utils, view
-from setup_env import setup_salmon_dirs, teardown_salmon_dirs
+from salmon import utils
+
+from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
 
 
 def test_make_fake_settings():
     settings = utils.make_fake_settings('localhost', 8800)
     assert settings
     assert settings.receiver
-    assert settings.relay == None
+    assert settings.relay is None
     settings.receiver.close()
 
 
 def test_import_settings():
-    loader = view.LOADER
-
     settings = utils.import_settings(True, from_dir='tests', boot_module='config.testing')
     assert settings
     assert settings.receiver_config
@@ -38,4 +37,3 @@ def test_daemonize_not_fully(dc_open):
 def test_drop_priv(cpo):
     utils.drop_priv(100, 100)
     assert cpo.called
-

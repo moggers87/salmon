@@ -1,17 +1,15 @@
 # Copyright (C) 2008 Zed A. Shaw.  Licensed under the terms of the GPLv3.
+from nose.tools import assert_equal, assert_raises
 
-import warnings
-from nose.tools import *
-import re
-import os
 from salmon import mail, encoding
-import email
+
 
 sample_message = """From: somedude@localhost
 To: somedude@localhost
 
 Test
 """
+
 
 def test_mail_request():
     # try with a half-assed message
@@ -20,8 +18,7 @@ def test_mail_request():
     assert msg['to'] == "zedto@localhost", "To is %r" % msg['to']
     assert msg['from'] == "zedfrom@localhost", "From is %r" % msg['from']
 
-    msg = mail.MailRequest("localhost", "somedude@localhost",
-                             ["somedude@localhost"], sample_message)
+    msg = mail.MailRequest("localhost", "somedude@localhost", ["somedude@localhost"], sample_message)
     assert msg.original == sample_message
 
     assert_equal(msg['From'], "somedude@localhost")
@@ -47,36 +44,51 @@ def test_mail_request():
 
     return msg
 
+
 def test_mail_response_plain_text():
-    sample = mail.MailResponse(To="receiver@localhost", 
-                                 Subject="Test message",
-                                 From="sender@localhost",
-                                 Body="Test from test_mail_response_plain_text.")
+    sample = mail.MailResponse(
+        To="receiver@localhost",
+        Subject="Test message",
+        From="sender@localhost",
+        Body="Test from test_mail_response_plain_text.",
+    )
+
     return sample
+
 
 def test_mail_response_html():
-    sample = mail.MailResponse(To="receiver@localhost", 
-                                 Subject="Test message",
-                                 From="sender@localhost",
-                                 Html="<html><body><p>From test_mail_response_html</p></body></html>")
+    sample = mail.MailResponse(
+        To="receiver@localhost",
+        Subject="Test message",
+        From="sender@localhost",
+        Html="<html><body><p>From test_mail_response_html</p></body></html>",
+    )
+
     return sample
+
 
 def test_mail_response_html_and_plain_text():
-    sample = mail.MailResponse(To="receiver@localhost", 
-                                 Subject="Test message",
-                                 From="sender@localhost",
-                                 Html="<html><body><p>Hi there.</p></body></html>",
-                                 Body="Test from test_mail_response_html_and_plain_text.")
+    sample = mail.MailResponse(
+        To="receiver@localhost",
+        Subject="Test message",
+        From="sender@localhost",
+        Html="<html><body><p>Hi there.</p></body></html>",
+        Body="Test from test_mail_response_html_and_plain_text.",
+    )
+
     return sample
 
+
 def test_mail_response_attachments():
-    sample = mail.MailResponse(To="receiver@localhost", 
-                                 Subject="Test message",
-                                 From="sender@localhost",
-                                 Body="Test from test_mail_response_attachments.")
+    sample = mail.MailResponse(
+        To="receiver@localhost",
+        Subject="Test message",
+        From="sender@localhost",
+        Body="Test from test_mail_response_attachments.",
+    )
     readme_data = open("./README.md").read()
 
-    assert_raises(AssertionError, sample.attach, filename="./README.md", disposition="inline")
+    assert_raises(AssertionError, sample.attach, data=readme_data, disposition="inline")
 
     sample.attach(filename="./README.md", content_type="text/plain", disposition="inline")
     assert len(sample.attachments) == 1
@@ -131,8 +143,7 @@ def test_mail_request_attachments():
 def test_mail_response_mailing_list_headers():
     list_addr = "test.users@localhost"
 
-    msg = mail.MailResponse(From='somedude@localhost', To=list_addr, 
-            Subject='subject', Body="Mailing list reply.")
+    msg = mail.MailResponse(From='somedude@localhost', To=list_addr, Subject='subject', Body="Mailing list reply.")
 
     print repr(msg)
 
@@ -148,13 +159,13 @@ def test_mail_response_mailing_list_headers():
 
     req = mail.MailRequest('localhost', 'somedude@localhost', list_addr, data)
 
-    headers = ['Sender', 'Reply-To', 'List-Id', 'Return-Path', 
-               'In-Reply-To', 'References', 'Precedence']
+    headers = ['Sender', 'Reply-To', 'List-Id', 'Return-Path', 'In-Reply-To', 'References', 'Precedence']
     for header in headers:
         assert msg[header] == req[header]
 
     # try a delete
     del msg['Precedence']
+
 
 def test_mail_response_ignore_case_headers():
     msg = test_mail_response_plain_text()
@@ -168,7 +179,7 @@ def test_mail_response_ignore_case_headers():
 
 
 def test_walk():
-    bm = mail.MailRequest(None,None,None, open("tests/bounce.msg").read())
+    bm = mail.MailRequest(None, Data=open("tests/bounce.msg").read())
     parts = [x for x in bm.walk()]
 
     assert parts
@@ -176,10 +187,9 @@ def test_walk():
 
 
 def test_copy_parts():
-    bm = mail.MailRequest(None,None,None, open("tests/bounce.msg").read())
-    
-    resp = mail.MailResponse(To=bm['to'], From=bm['from'],
-                             Subject=bm['subject'])
+    bm = mail.MailRequest(None, Data=open("tests/bounce.msg").read())
+
+    resp = mail.MailResponse(To=bm['to'], From=bm['from'], Subject=bm['subject'])
 
     resp.attach_all_parts(bm)
 
@@ -188,30 +198,28 @@ def test_copy_parts():
 
     assert_equal(len([x for x in bm.walk()]), len([x for x in resp.walk()]))
 
-   
+
 def test_craft_from_sample():
     list_name = "test.list"
     user_full_address = "tester@localhost"
 
-    sample = mail.MailResponse(To=list_name + "@localhost",
-                          From=user_full_address,
-                          Subject="Test message with attachments.",
-                          Body="The body as one attachment.")
+    sample = mail.MailResponse(
+        To=list_name + "@localhost",
+        From=user_full_address,
+        Subject="Test message with attachments.",
+        Body="The body as one attachment.",
+    )
     sample.update({"Test": "update"})
 
-    sample.attach(filename="tests/salmon_tests/message_tests.py",
-                  content_type="text/plain",
-                  disposition="attachment")
-    
+    sample.attach(filename="tests/salmon_tests/message_tests.py", content_type="text/plain", disposition="attachment")
+
     inmsg = mail.MailRequest("fakepeer", None, None, str(sample))
     assert "Test" in sample.keys()
 
     for part in inmsg.to_message().walk():
         assert part.get_payload(), "inmsg busted."
 
-    outmsg = mail.MailResponse(To=inmsg['from'], 
-                          From=inmsg['to'],
-                          Subject=inmsg['subject'])
+    outmsg = mail.MailResponse(To=inmsg['from'], From=inmsg['to'], Subject=inmsg['subject'])
 
     outmsg.attach_all_parts(inmsg)
 
@@ -221,41 +229,25 @@ def test_craft_from_sample():
         assert part.get_payload(), "outmsg parts don't have payload."
 
 
-def test_route_to_from_works():
-    msg = mail.MailRequest("fakepeer", "from@localhost",
-                                   [u"<to1@localhost>", u"to2@localhost"], "")
-    assert '<' not in msg.route_to, msg.route_to
+def test_to_from_works():
+    msg = mail.IncomingMessage("fakepeer", "from@localhost", [u"<to1@localhost>", u"to2@localhost"], "")
+    assert '<' not in msg.To, msg.To
 
-    msg = mail.MailRequest("fakepeer", "from@localhost",
-                                   [u"to1@localhost", u"to2@localhost"], "")
-    assert '<' not in msg.route_to, msg.route_to
-    
-    msg = mail.MailRequest("fakepeer", "from@localhost",
-                                   [u"to1@localhost", u"<to2@localhost>"], "")
-    assert '<' not in msg.route_to, msg.route_to
+    msg = mail.IncomingMessage("fakepeer", "from@localhost", [u"to1@localhost", u"to2@localhost"], "")
+    assert '<' not in msg.To, msg.To
 
-    msg = mail.MailRequest("fakepeer", "from@localhost",
-                                   [u"to1@localhost"], "")
-    assert '<' not in msg.route_to, msg.route_to
+    msg = mail.IncomingMessage("fakepeer", "from@localhost", [u"to1@localhost", u"<to2@localhost>"], "")
+    assert '<' not in msg.To, msg.To
 
-    msg = mail.MailRequest("fakepeer", "from@localhost",
-                                   [u"<to1@localhost>"], "")
-    assert '<' not in msg.route_to, msg.route_to
+    msg = mail.IncomingMessage("fakepeer", "from@localhost", [u"to1@localhost"], "")
+    assert '<' not in msg.To, msg.To
+
+    msg = mail.IncomingMessage("fakepeer", "from@localhost", [u"<to1@localhost>"], "")
+    assert '<' not in msg.To, msg.To
 
 
 def test_decode_header_randomness():
     assert_equal(mail._decode_header_randomness(None), set())
-    assert_equal(mail._decode_header_randomness(["z@localhost", '"Z A" <z@localhost>']), 
-                 set(["z@localhost", "z@localhost"]))
-    assert_equal(mail._decode_header_randomness("z@localhost"),
-                 set(["z@localhost"]))
+    assert_equal(mail._decode_header_randomness(["z@localhost", '"Z A" <z@localhost>']), set(["z@localhost", "z@localhost"]))
+    assert_equal(mail._decode_header_randomness("z@localhost"), set(["z@localhost"]))
     assert_raises(encoding.EncodingError, mail._decode_header_randomness, 1)
-
-
-def test_msg_is_deprecated():
-    warnings.simplefilter("ignore")
-    msg = mail.MailRequest(None, None, None, "")
-    assert_equal(msg.msg, msg.base)
-    resp = mail.MailResponse()
-    assert_equal(resp.msg, resp.base)
-

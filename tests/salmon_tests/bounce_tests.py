@@ -1,13 +1,14 @@
-from nose.tools import *
+from nose.tools import assert_equal, with_setup
 
 from salmon import mail
 from salmon.routing import Router
-from setup_env import setup_salmon_dirs, teardown_salmon_dirs
-from handlers import bounce_filtered_mod
+
+from .handlers import bounce_filtered_mod
+from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
 
 
 def test_bounce_analyzer_on_bounce():
-    bm = mail.MailRequest(None,None,None, open("tests/bounce.msg").read())
+    bm = mail.MailRequest(None, Data=open("tests/bounce.msg").read())
     assert bm.is_bounce()
     assert bm.bounce
     assert bm.bounce.score == 1.0
@@ -29,8 +30,9 @@ def test_bounce_analyzer_on_bounce():
 
     assert bm.bounce.error_for_humans()
 
+
 def test_bounce_analyzer_on_regular():
-    bm = mail.MailRequest(None,None,None, open("tests/signed.msg").read())
+    bm = mail.MailRequest(None, Data=open("tests/signed.msg").read())
     assert not bm.is_bounce()
     assert bm.bounce
     assert bm.bounce.score == 0.0
@@ -48,9 +50,10 @@ def test_bounce_analyzer_on_regular():
     assert_equal(bm.bounce.diagnostic_codes, [None, None])
     assert_equal(bm.bounce.action, None)
 
+
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_bounce_to_decorator():
-    msg = mail.MailRequest(None, None, None, open("tests/bounce.msg").read())
+    msg = mail.MailRequest(None, Data=open("tests/bounce.msg").read())
 
     Router.deliver(msg)
     assert Router.in_state(bounce_filtered_mod.START, msg)
@@ -62,14 +65,14 @@ def test_bounce_to_decorator():
     assert Router.in_state(bounce_filtered_mod.START, msg)
     assert bounce_filtered_mod.SOFT_RAN, "Soft bounce didn't actually run."
 
-    msg = mail.MailRequest(None, None, None, open("tests/signed.msg").read())
+    msg = mail.MailRequest(None, Data=open("tests/signed.msg").read())
     Router.clear_states()
     Router.deliver(msg)
     assert Router.in_state(bounce_filtered_mod.END, msg), "Regular messages aren't delivering."
 
 
 def test_bounce_getting_original():
-    msg = mail.MailRequest(None,None,None, open("tests/bounce.msg").read())
+    msg = mail.MailRequest(None, Data=open("tests/bounce.msg").read())
     msg.is_bounce()
 
     assert msg.bounce.notification
@@ -78,7 +81,7 @@ def test_bounce_getting_original():
     assert msg.bounce.report
 
     for part in msg.bounce.report:
-        assert [(k,part[k]) for k in part]
+        assert [(k, part[k]) for k in part]
         # these are usually empty, but might not be.  they are in our test
         assert not part.body
 
@@ -88,7 +91,6 @@ def test_bounce_getting_original():
 
 
 def test_bounce_no_headers_error_message():
-    msg = mail.MailRequest(None, None, None, "Nothing")
+    msg = mail.MailRequest(None, Data="Nothing")
     msg.is_bounce()
     assert_equal(msg.bounce.error_for_humans(), 'No status codes found in bounce message.')
-
