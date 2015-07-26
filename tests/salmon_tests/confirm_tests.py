@@ -1,11 +1,17 @@
 from mock import Mock, patch
 from nose.tools import assert_equal
 
-from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
 from salmon import mail
-from salmon.confirm import *
+from salmon.confirm import ConfirmationEngine, ConfirmationStorage
 from salmon.queue import Queue
-from salmon.testing import *
+from salmon.testing import delivered, relay
+
+from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
+
+
+# quiten the linter on these variables
+storage = None
+engine = None
 
 
 def setup_module(module):

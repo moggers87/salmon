@@ -5,6 +5,7 @@ from salmon.routing import Router
 
 from . import dirs
 
+
 def clear_dir(dir_path):
     for dir_item in os.listdir(dir_path):
         print dir_item

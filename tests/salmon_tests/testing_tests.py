@@ -3,8 +3,18 @@ import os
 from mock import Mock, patch
 from nose.tools import with_setup
 
+from salmon.testing import (
+    RouterConversation,
+    assert_in_state,
+    clear_queue,
+    delivered,
+    queue,
+    relay,
+    spelling,
+)
+
 from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
-from salmon.testing import *
+
 
 relay = relay(port=8899)
 

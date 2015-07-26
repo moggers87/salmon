@@ -1,7 +1,7 @@
 import os
 import shutil
 
-import config.testing
+import config.testing  # noqa
 
 
 dirs = ["run", "logs"]

@@ -1,12 +1,13 @@
-from nose.tools import *
+from nose.tools import assert_equal
+
 from salmon import view
-import jinja2
 
 
 def test_load():
     template = view.load("template.txt")
     assert template
     assert template.render()
+
 
 def test_render():
     # try with some empty vars
@@ -18,14 +19,12 @@ def test_most_basic_form():
     msg = view.respond(locals(), 'template.txt')
     assert msg.Body
 
-def test_respond_cadillac_version():
-    dude = 'Tester'
 
-    msg = view.respond(locals(), Body='template.txt', 
-                      Html='template.html',
-                      From='test@localhost',
-                      To='receiver@localhost',
-                      Subject='Test body from "%(dude)s".')
+def test_respond_cadillac_version():
+    person = 'Tester'
+
+    msg = view.respond(locals(), Body='template.txt', Html='template.html',
+        From='test@localhost', To='receiver@localhost', Subject='Test body from "%(person)s".')
 
     assert msg.Body
     assert msg.Html
@@ -35,12 +34,9 @@ def test_respond_cadillac_version():
 
 
 def test_respond_plain_text():
-    dude = 'Tester'
+    person = 'Tester'
 
-    msg = view.respond(locals(), Body='template.txt', 
-                      From='test@localhost',
-                      To='receiver@localhost',
-                      Subject='Test body from "%(dude)s".')
+    msg = view.respond(locals(), Body='template.txt', From='test@localhost', To='receiver@localhost', Subject='Test body from "%(person)s".')
 
     assert msg.Body
     assert not msg.Html
@@ -49,14 +45,10 @@ def test_respond_plain_text():
         assert k in msg
 
 
-
 def test_respond_html_only():
-    dude = 'Tester'
+    person = 'Tester'
 
-    msg = view.respond(locals(), Html='template.html', 
-                      From='test@localhost',
-                      To='receiver@localhost',
-                      Subject='Test body from "%(dude)s".')
+    msg = view.respond(locals(), Html='template.html', From='test@localhost', To='receiver@localhost', Subject='Test body from "%(person)s".')
 
     assert not msg.Body
     assert msg.Html
@@ -65,16 +57,11 @@ def test_respond_html_only():
         assert k in msg
 
 
-
 def test_respond_attach():
-    dude = "hello"
-    mail = view.respond(locals(), Body="template.txt",
-                       From="test@localhost",
-                       To="receiver@localhost",
-                       Subject='Test body from someone.')
+    person = "hello"
+    mail = view.respond(locals(), Body="template.txt", From="test@localhost", To="receiver@localhost", Subject='Test body from someone.')
 
-    view.attach(mail, locals(), 'template.html', content_type="text/html",
-               filename="template.html", disposition='attachment')
+    view.attach(mail, locals(), 'template.html', content_type="text/html", filename="template.html", disposition='attachment')
 
     assert_equal(len(mail.attachments), 1)
 
@@ -93,14 +80,11 @@ def test_respond_attach():
 
 
 def test_unicode():
-    dude = u'H\xe9avy M\xe9t\xe5l Un\xeec\xf8d\xe9'
-    mail = view.respond(locals(), Html="unicode.html",
-                       From="test@localhost",
-                       To="receiver@localhost",
-                       Subject='Test body from someone.')
+    person = u'H\xe9avy M\xe9t\xe5l Un\xeec\xf8d\xe9'
+    mail = view.respond(locals(), Html="unicode.html", From="test@localhost", To="receiver@localhost", Subject='Test body from someone.')
+
     assert str(mail)
 
     view.attach(mail, locals(), "unicode.html", filename="attached.html")
 
     assert str(mail)
-
