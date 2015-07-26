@@ -1,19 +1,22 @@
-from nose.tools import *
-import shutil
-import os
+from mock import Mock, patch
+from nose.tools import assert_equal
 
-from setup_env import setup_salmon_dirs, teardown_salmon_dirs
+from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
+from salmon import mail
 from salmon.confirm import *
+from salmon.queue import Queue
 from salmon.testing import *
-from salmon import mail, queue
+
 
 def setup_module(module):
     setup_salmon_dirs()
     module.storage = ConfirmationStorage()
     module.engine = ConfirmationEngine('run/confirm', storage)
 
+
 def teardown_module(module):
     teardown_salmon_dirs()
+
 
 def test_ConfirmationStorage():
     storage.store('testing', 'somedude@localhost',
@@ -32,8 +35,11 @@ def test_ConfirmationStorage():
     assert_equal(len(storage.confirmations), 0)
 
 
-def test_ConfirmationEngine_send():
-    queue.Queue('run/queue').clear()
+@patch("smtplib.SMTP")
+def test_ConfirmationEngine_send(smtp_mock):
+    smtp_mock.return_value = Mock()
+
+    Queue('run/queue').clear()
     engine.clear()
 
     list_name = 'testing'
@@ -44,19 +50,19 @@ def test_ConfirmationEngine_send():
                                'testing-subscribe@localhost', 'Fake body.')
 
     engine.send(relay(port=8899), 'testing', message, 'confirmation.msg', locals())
-   
-    confirm = delivered('confirm')
-    assert delivered('somedude', to_queue=engine.pending)
-    assert confirm
 
-    return confirm
+    assert smtp_mock.return_value.sendmail.called
+    assert smtp_mock.return_value.quit.called
+    assert delivered('somedude', to_queue=engine.pending)
+
+    return smtp_mock.return_value.sendmail.call_args[0][2]
+
 
 def test_ConfirmationEngine_verify():
     confirm = test_ConfirmationEngine_send()
-    confirm = mail.MailRequest(confirm)
+    confirm = mail.MailRequest(None, Data=confirm)
 
-    resp = mail.MailRequest('fakepeer', '"Somedude Smith" <somedude@localhost>',
-                           confirm['Reply-To'], 'Fake body')
+    resp = mail.MailRequest('fakepeer', '"Somedude Smith" <somedude@localhost>', confirm['Reply-To'], 'Fake body')
 
     target, _, expect_secret = confirm['Reply-To'].split('-')
     expect_secret = expect_secret.split('@')[0]
@@ -75,12 +81,12 @@ def test_ConfirmationEngine_verify():
 
 def test_ConfirmationEngine_cancel():
     confirm = test_ConfirmationEngine_send()
-    confirm = mail.MailRequest(confirm)
+    confirm = mail.MailRequest(None, Data=confirm)
 
     target, _, expect_secret = confirm['Reply-To'].split('-')
     expect_secret = expect_secret.split('@')[0]
 
     engine.cancel(target, confirm['To'], expect_secret)
-    
+
     found = engine.verify(target, confirm['To'], expect_secret)
     assert not found

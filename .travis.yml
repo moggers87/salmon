@@ -7,13 +7,7 @@ python:
 
 install: python setup.py develop
 
-before_script:
-    - mkdir logs run
-    - python -c "from salmon import commands; commands.main()" log --pid "./log.pid" --port 8899
-
-script: python setup.py test
-
-after_script: python -c "from salmon import commands; commands.main()" stop --pid "./log.pid"
+script: python setup.py nosetests
 
 notifications:
     irc:

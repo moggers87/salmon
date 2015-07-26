@@ -1,8 +1,10 @@
-from setup_env import setup_salmon_dirs, teardown_salmon_dirs, setup_router
-from salmon.testing import *
-
-from nose.tools import *
 import os
+
+from mock import Mock, patch
+from nose.tools import with_setup
+
+from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
+from salmon.testing import *
 
 relay = relay(port=8899)
 
@@ -15,20 +17,27 @@ def test_clear_queue():
     clear_queue()
     assert queue().count() == 0
 
+
+@patch("smtplib.SMTP")
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
-def test_relay():
-    clear_queue()
+def test_relay(smtp_mock):
+    smtp_mock.return_value = Mock()
+
     relay.send('test@localhost', 'zedshaw@localhost', 'Test message', 'Test body')
-    assert queue().keys()
+
+    assert smtp_mock.return_value.sendmail.called
+    assert smtp_mock.return_value.quit.called
+
 
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_delivered():
     clear_queue()
+    queue().push("To: gooduser@localhost\nFrom: tester@localhost\n\nHi\n")
 
-    relay.send("zedshaw@localhost", "tester@localhost", Subject="Test subject.", Body="Test body.")
-    assert delivered("zedshaw@localhost"), "Test message not delivered."
-    assert not delivered("badman@localhost")
-    assert_in_state('salmon_tests.handlers.simple_fsm_mod', 'zedshaw@localhost', 'tester@localhost', 'START')
+    assert delivered("gooduser@localhost"), "Test message not delivered."
+    assert not delivered("baduser@localhost")
+    assert_in_state('salmon_tests.handlers.simple_fsm_mod', 'gooduser@localhost', 'tester@localhost', 'START')
+
 
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_RouterConversation():
@@ -37,6 +46,7 @@ def test_RouterConversation():
     client.say('testlist@localhost', 'This is a test')
     delivered('testlist@localhost'), "Test message not delivered."
 
+
 def test_spelling():
     # specific to a mac setup, because macs are lame
     if 'PYENCHANT_LIBRARY_PATH' not in os.environ:
@@ -44,4 +54,4 @@ def test_spelling():
 
     template = "tests/salmon_tests/templates/template.txt"
     contents = open(template).read()
-    assert spelling(template, contents) 
+    assert spelling(template, contents)
