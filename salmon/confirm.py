@@ -3,12 +3,12 @@ Confirmation handling API that helps you get the whole confirm/pending/verify
 process correct.  It doesn't implement any handlers, but what it does do is
 provide the logic for doing the following:
 
-    * Take an email, put it in a "pending" queue, and then send out a confirm
-    email with a strong random id.
-    * Store the pending message ID and the random secret someplace for later
-    verification.
-    * Verify an incoming email against the expected ID, and get back the
-    original.
+* Take an email, put it in a "pending" queue, and then send out a confirm
+  email with a strong random id.
+* Store the pending message ID and the random secret someplace for later
+  verification.
+* Verify an incoming email against the expected ID, and get back the
+  original.
 
 You then just work this into your project's state flow, write your own
 templates, and possibly write your own storage.

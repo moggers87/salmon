@@ -33,15 +33,15 @@ To control routing there are a set of decorators that you apply to your
 functions.
 
 * @route -- The main routing function that determines what addresses you are
-interested in.
+  interested in.
 * @route_like -- Says that this function routes like another one.
 * @stateless -- Indicates this function always runs on each route encountered, and
-no state is maintained.
+  no state is maintained.
 * @nolocking -- Use this if you want this handler to run parallel without any
-locking around Salmon internals.  SUPER DANGEROUS, add @stateless as well.
+  locking around Salmon internals.  SUPER DANGEROUS, add @stateless as well.
 * @state_key_generator -- Used on a function that knows how to make your state
-keys for the module, for example if module_name + message.To is needed to maintain
-state.
+  keys for the module, for example if module_name + message.To is needed to maintain
+  state.
 
 It's best to put @route or @route_like as the first decorator, then the others 
 after that.
