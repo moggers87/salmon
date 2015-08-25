@@ -17,16 +17,16 @@ rules on each email it receives:
 1) NO ENCODING IS TRUSTED, NO LANGUAGE IS SACRED, ALL ARE SUSPECT.
 2) Python wants Unicode, it will get Unicode.
 3) Any email that CANNOT become Unicode, CANNOT be processed by Salmon or
-Python.
+   Python.
 4) Email addresses are ESSENTIAL to Salmon's routing and security, and therefore
-will be canonicalized and properly encoded.
+   will be canonicalized and properly encoded.
 5) Salmon will therefore try to "upgrade" all email it receives to Unicode
-internally, and cleaning all email addresses.
+   internally, and cleaning all email addresses.
 6) It does this by decoding all codecs, and if the codec LIES, then it will
-attempt to statistically detect the codec using chardet.
+   attempt to statistically detect the codec using chardet.
 7) If it can't detect the codec, and the codec lies, then the email is bad.
 8) All text bodies and attachments are then converted to Python unicode in the
-same way as the headers.
+   same way as the headers.
 9) All other attachments are converted to raw strings as-is.
 
 Once Salmon has done this, your Python handler can now assume that all
