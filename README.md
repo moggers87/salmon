@@ -50,7 +50,7 @@ There's a setup.py
 Project Information
 ===================
 
-We, uh, don't really have any docs yet.
+Project documentation can be found [here](http://salmon-mail.readthedocs.org/)
 
 Fork
 -----
@@ -81,9 +81,9 @@ https://github.com/moggers87/salmon
 Status
 ------
 
-As this project has only just been forked, there may be bugs that have been
-fixed upstream, but can't be backported due to licencing issues.  The source is
-well documented, has nearly full test coverage, and runs on Python 2.6 and 2.7.
+Right now things are in flux as I'm moderning the codebase and start porting to
+Python 3. The source is well documented (though I suspect some of the comments 
+are wrong, has nearly full test coverage, and runs on Python 2.6 and 2.7.
 
 
 License
@@ -100,7 +100,7 @@ Contributing
 Pull requests and issues are most welcome.
 
 I will not accept code that has been submitted for inclusion in the original
-project due to the terms of its licence.
+project due to the terms of its new licence.
 
 Testing
 =======
