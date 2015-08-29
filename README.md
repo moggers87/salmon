@@ -45,7 +45,7 @@ salmon gen command lets you get an application up and running quick.
 Installing
 ==========
 
-There's a setup.py
+`pip install salmon-mail`
 
 Project Information
 ===================
