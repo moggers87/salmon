@@ -36,6 +36,7 @@ def test_ShelveStorage():
 
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_RoutingBase():
+    # check that Router is in a pristine state
     assert len(Router.ORDER) == 0
     assert len(Router.REGISTERED) == 0
 

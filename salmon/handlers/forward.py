@@ -19,7 +19,7 @@ import logging
 @route("(to)@(host)", to=".+", host=".+")
 @stateless
 def START(message, to=None, host=None):
-    """Forwards every mail it gets to the relay.  BE CAREFULE WITH THIS."""
+    """Forwards every mail it gets to the relay.  BE CAREFUL WITH THIS."""
     logging.debug("MESSAGE to %s@%s forwarded to the relay host.", to, host)
     settings.relay.deliver(message)
 
