@@ -110,8 +110,11 @@ class Relay(object):
         You can pass in an alternate To and From, which will be used in the
         SMTP send lines rather than what's in the message.
         """
-        recipient = To or message['To']
-        sender = From or message['From']
+        # if To and From haven't been provided, message must be either a
+        # MailResponse or IncomingMessage style object (in the case of
+        # MailRequest, it's both!)
+        recipient = To or getattr(message, 'To', None) or message['To']
+        sender = From or getattr(message, 'From', None) or message['From']
 
         hostname = self.hostname or self.resolve_relay_host(recipient)
 
