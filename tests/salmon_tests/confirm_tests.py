@@ -66,7 +66,7 @@ def test_ConfirmationEngine_send(smtp_mock):
 
 def test_ConfirmationEngine_verify():
     confirm = test_ConfirmationEngine_send()
-    confirm = mail.MailRequest(None, Data=confirm)
+    confirm = mail.MailRequest(None, None, None, confirm)
 
     resp = mail.MailRequest('fakepeer', '"Somedude Smith" <somedude@localhost>', confirm['Reply-To'], 'Fake body')
 
@@ -77,7 +77,6 @@ def test_ConfirmationEngine_verify():
     assert not found
 
     pending = engine.verify(target, resp['from'], expect_secret)
-    pending = mail.MailRequest(pending)
     assert pending, "Verify failed: %r not in %r." % (expect_secret,
                                                       storage.confirmations)
 
@@ -87,7 +86,7 @@ def test_ConfirmationEngine_verify():
 
 def test_ConfirmationEngine_cancel():
     confirm = test_ConfirmationEngine_send()
-    confirm = mail.MailRequest(None, Data=confirm)
+    confirm = mail.MailRequest(None, None, None, confirm)
 
     target, _, expect_secret = confirm['Reply-To'].split('-')
     expect_secret = expect_secret.split('@')[0]

@@ -43,14 +43,6 @@ salmon.encoding module
     :undoc-members:
     :show-inheritance:
 
-salmon.filters module
----------------------
-
-.. automodule:: salmon.filters
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 salmon.mail module
 ------------------
 

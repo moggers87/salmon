@@ -110,9 +110,8 @@ class Relay(object):
         You can pass in an alternate To and From, which will be used in the
         SMTP send lines rather than what's in the message.
         """
-        # if To and From haven't been provided, message must be either a
-        # MailResponse or IncomingMessage style object (in the case of
-        # MailRequest, it's both!)
+        # Check in multiple places for To and From.
+        # Ordered in preference.
         recipient = To or getattr(message, 'To', None) or message['To']
         sender = From or getattr(message, 'From', None) or message['From']
 
@@ -193,7 +192,7 @@ class SMTPReceiver(smtpd.SMTPServer):
 
         try:
             logging.debug("Message received from Peer: %r, From: %r, to To %r.", Peer, From, To)
-            routing.Router.deliver(mail.IncomingMessage(Peer, From, To, Data))
+            routing.Router.deliver(mail.MailRequest(Peer, From, To, Data))
         except SMTPError, err:
             # looks like they want to return an error, so send it out
             return str(err)
@@ -247,7 +246,7 @@ class LMTPReceiver(lmtpd.LMTPServer):
 
         try:
             logging.debug("Message received from Peer: %r, From: %r, to To %r.", Peer, From, To)
-            routing.Router.deliver(mail.IncomingMessage(Peer, From, To, Data))
+            routing.Router.deliver(mail.MailRequest(Peer, From, To, Data))
         except SMTPError, err:
             # looks like they want to return an error, so send it out
             # and yes, you should still use SMTPError in your handlers

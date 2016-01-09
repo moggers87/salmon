@@ -179,7 +179,7 @@ def test_mail_response_ignore_case_headers():
 
 
 def test_walk():
-    bm = mail.MailRequest(None, Data=open("tests/bounce.msg").read())
+    bm = mail.MailRequest(None, None, None, open("tests/bounce.msg").read())
     parts = [x for x in bm.walk()]
 
     assert parts
@@ -187,7 +187,7 @@ def test_walk():
 
 
 def test_copy_parts():
-    bm = mail.MailRequest(None, Data=open("tests/bounce.msg").read())
+    bm = mail.MailRequest(None, None, None, open("tests/bounce.msg").read())
 
     resp = mail.MailResponse(To=bm['to'], From=bm['from'], Subject=bm['subject'])
 
@@ -230,19 +230,19 @@ def test_craft_from_sample():
 
 
 def test_to_from_works():
-    msg = mail.IncomingMessage("fakepeer", "from@localhost", [u"<to1@localhost>", u"to2@localhost"], "")
+    msg = mail.MailRequest("fakepeer", "from@localhost", [u"<to1@localhost>", u"to2@localhost"], "")
     assert '<' not in msg.To, msg.To
 
-    msg = mail.IncomingMessage("fakepeer", "from@localhost", [u"to1@localhost", u"to2@localhost"], "")
+    msg = mail.MailRequest("fakepeer", "from@localhost", [u"to1@localhost", u"to2@localhost"], "")
     assert '<' not in msg.To, msg.To
 
-    msg = mail.IncomingMessage("fakepeer", "from@localhost", [u"to1@localhost", u"<to2@localhost>"], "")
+    msg = mail.MailRequest("fakepeer", "from@localhost", [u"to1@localhost", u"<to2@localhost>"], "")
     assert '<' not in msg.To, msg.To
 
-    msg = mail.IncomingMessage("fakepeer", "from@localhost", [u"to1@localhost"], "")
+    msg = mail.MailRequest("fakepeer", "from@localhost", [u"to1@localhost"], "")
     assert '<' not in msg.To, msg.To
 
-    msg = mail.IncomingMessage("fakepeer", "from@localhost", [u"<to1@localhost>"], "")
+    msg = mail.MailRequest("fakepeer", "from@localhost", [u"<to1@localhost>"], "")
     assert '<' not in msg.To, msg.To
 
 

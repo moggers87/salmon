@@ -8,7 +8,7 @@ from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
 
 
 def test_bounce_analyzer_on_bounce():
-    bm = mail.MailRequest(None, Data=open("tests/bounce.msg").read())
+    bm = mail.MailRequest(None, None, None, open("tests/bounce.msg").read())
     assert bm.is_bounce()
     assert bm.bounce
     assert bm.bounce.score == 1.0
@@ -32,7 +32,7 @@ def test_bounce_analyzer_on_bounce():
 
 
 def test_bounce_analyzer_on_regular():
-    bm = mail.MailRequest(None, Data=open("tests/signed.msg").read())
+    bm = mail.MailRequest(None, None, None, open("tests/signed.msg").read())
     assert not bm.is_bounce()
     assert bm.bounce
     assert bm.bounce.score == 0.0
@@ -53,7 +53,7 @@ def test_bounce_analyzer_on_regular():
 
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_bounce_to_decorator():
-    msg = mail.MailRequest(None, Data=open("tests/bounce.msg").read())
+    msg = mail.MailRequest(None, None, None, open("tests/bounce.msg").read())
 
     Router.deliver(msg)
     assert Router.in_state(bounce_filtered_mod.START, msg)
@@ -65,14 +65,14 @@ def test_bounce_to_decorator():
     assert Router.in_state(bounce_filtered_mod.START, msg)
     assert bounce_filtered_mod.SOFT_RAN, "Soft bounce didn't actually run."
 
-    msg = mail.MailRequest(None, Data=open("tests/signed.msg").read())
+    msg = mail.MailRequest(None, None, None, open("tests/signed.msg").read())
     Router.clear_states()
     Router.deliver(msg)
     assert Router.in_state(bounce_filtered_mod.END, msg), "Regular messages aren't delivering."
 
 
 def test_bounce_getting_original():
-    msg = mail.MailRequest(None, Data=open("tests/bounce.msg").read())
+    msg = mail.MailRequest(None, None, None, open("tests/bounce.msg").read())
     msg.is_bounce()
 
     assert msg.bounce.notification
@@ -91,6 +91,6 @@ def test_bounce_getting_original():
 
 
 def test_bounce_no_headers_error_message():
-    msg = mail.MailRequest(None, Data="Nothing")
+    msg = mail.MailRequest(None, None, None, "Nothing")
     msg.is_bounce()
     assert_equal(msg.bounce.error_for_humans(), 'No status codes found in bounce message.')
