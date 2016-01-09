@@ -33,44 +33,6 @@ DECODED_HEADERS = encoding.header_from_mime_encoding(BAD_HEADERS)
 NORMALIZED_HEADERS = [encoding.header_to_mime_encoding(x) for x in DECODED_HEADERS]
 
 
-def test_HeaderDict():
-    items = [("Subject", "Test"), ("Subject", "Second subject!"), ("From", "moggers@localhost"), ("To", "tsyesika@remotehost")]
-
-    # __init__
-    headers = encoding.HeaderDict(items)
-
-    # __getitem__
-    assert_equal(headers["From"], "moggers@localhost")
-    assert_true(headers["Cheese"] is None)
-    assert_equal(len(headers.get_all("Subject")), 2)
-
-    # __contains__
-    contains = "Subject" in headers
-    not_contains = "Cheese" in headers
-    assert_true(contains)
-    assert_false(not_contains)
-
-    # __delitem__
-    del headers["To"]
-    assert_false("To" in headers)
-
-    # __setitem__
-    headers["To"] = "tsyesika@remotehost"
-    assert_true("To" in headers)
-
-    headers.replace_item("To", "tsyes@host")
-    assert_equal(headers["To"], "tsyes@host")
-
-    # __len__
-    assert_equal(len(headers), len(items))
-    assert_equal(len(headers.items()), len(items))
-    assert_equal(len(headers.values()), len(items))
-
-    # __iter__
-    h2 = encoding.HeaderDict(headers)
-    assert_equal(headers, h2)
-
-
 def test_MailBase():
     the_subject = u'p\xf6stal'
     m = encoding.MailBase()
@@ -123,10 +85,9 @@ def test_header_from_mime_encoding():
 
 
 def test_to_message_from_message_with_spam():
-    raise SkipTest  # skip this
     mb = mailbox.mbox("tests/spam")
-    fails = 0
-    total = 0
+    fails = 0.0
+    total = 0.0
 
     for msg in mb:
         try:
@@ -139,20 +100,38 @@ def test_to_message_from_message_with_spam():
             for k in m:
                 if '@' in m[k]:
                     assert_equal(parseaddr(m[k]), parseaddr(m2[k]))
+                elif k.lower() in [key.lower() for key in encoding.CONTENT_ENCODING_KEYS]:
+                    pass  # skip!
                 else:
                     assert m[k].strip() == m2[k].strip(), "%s: %r != %r" % (k, m[k], m2[k])
 
                 assert not m[k].startswith(u"=?")
                 assert not m2[k].startswith(u"=?")
-                assert m.body == m2.body, "Bodies don't match"
 
-                assert_equal(len(m.parts), len(m2.parts), "Not the same number of parts.")
+            # salmon adds lots of stuff to that's missing from example messages
+            for k in encoding.CONTENT_ENCODING_KEYS:
+                if k in ("Content-Transfer-Encoding", "Mime-Version"):
+                    continue  # skip certain headers that we know will change
+                assert m.content_encoding[k][0] == m2.content_encoding[k][0], \
+                    "%s: %r != %r" % (k, m.content_encoding[k], m2.content_encoding[k])
 
-                for i, part in enumerate(m.parts):
-                    assert part.body == m2.parts[i].body, "Part %d isn't the same: %r \nvs\n. %r" % (i, part.body, m2.parts[i].body)
-            total += 1
+                for p in m.content_encoding[k][1]:
+                    if p in m2.content_encoding[k][1]:
+                        assert m.content_encoding[k][1][p].lower() == m2.content_encoding[k][1][p].lower(), \
+                            "%s: %r != %r" % (p, m.content_encoding[k][1][p], m2.content_encoding[k][1][p])
+
+            assert m.body == m2.body, "Bodies don't match"
+
+            assert_equal(len(m.parts), len(m2.parts), "Not the same number of parts.")
+
+            for i, part in enumerate(m.parts):
+                assert part.body == m2.parts[i].body, \
+                    "Part %d isn't the same: %r \nvs\n. %r" % (i, part.body, m2.parts[i].body)
+
         except encoding.EncodingError:
             fails += 1
+        finally:
+            total += 1
 
     assert fails/total < 0.01, "There were %d failures out of %d total." % (fails, total)
 

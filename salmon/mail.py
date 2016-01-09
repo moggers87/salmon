@@ -272,8 +272,6 @@ class MailResponse(object):
         for part in mail_request.all_parts():
             self.attach_part(part)
 
-        self.base.content_encoding = mail_request.base.content_encoding.copy()
-
     def clear(self):
         """
         Clears out the attachments so you can redo them.  Use this to keep the

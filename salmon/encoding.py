@@ -68,6 +68,7 @@ project as a test case.
 from email import encoders
 from email.charset import Charset
 from email.mime.base import MIMEBase
+from email.message import Message
 from email.utils import parseaddr
 import email
 import re
@@ -90,49 +91,144 @@ INDENT_REGEX = re.compile(r"\n\s+")
 VALUE_IS_EMAIL_ADDRESS = lambda v: '@' in v
 ADDRESS_HEADERS_WHITELIST = ['From', 'To', 'Delivered-To', 'Cc', 'Bcc']
 
+
 class EncodingError(Exception): 
     """Thrown when there is an encoding error."""
     pass
 
 
+class ContentEncoding(object):
+    """
+    Wrapper various content encoding headers
+
+    The value of each key is returned as a tuple of a string and a dict of
+    params. Note that changes to the params dict won't be reflected in the
+    underlying MailBase unless the tuple is reassigned:
+
+    >>> value = mail.content_encoding["Content-Type"]
+    >>> print value
+    ('text/html', {'charset': 'us-ascii'})
+    >>> value[1]['charset'] = 'utf-8'
+    >>> print mail["Content-Type"]  # unchanged
+    ('text/html', {'charset': 'us-ascii'})
+    >>> mail.content_encoding["Content-Type"] = value
+    >>> print mail["Content-Type"]
+    ('text/html', {'charset': 'utf-8'})
+
+    Will raise EncodingError if you try to access a header that isn't in
+    CONTENT_ENCODING_KEYS
+    """
+    def __init__(self, base):
+        self.base = base
+        self.defaults = {
+            "Content-Transfer-Encoding": ("7bit", {}),
+        }
+
+    def get(self, key, default=None):
+        if key not in CONTENT_ENCODING_KEYS:
+            raise EncodingError("EncodingError: %s is not in CONTENT_ENCODING_KEYS" % key)
+
+        value, params = parse_parameter_header(self.base.mime_part, key)
+        value = value.lower() if value else value
+        return (value, params)
+
+    def __getitem__(self, key):
+        return self.get(key)
+
+    def __setitem__(self, key, value):
+        if key not in CONTENT_ENCODING_KEYS:
+            raise EncodingError("EncodingError: %s is not in CONTENT_ENCODING_KEYS" % key)
+
+        # remove any other content header before adding our own
+        del self.base.mime_part[key]
+        self.base.mime_part.add_header(key, value[0], **value[1])
+
+    def __delitem__(self, key):
+        if key not in CONTENT_ENCODING_KEYS:
+            raise EncodingError("EncodingError: %s is not in CONTENT_ENCODING_KEYS" % key)
+
+        del self.base.mime_part[key]
+
+    def __len__(self):
+        return len(CONTENT_ENCODING_KEYS)
+
+    def __contains__(self, key):
+        return key in CONTENT_ENCODING_KEYS
+
+    def keys(self):
+        return CONTENT_ENCODING_KEYS
+
+
 class MailBase(object):
-    """MailBase is used as the basis of salmon.mail and contains the basics of
+    """
+    MailBase is used as the basis of salmon.mail and contains the basics of
     encoding an email.  You actually can do all your email processing with this
     class, but it's more raw.
     """
-    def __init__(self, items=(), parent=None):
-        self.headers = HeaderDict(items)
+    def __init__(self, mime_part_or_headers=None, parent=None):
         self.parts = []
         self.parent = parent
-        self.body = None
-        self.content_encoding = {'Content-Type': (None, {}), 
-                                 'Content-Disposition': (None, {}),
-                                 'Content-Transfer-Encoding': (None, {})}
+        self.content_encoding = ContentEncoding(self)
+
+        if isinstance(mime_part_or_headers, Message):
+            self.mime_part = mime_part_or_headers
+        else:
+            self.mime_part = Message()
+            if mime_part_or_headers is not None and len(mime_part_or_headers) > 0:
+                for key, value in mime_part_or_headers:
+                    self.mime_part[key] = value
 
     def __getitem__(self, key):
-        return self.headers.get(normalize_header(key))
+        header = self.mime_part.get(normalize_header(key))
+        return header_from_mime_encoding(header)
 
     def __len__(self):
-        return len(self.headers)
+        return len(self.mime_part)
 
     def __iter__(self):
-        return iter(self.headers)
+        for k in self.mime_part.keys():
+            yield k
 
     def __contains__(self, key):
-        return normalize_header(key) in self.headers
+        return normalize_header(key) in self.mime_part
 
     def __setitem__(self, key, value):
-        self.headers[normalize_header(key)] = value
+        self.mime_part[normalize_header(key)] = value
 
     def __delitem__(self, key):
-        del self.headers[normalize_header(key)]
+        del self.mime_part[normalize_header(key)]
 
     def __nonzero__(self):
-        return self.body != None or len(self.headers) > 0 or len(self.parts) > 0
+        return self.body != None or len(self.mime_part) > 0 or len(self.parts) > 0
 
     def keys(self):
         """Returns header keys."""
-        return self.headers.keys()
+        return self.mime_part.keys()
+
+    @property
+    def body(self):
+        body = self.mime_part.get_payload(decode=True)
+        if body:
+            # decode the payload according to the charset given if it's text
+            ctype, params = self.content_encoding['Content-Type']
+
+            if not ctype:
+                charset = 'ascii'
+                body = attempt_decoding(charset, body)
+            elif ctype.startswith("text/"):
+                charset = params.get('charset', 'ascii')
+                body = attempt_decoding(charset, body)
+            else:
+                # it's a binary codec of some kind, so just decode and leave it
+                # alone for now
+                pass
+        return body
+
+    @body.setter
+    def body(self, value):
+        ctype, params = self.content_encoding['Content-Type']
+        self.mime_part.set_payload(value, params.get("charset", None))
+
 
     def attach_file(self, filename, data, ctype, disposition):
         """
@@ -168,81 +264,8 @@ class MailBase(object):
             for x in p.walk():
                 yield x
 
-class HeaderDict(object):
-    """
-    A dictionary-like object for email headers. It deals with things such as
-    multiple headers of the same name and preserving order of keys.
 
-    Very similar to how headers work in Python's email.message.Message
-    """
-    def __init__(self, items=()):
-        if hasattr(items, "items"):
-            items = items.items()
-
-        self._data = [(name, data) for name, data in items]
-
-    def __contains__(self, name):
-        return name in self.keys()
-
-    def __delitem__(self, name):
-        newitems = []
-        for key, value in self._data:
-            if key != name:
-                newitems.append((key, value))
-        self._data = newitems
-
-    def __eq__(self, other):
-        return (isinstance(other, self.__class__)
-                and self.items() == other.items())
-
-    def __getitem__(self, name):
-        return self.get(name)
-
-    def __iter__(self):
-        for name, value in self._data:
-            yield name
-
-    def __len__(self):
-        return len(self._data)
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __reverse__(self):
-        raise NotImplementedError # just in case
-
-    def __setitem__(self, name, data):
-        self._data.append((name, data))
-
-    def get(self, name, failobj=None):
-        for key, value in self._data:
-            if key == name:
-                return value
-        return failobj
-
-    def get_all(self, name, failobj=None):
-        data = []
-        for key, value in self._data:
-            if key == name:
-                data.append(value)
-        return data
-
-    def keys(self):
-        return [name for name, data in self._data]
-
-    def items(self):
-        return self._data[:]
-
-    def replace_item(self, name, value):
-        for item in self._data:
-            if name == item[0]:
-                index = self._data.index(item)
-                self._data[index] = (name, value)
-
-    def values(self):
-        return [data for name, data in self._data]
-
-class MIMEPart(MIMEBase):
+class MIMEPart(Message):
     """
     A reimplementation of nearly everything in email.mime to be more useful
     for actually attaching things.  Rather than one class for every type of
@@ -250,9 +273,13 @@ class MIMEPart(MIMEBase):
     encode what you ask it.
     """
     def __init__(self, type_, **params):
-        self.maintype, self.subtype = type_.split('/')
+        self.mimetype = type_
+
         # classes from email.* are all old-style :(
-        MIMEBase.__init__(self, self.maintype, self.subtype, **params)
+        Message.__init__(self)
+
+        self.add_header('Content-Type', type_, **params)
+        self['MIME-Version'] = '1.0'
 
     def add_text(self, content, charset=None):
         # this is text, so encode it in canonical form
@@ -266,7 +293,8 @@ class MIMEPart(MIMEBase):
         self.set_payload(encoded, charset=charset)
 
     def extract_payload(self, mail):
-        if mail.body == None: return  # only None, '' is still ok
+        if mail.body == None:
+            return  # only None, '' is still ok
 
         ctype, ctype_params = mail.content_encoding['Content-Type']
         cdisp, cdisp_params = mail.content_encoding['Content-Disposition']
@@ -284,7 +312,7 @@ class MIMEPart(MIMEBase):
             encoders.encode_base64(self)
 
     def __repr__(self):
-        return "<MIMEPart '%s/%s': %r, %r, multipart=%r>" % (self.subtype, self.maintype, self['Content-Type'],
+        return "<MIMEPart '%s': %r, %r, multipart=%r>" % (self.mimetype, self['Content-Type'],
                                               self['Content-Disposition'],
                                                             self.is_multipart())
 
@@ -294,25 +322,13 @@ def from_message(message, parent=None):
     will canonicalize it and give you back a pristine MailBase.
     If it can't then it raises a EncodingError.
     """
-    mail = MailBase(parent=parent)
-
-    # parse the content information out of message
-    for k in CONTENT_ENCODING_KEYS:
-        setting, params = parse_parameter_header(message, k)
-        setting = setting.lower() if setting else setting
-        mail.content_encoding[k] = (setting, params)
-
-    # copy over any keys that are not part of the content information
-    for k in message.keys():
-        mail[k] = header_from_mime_encoding(message[k])
-  
-    decode_message_body(mail, message)
+    mail = MailBase(message, parent)
 
     if message.is_multipart():
         # recursively go through each subpart and decode in the same way
         for msg in message.get_payload():
             if msg != message:  # skip the multipart message itself
-                mail.parts.append(from_message(msg, parent=mail))
+                mail.parts.append(from_message(msg, mail))
 
     return mail
 
@@ -321,9 +337,10 @@ def to_message(mail):
     """
     Given a MailBase message, this will construct a MIMEPart 
     that is canonicalized for use with the Python email API.
+
+    N.B. this changes the original email.message.Message
     """
     ctype, params = mail.content_encoding['Content-Type']
-
     if not ctype:
         if mail.parts:
             ctype = 'multipart/mixed'
@@ -343,7 +360,6 @@ def to_message(mail):
                             (ctype, params, exc.message))
 
     for k in mail.keys():
-
         if k in ADDRESS_HEADERS_WHITELIST:
             value = header_to_mime_encoding(mail[k])
         else:
@@ -403,23 +419,6 @@ def parse_parameter_header(message, header):
     else:
         return None, {}
 
-def decode_message_body(mail, message):
-    mail.body = message.get_payload(decode=True)
-    if mail.body:
-        # decode the payload according to the charset given if it's text
-        ctype, params = mail.content_encoding['Content-Type']
-
-        if not ctype:
-            charset = 'ascii'
-            mail.body = attempt_decoding(charset, mail.body)
-        elif ctype.startswith("text/"):
-            charset = params.get('charset', 'ascii')
-            mail.body = attempt_decoding(charset, mail.body)
-        else:
-            # it's a binary codec of some kind, so just decode and leave it
-            # alone for now
-            pass
-
 
 def properly_encode_header(value, encoder, not_email):
     """
@@ -462,8 +461,6 @@ def header_from_mime_encoding(header):
         return [properly_decode_header(h) for h in header]
     else:
         return properly_decode_header(header)
-
-
 
 
 def guess_encoding_and_decode(original, data, errors=DEFAULT_ERROR_HANDLING):
