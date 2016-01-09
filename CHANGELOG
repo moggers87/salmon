@@ -1,10 +1,9 @@
 ## 3.0
 
 - Removed lots of cruft (#19)
-- IncomingMessage has replace MailRequest as the default message class. If you
-  still want to use MailRequest, decorate your handlers with the new filters (#21)
-- Introduced filters to automatically convert incoming mail to a format you want
-  (current we support both MailRequest and standard email objects) (#21)
 - Moved from modargs to argparse - command line interface has changed (#28)
 - Moved from PyDNS to dnspython
 - Tests can now be run without having to start a log-server first (#6)
+- MailRequest objects are now wrappers around Python's `email.message.Message` class. (#40)
+  * Deserializing incoming messages is now done in a slightly more lazy fashion
+  * Also allows access to the "pristine" `Message` object without having to back-convert
