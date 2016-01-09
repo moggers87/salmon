@@ -67,7 +67,7 @@ User-Agent: Mozilla/5.0 (Windows; U; Win95; en-GB;
 MIME-Version: 1.0
 To: <anonymous@anonymous.com>
 Subject: Veja no seu pc
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-Spambayes-Trained: spam
 Status: O
