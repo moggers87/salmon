@@ -25,6 +25,7 @@ Contents:
    :maxdepth: 2
 
    getting_started
+   Salmon API guide <salmon>
 
 
 Indices and tables
