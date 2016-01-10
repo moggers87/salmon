@@ -45,8 +45,7 @@ def test_pop():
     assert key, "Didn't get a key for test_get push."
     assert msg, "Didn't get a message for key %r" % key
 
-    assert hasattr(msg, "Data"), "IncomingMessage doesn't have Data attribute"
-    msg = mail.MailRequest(msg.Peer, msg.From, msg.To, msg.Data)
+    assert hasattr(msg, "Data"), "MailRequest doesn't have Data attribute"
 
     assert msg['to'] == "test@localhost"
     assert msg['from'] == "test@localhost"

@@ -13,7 +13,7 @@ Test
 
 
 def create_message():
-    return mail.IncomingMessage("localhost", "someone@localhost", "someone@localhost", sample_message)
+    return mail.MailRequest("localhost", "someone@localhost", "someone@localhost", sample_message)
 
 
 def cleanup_router():

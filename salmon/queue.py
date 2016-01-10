@@ -144,7 +144,7 @@ class Queue(object):
         msg_data = msg_file.read()
 
         try:
-            return mail.IncomingMessage(self.dir, None, None, msg_data)
+            return mail.MailRequest(self.dir, None, None, msg_data)
         except Exception, exc:
             logging.exception("Failed to decode message: %s; msg_data: %r",   exc, msg_data)
             return None

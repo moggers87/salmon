@@ -21,6 +21,7 @@ import warnings
 # You can change this to 'Delivered-To' on servers that support it like Postfix
 ROUTABLE_TO_HEADER='to'
 
+
 def _decode_header_randomness(addr):
     """
     This fixes the given address so that it is *always* a set() of 
@@ -36,12 +37,26 @@ def _decode_header_randomness(addr):
         raise encoding.EncodingError("Address must be a string or a list not: %r", type(addr))
 
 
-class IncomingMessage(object):
+class MailRequest(object):
     """
-    Lightweight class that contains message data and metadata
+    This is what older users of Salmon are accustomed to.  The information
+    you get out of this is *ALWAYS* in Python unicode and should be usable 
+    by any API.  Modifying this object will cause other handlers that deal
+    with it to get your modifications, but in general you don't want to do
+    more than maybe tag a few headers.
     """
     def __init__(self, Peer, From, To, Data):
+        """
+        Peer is the remote peer making the connection (sometimes the queue
+        name).  From and To are what you think they are.  Data is the raw
+        full email as received by the server.
+
+        NOTE:  It does not handle multiple From headers, if that's even
+        possible.  It will parse the From into a list and take the first
+        one.
+        """
         self.Peer = Peer
+        self.Data = Data
         try:
             self.From = _decode_header_randomness(From).pop()
         except KeyError:
@@ -50,51 +65,6 @@ class IncomingMessage(object):
             self.To = _decode_header_randomness(To).pop()
         except KeyError:
             self.To = None
-
-        self.Data = Data
-
-        # this is where your parsed email object should go
-        self.Email = None
-
-    def __str__(self):
-        """
-        Return original string usable for storage into a queue or transmission.
-        """
-        return self.Data
-
-    def __repr__(self):
-        return "From: %r" % [self.Peer, self.From, self.To]
-
-
-class MailRequest(IncomingMessage):
-    """
-    This is what older users of Salmon are accustomed to.  The information
-    you get out of this is *ALWAYS* in Python unicode and should be usable 
-    by any API.  Modifying this object will cause other handlers that deal
-    with it to get your modifications, but in general you don't want to do
-    more than maybe tag a few headers.
-    """
-    def __init__(self, Peer, From=None, To=None, Data=None):
-        """
-        Peer is the remote peer making the connection (sometimes the queue
-        name).  From and To are what you think they are.  Data is the raw
-        full email as received by the server.
-
-        Peer can also be an instance of IncomingMessage and will be
-        upgraded into a MailRequest.
-
-        NOTE:  It does not handle multiple From headers, if that's even
-        possible.  It will parse the From into a list and take the first
-        one.
-        """
-        if isinstance(Peer, IncomingMessage):
-            old_msg = Peer
-            self.Peer = old_msg.Peer
-            self.From = old_msg.From
-            self.To = old_msg.To
-            self.Data = old_msg.Data
-        else:
-            super(MailRequest, self).__init__(Peer, From, To, Data)
 
         self.Email = encoding.from_string(self.Data)
 
@@ -109,11 +79,18 @@ class MailRequest(IncomingMessage):
 
         self.bounce = None
 
+    def __str__(self):
+        """
+        Return original string usable for storage into a queue or transmission.
+        """
+        return self.Data
+
+    def __repr__(self):
+        return "From: %r" % [self.Peer, self.From, self.To]
 
     def all_parts(self):
         """Returns all multipart mime parts.  This could be an empty list."""
         return self.Email.parts
-
 
     def body(self):
         """
@@ -126,7 +103,6 @@ class MailRequest(IncomingMessage):
             return self.Email.parts[0].body
         else:
             return self.Email.body
-
 
     def __contains__(self, key):
         return self.Email.__contains__(key)
@@ -271,8 +247,6 @@ class MailResponse(object):
         """
         for part in mail_request.all_parts():
             self.attach_part(part)
-
-        self.base.content_encoding = mail_request.base.content_encoding.copy()
 
     def clear(self):
         """

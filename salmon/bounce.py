@@ -105,15 +105,15 @@ def match_bounce_headers(msg):
     matches = {'Content-Description-Parts': {}}
     for part in msg.base.walk():
         for k in BOUNCE_MATCHERS:
-            if k in part.headers:
+            if k in part:
                 if k not in matches:
                     matches[k] = set()
 
                 # kind of an odd place to put this, but it's the easiest way
                 if k == 'Content-Description':
-                    matches['Content-Description-Parts'][part.headers[k].lower()] = part
+                    matches['Content-Description-Parts'][part[k].lower()] = part
 
-                matches[k].add(part.headers[k])
+                matches[k].add(part[k])
 
     return matches
 
