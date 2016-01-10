@@ -372,6 +372,13 @@ def to_message(mail):
 
     out.extract_payload(mail)
 
+    # make sure payload respects cte
+    cte, cte_params = mail.content_encoding['Content-Transfer-Encoding']
+    if cte == "quoted-printable":
+        encoders.encode_quopri(out)
+    elif cte == "base64":
+        encoders.encode_base64(out)
+
     # go through the children
     for part in mail.parts:
         out.attach(to_message(part))
