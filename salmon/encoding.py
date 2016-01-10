@@ -279,7 +279,6 @@ class MIMEPart(Message):
         Message.__init__(self)
 
         self.add_header('Content-Type', type_, **params)
-        self['MIME-Version'] = '1.0'
 
     def add_text(self, content, charset=None):
         # this is text, so encode it in canonical form
