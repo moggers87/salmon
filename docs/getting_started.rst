@@ -83,7 +83,7 @@ Configuration
 All configuration happens in ``config/``
 
 ``boot.py``
-^^^^^^^^^^
+^^^^^^^^^^^
 
 This file is used by Salmon during start-up to configure the daemon with various
 things, such as starting the ``SMTPReceiver``.
