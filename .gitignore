@@ -8,5 +8,7 @@
 *.egg*
 /tests/*.db
 /.coverage
+/.tox
+/htmlcov
 
 /docs/_build
