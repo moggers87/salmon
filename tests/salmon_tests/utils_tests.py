@@ -1,3 +1,5 @@
+import os
+
 from mock import patch
 from nose.tools import with_setup
 
@@ -15,9 +17,16 @@ def test_make_fake_settings():
 
 
 def test_import_settings():
-    settings = utils.import_settings(True, from_dir='tests', boot_module='config.testing')
+    settings = utils.import_settings(True, boot_module='config.testing')
     assert settings
     assert settings.receiver_config
+
+    with patch("salmon.utils.importlib.import_module") as import_mock:
+        utils.import_settings(False)
+        assert import_mock.call_count == 1, import_mock.call_count
+
+        utils.import_settings(True)
+        assert import_mock.call_count == 3, import_mock.call_count
 
 
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)

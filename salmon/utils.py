@@ -5,30 +5,29 @@ is kind of a dumping ground, so if you find something that
 can be improved feel free to work up a patch.
 """
 
-from salmon import server, routing
-import sys, os
+import imp
+import importlib
 import logging
-if sys.platform != 'win32': # Can daemonize
-    import daemon
+import os
+import signal
+import sys
 
 try:
-    from daemon import pidlockfile 
+    import daemon  # daemon unavailable on Windows
+    from daemon import pidlockfile
 except ImportError:
-    from lockfile import pidlockfile 
+    from lockfile import pidlockfile
 
-import imp
-import signal
+from salmon import server, routing
 
 
-def import_settings(boot_also, from_dir=None, boot_module="config.boot"):
+def import_settings(boot_also, boot_module="config.boot"):
     """Used to import the settings in a Salmon project."""
-    if from_dir:
-        sys.path.append(from_dir)
-
-    settings = __import__("config.settings", globals(), locals()).settings
+    settings_module = os.getenv("SALMON_SETTINGS_MODULE", "config.settings")
+    settings = importlib.import_module(settings_module)
 
     if boot_also:
-        __import__(boot_module, globals(), locals())
+        importlib.import_module(boot_module)
 
     return settings
 
@@ -42,12 +41,12 @@ def daemonize(pid, chdir, chroot, umask, files_preserve=None, do_open=True):
     """
     context = daemon.DaemonContext()
     context.pidfile = pidlockfile.PIDLockFile(pid)
-    context.stdout = open(os.path.join(chdir, "logs/salmon.out"),"a+")                                                                                                       
-    context.stderr = open(os.path.join(chdir, "logs/salmon.err"),"a+")                                                                                                       
+    context.stdout = open(os.path.join(chdir, "logs/salmon.out"),"a+")
+    context.stderr = open(os.path.join(chdir, "logs/salmon.err"),"a+")
     context.files_preserve = files_preserve or []
     context.working_directory = os.path.expanduser(chdir)
 
-    if chroot: 
+    if chroot:
         context.chroot_directory = os.path.expanduser(chroot)
     if umask != False:
         context.umask = umask
@@ -111,7 +110,7 @@ def start_server(pid, force, chroot, chdir, uid, gid, umask, settings_loader, de
     settings = settings_loader()
 
     if uid and gid:
-        drop_priv(uid, gid) 
+        drop_priv(uid, gid)
     elif uid or gid:
         logging.warning("You probably meant to give a uid and gid, but you gave: uid=%r, gid=%r.  Will not change to any user.", uid, gid)
 
