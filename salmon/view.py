@@ -1,8 +1,7 @@
 """
-These are helper functions that make it easier to work with either
-Jinja2 or Mako templates.  You MUST configure it by setting
-salmon.view.LOADER to one of the template loaders in your config.boot
-or config.testing.
+These are helper functions that make it easier to work with either Jinja2 or
+Mako templates.  You MUST configure it by setting salmon.view.LOADER to one of
+the template loaders in your boot module.
 
 After that these functions should just work.
 """
@@ -49,7 +48,7 @@ def respond(variables, Body=None, Html=None, **kwd):
     For example, to render a template for the body and a .html for the Html
     attachment, and to indicate the From/To/Subject do this:
 
-        msg = view.respond(locals(), Body='template.txt', 
+        msg = view.respond(locals(), Body='template.txt',
                           Html='template.html',
                           From='test@test.com',
                           To='receiver@test.com',
@@ -67,12 +66,12 @@ def respond(variables, Body=None, Html=None, **kwd):
 
     for key in kwd:
         kwd[key] = kwd[key] % variables
-    
+
     msg = mail.MailResponse(**kwd)
 
     if Body:
         msg.Body = render(variables, Body)
-    
+
     if Html:
         msg.Html = render(variables, Html)
 

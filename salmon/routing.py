@@ -10,10 +10,10 @@ The salmon.routing.Router variable (it's not a class, just named like one) is
 how the whole system gets to the Router.  It is an instance of RoutingBase and
 there's usually only one.
 
-The salmon.routing.StateStorage is what you need to implement if you want Salmon
-to store the state in a different way.  By default the salmon.routing.Router
-object just uses a default MemoryStorage to do its job.  If you want to use a
-custom storage, then in your config/boot.py (or config/testing.py) you would set
+The salmon.routing.StateStorage is what you need to implement if you want
+Salmon to store the state in a different way.  By default the
+salmon.routing.Router object just uses a default MemoryStorage to do its job.
+If you want to use a custom storage, then in your boot modiule you would set
 salmon.routing.Router.STATE_STORE to what you want to use.
 
 Finally, when you write a state handler, it has functions that act as state
@@ -43,7 +43,7 @@ functions.
   keys for the module, for example if module_name + message.To is needed to maintain
   state.
 
-It's best to put @route or @route_like as the first decorator, then the others 
+It's best to put @route or @route_like as the first decorator, then the others
 after that.
 
 The @state_key_generator is different since it's not intended to go on a handler
@@ -78,7 +78,7 @@ class StateStorage(object):
 
     def set(self, key, sender, state):
         """
-        Set should take the given parameters and consistently set the state for 
+        Set should take the given parameters and consistently set the state for
         that combination such that when StateStorage.get is called it gives back
         the same setting.
         """
@@ -86,7 +86,7 @@ class StateStorage(object):
 
     def clear(self):
         """
-        This should clear ALL states, it is only used in unit testing, so you 
+        This should clear ALL states, it is only used in unit testing, so you
         can have it raise an exception if you want to make this safer.
         """
         raise NotImplementedError("You have to implement a StateStorage.clear for unit testing to work.")
@@ -129,8 +129,8 @@ class ShelveStorage(MemoryStorage):
     """
     Uses Python's shelve to store the state of the Routers to disk rather than
     in memory like with MemoryStorage.  This will get you going on a small
-    install if you need to persist your states (most likely), but if you 
-    have a database, you'll need to write your own StateStorage that 
+    install if you need to persist your states (most likely), but if you
+    have a database, you'll need to write your own StateStorage that
     uses your ORM or database to store.  Consider this an example.
 
     NOTE: Because of shelve limitations you can only use ASCII encoded keys.
@@ -176,8 +176,8 @@ class ShelveStorage(MemoryStorage):
 class RoutingBase(object):
     """
     The self is a globally accessible class that is actually more like a
-    glorified module.  It is used mostly internally by the salmon.routing 
-    decorators (route, route_like, stateless) to control the routing 
+    glorified module.  It is used mostly internally by the salmon.routing
+    decorators (route, route_like, stateless) to control the routing
     mechanism.
 
     It keeps track of the registered routes, their attached functions, the
@@ -195,11 +195,11 @@ class RoutingBase(object):
     handler's state function is called.  ALL threads will go through this lock,
     but only as each state is run, so you won't have a situation where the chain
     of state functions will block all the others.  This means that while your
-    handler runs nothing will be running, but you have not guarantees about 
+    handler runs nothing will be running, but you have not guarantees about
     the order of each state function.
 
     However, this can kill the performance of some kinds of state functions,
-    so if you find the need to not have locking, then use the @nolocking 
+    so if you find the need to not have locking, then use the @nolocking
     decorator and the Router will NOT lock when that function is called.  That
     means while your @nolocking state function is running at least one other
     thread (more if the next ones happen to be @nolocking) could also be
@@ -207,7 +207,7 @@ class RoutingBase(object):
 
     It's your job to keep things straight if you do that.
 
-    NOTE: See @state_key_generator for a way to change what the key is to 
+    NOTE: See @state_key_generator for a way to change what the key is to
     STATE_STORE for different state control options.
     """
 
@@ -268,7 +268,7 @@ class RoutingBase(object):
         key = self.state_key(module_name, message)
         return self.STATE_STORE.get(key, message.From)
 
-    
+
     def in_state(self, func, message):
         """
         Determines if this function is in the state for the to/from in the
@@ -279,7 +279,7 @@ class RoutingBase(object):
 
     def in_error(self, func, message):
         """
-        Determines if the this function is in the 'ERROR' state, 
+        Determines if the this function is in the 'ERROR' state,
         which is a special state that self puts handlers in that throw
         an exception.
         """
@@ -399,7 +399,7 @@ class RoutingBase(object):
             self.REGISTERED.clear()
             del self.ORDER[:]
 
-    
+
     def load(self, handlers):
         """
         Loads the listed handlers making them available for processing.
@@ -449,7 +449,7 @@ class route(object):
     both the URL and an internal state setting to determine which method to run.
 
     However, if you'd rather than this state handler process all messages
-    matching the @route then tag it @stateless.  This will run the handler 
+    matching the @route then tag it @stateless.  This will run the handler
     no matter what and not change the user's state.
     """
 
@@ -567,7 +567,7 @@ def stateless(func):
     """
     if has_salmon_settings(func):
         assert not salmon_setting(func, 'format'), "You must use @stateless AFTER @route or @route_like."
-    
+
     attach_salmon_settings(func)
     func._salmon_settings['stateless'] = True
 
@@ -583,7 +583,7 @@ def nolocking(func):
 
     However, sometimes you know better what you are doing and this is where
     @nolocking comes in.  Put this decorator on your state functions that you
-    don't care about threading issues or that you have found a need to 
+    don't care about threading issues or that you have found a need to
     manually tune, and it will run it without any locks.
     """
     attach_salmon_settings(func)
@@ -593,7 +593,7 @@ def nolocking(func):
 def state_key_generator(func):
     """
     Used to indicate that a function in your handlers should be used
-    to determine what they key is for state storage.  It should be a 
+    to determine what they key is for state storage.  It should be a
     function that takes the module_name and message being worked on
     and returns a string.
     """
