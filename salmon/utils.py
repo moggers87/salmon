@@ -9,7 +9,6 @@ import imp
 import importlib
 import logging
 import os
-import signal
 import sys
 
 try:
@@ -41,20 +40,21 @@ def daemonize(pid, chdir, chroot, umask, files_preserve=None, do_open=True):
     """
     context = daemon.DaemonContext()
     context.pidfile = pidlockfile.PIDLockFile(pid)
-    context.stdout = open(os.path.join(chdir, "logs/salmon.out"),"a+")
-    context.stderr = open(os.path.join(chdir, "logs/salmon.err"),"a+")
+    context.stdout = open(os.path.join(chdir, "logs/salmon.out"), "a+")
+    context.stderr = open(os.path.join(chdir, "logs/salmon.err"), "a+")
     context.files_preserve = files_preserve or []
     context.working_directory = os.path.expanduser(chdir)
 
     if chroot:
         context.chroot_directory = os.path.expanduser(chroot)
-    if umask != False:
+    if umask is not False:
         context.umask = umask
 
     if do_open:
         context.open()
 
     return context
+
 
 def drop_priv(uid, gid):
     """
@@ -65,7 +65,6 @@ def drop_priv(uid, gid):
     logging.debug("Dropping to uid=%d, gid=%d", uid, gid)
     daemon.daemon.change_process_owner(uid, gid)
     logging.debug("Now running as uid=%d, gid=%d", os.getgid(), os.getuid())
-
 
 
 def make_fake_settings(host, port):
@@ -83,6 +82,7 @@ def make_fake_settings(host, port):
 
     return settings
 
+
 def check_for_pid(pid, force):
     """Checks if a pid file is there, and if it is sys.exit.  If force given
     then it will remove the file and not exit if it's there."""
@@ -90,7 +90,6 @@ def check_for_pid(pid, force):
         if not force:
             print "PID file %s exists, so assuming Salmon is running.  Give -FORCE to force it to start." % pid
             sys.exit(1)
-            return # for unit tests mocking sys.exit
         else:
             os.unlink(pid)
 
