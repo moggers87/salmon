@@ -13,7 +13,7 @@ of allowed hosts your machine answers to and only forwards those.
 """
 
 from salmon.routing import route, stateless
-from config import settings
+from salmon.utils import settings
 import logging
 
 @route("(to)@(host)", to=".+", host=".+")

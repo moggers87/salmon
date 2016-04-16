@@ -186,9 +186,9 @@ class RoutingBase(object):
 
     You can change the storage to another implementation by simple setting:
 
-        self.STATE_STORE = OtherStorage()
+        Router.STATE_STORE = OtherStorage()
 
-    In a config/settings.py file.
+    in your settings module.
 
     RoutingBase does locking on every write to its internal data (which usually
     only happens during booting and reloading while debugging), and when each

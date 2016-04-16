@@ -20,10 +20,20 @@ except ImportError:
 from salmon import server, routing
 
 
+settings = None
+
+
 def import_settings(boot_also, boot_module="config.boot"):
-    """Used to import the settings in a Salmon project."""
-    settings_module = os.getenv("SALMON_SETTINGS_MODULE", "config.settings")
-    settings = importlib.import_module(settings_module)
+    """Returns the current settings module, there is no harm in calling it
+    multiple times
+
+    The location of the settings module can be control via
+    ``SALMON_SETTINGS_MODULE``"""
+    global settings
+
+    if settings is None:
+        settings_module = os.getenv("SALMON_SETTINGS_MODULE", "config.settings")
+        settings = importlib.import_module(settings_module)
 
     if boot_also:
         importlib.import_module(boot_module)
