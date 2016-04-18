@@ -81,10 +81,14 @@ https://github.com/moggers87/salmon
 Status
 ------
 
-Right now things are in flux as I'm moderning the codebase and start porting to
-Python 3. The source is well documented (though I suspect some of the comments 
-are wrong, has nearly full test coverage, and runs on Python 2.6 and 2.7.
+Right now things are in flux as I'm modernising the codebase and preparing for
+porting to Python 3. The source is well documented (though I suspect some of
+the comments are wrong, has nearly full test coverage, and runs on Python 2.7
+only.  Python 3 support was being worked on, but a number of bugs in Python
+itself meant that work stalled.
 
+Additionally, tests are run against PyPy, but I don't know if it's ever been
+used "in anger" on that platform.
 
 License
 ----
@@ -132,8 +136,8 @@ behave correctly given that constraint then please voice your concerns.
 Development
 ===========
 
-Salmon is written entirely in Python and runs on Python 2.6 or 2.7 but not 3k
-yet.  It should hopefully run on any platform that supports Python and has Unix
+Salmon is written entirely in Python and runs on Python 2.7 but not 3k yet.  It
+should hopefully run on any platform that supports Python and has Unix
 semantics.
 
 If you find yourself lost in source code, just yell.
