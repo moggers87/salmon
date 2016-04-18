@@ -81,7 +81,7 @@ def make_fake_settings(host, port):
     """
     When running as a logging server we need a fake settings module to work with
     since the logging server can be run in any directory, so there may not be
-    a config/settings.py file to import.
+    a settings module to import.
     """
     logging.basicConfig(filename="logs/logger.log", level=logging.DEBUG)
     routing.Router.load(['salmon.handlers.log', 'salmon.handlers.queue'])

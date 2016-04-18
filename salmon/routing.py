@@ -252,7 +252,7 @@ class RoutingBase(object):
         """
         Updates the defaults for routing captures with the given settings.
 
-        You use this in your handlers or your config/settings.py to set
+        You use this in your handlers or your settings module to set
         common regular expressions you'll have in your @route decorators.
         This saves you typing, but also makes it easy to reconfigure later.
 

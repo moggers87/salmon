@@ -11,7 +11,7 @@ However, this isn't that fast, doesn't give you coverage analysis, and doesn't
 let you test the results.  For that you use RouterConversation to do the exact
 same API (they should be interchangeable) but rather than talk to a running
 server through the relay, it just runs all the messages through the router
-directly. 
+directly.
 
 This is faster and will give you code coverage as well as make sure that all the
 modules (not just your handlers) will get reloaded.
@@ -32,11 +32,11 @@ def spelling(file_name, contents, language="en_US"):
     """
     You give it a file_name and the contents of that file and it tells you
     if it's spelled correctly.  The reason you give it contents is that you
-    will typically run a template through the render process, so spelling 
+    will typically run a template through the render process, so spelling
     can't just load a file and check it.
 
-    It assumes you have PyEnchant installed correctly and configured 
-    in your config/testing.py file.  Use "salmon spell" to make sure it
+    It assumes you have PyEnchant installed correctly and configured
+    in your test settings module.  Use "salmon spell" to make sure it
     works right.
     """
     try:
