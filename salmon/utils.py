@@ -83,12 +83,15 @@ def make_fake_settings(host, port):
     since the logging server can be run in any directory, so there may not be
     a settings module to import.
     """
-    logging.basicConfig(filename="logs/logger.log", level=logging.DEBUG)
-    routing.Router.load(['salmon.handlers.log', 'salmon.handlers.queue'])
-    settings = imp.new_module('settings')
-    settings.receiver = server.SMTPReceiver(host, port)
-    settings.relay = None
-    logging.info("Logging mode enabled, will not send email to anyone, just log.")
+    global settings
+
+    if settings is None:
+        logging.basicConfig(filename="logs/logger.log", level=logging.DEBUG)
+        routing.Router.load(['salmon.handlers.log', 'salmon.handlers.queue'])
+        settings = imp.new_module('settings')
+        settings.receiver = server.SMTPReceiver(host, port)
+        settings.relay = None
+        logging.info("Logging mode enabled, will not send email to anyone, just log.")
 
     return settings
 
