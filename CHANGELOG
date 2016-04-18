@@ -7,3 +7,4 @@
 - MailRequest objects are now wrappers around Python's `email.message.Message` class. (#40)
   * Deserializing incoming messages is now done in a slightly more lazy fashion
   * Also allows access to the "pristine" `Message` object without having to back-convert
+- No longer supports Python 2.6 (#42)
