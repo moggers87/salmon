@@ -12,6 +12,7 @@ def clear_settings():
     utils.settings = None
 
 
+@with_setup(teardown=clear_settings)
 def test_make_fake_settings():
     settings = utils.make_fake_settings('localhost', 8800)
     assert settings
