@@ -5,30 +5,38 @@ is kind of a dumping ground, so if you find something that
 can be improved feel free to work up a patch.
 """
 
-from salmon import server, routing
-import sys, os
+import imp
+import importlib
 import logging
-if sys.platform != 'win32': # Can daemonize
-    import daemon
+import os
+import sys
 
 try:
-    from daemon import pidlockfile 
+    import daemon  # daemon unavailable on Windows
+    from daemon import pidlockfile
 except ImportError:
-    from lockfile import pidlockfile 
+    from lockfile import pidlockfile
 
-import imp
-import signal
+from salmon import server, routing
 
 
-def import_settings(boot_also, from_dir=None, boot_module="config.boot"):
-    """Used to import the settings in a Salmon project."""
-    if from_dir:
-        sys.path.append(from_dir)
+settings = None
 
-    settings = __import__("config.settings", globals(), locals()).settings
+
+def import_settings(boot_also, boot_module="config.boot"):
+    """Returns the current settings module, there is no harm in calling it
+    multiple times
+
+    The location of the settings module can be control via
+    ``SALMON_SETTINGS_MODULE``"""
+    global settings
+
+    if settings is None:
+        settings_module = os.getenv("SALMON_SETTINGS_MODULE", "config.settings")
+        settings = importlib.import_module(settings_module)
 
     if boot_also:
-        __import__(boot_module, globals(), locals())
+        importlib.import_module(boot_module)
 
     return settings
 
@@ -42,20 +50,21 @@ def daemonize(pid, chdir, chroot, umask, files_preserve=None, do_open=True):
     """
     context = daemon.DaemonContext()
     context.pidfile = pidlockfile.PIDLockFile(pid)
-    context.stdout = open(os.path.join(chdir, "logs/salmon.out"),"a+")                                                                                                       
-    context.stderr = open(os.path.join(chdir, "logs/salmon.err"),"a+")                                                                                                       
+    context.stdout = open(os.path.join(chdir, "logs/salmon.out"), "a+")
+    context.stderr = open(os.path.join(chdir, "logs/salmon.err"), "a+")
     context.files_preserve = files_preserve or []
     context.working_directory = os.path.expanduser(chdir)
 
-    if chroot: 
+    if chroot:
         context.chroot_directory = os.path.expanduser(chroot)
-    if umask != False:
+    if umask is not False:
         context.umask = umask
 
     if do_open:
         context.open()
 
     return context
+
 
 def drop_priv(uid, gid):
     """
@@ -68,21 +77,24 @@ def drop_priv(uid, gid):
     logging.debug("Now running as uid=%d, gid=%d", os.getgid(), os.getuid())
 
 
-
 def make_fake_settings(host, port):
     """
     When running as a logging server we need a fake settings module to work with
     since the logging server can be run in any directory, so there may not be
-    a config/settings.py file to import.
+    a settings module to import.
     """
-    logging.basicConfig(filename="logs/logger.log", level=logging.DEBUG)
-    routing.Router.load(['salmon.handlers.log', 'salmon.handlers.queue'])
-    settings = imp.new_module('settings')
-    settings.receiver = server.SMTPReceiver(host, port)
-    settings.relay = None
-    logging.info("Logging mode enabled, will not send email to anyone, just log.")
+    global settings
+
+    if settings is None:
+        logging.basicConfig(filename="logs/logger.log", level=logging.DEBUG)
+        routing.Router.load(['salmon.handlers.log', 'salmon.handlers.queue'])
+        settings = imp.new_module('settings')
+        settings.receiver = server.SMTPReceiver(host, port)
+        settings.relay = None
+        logging.info("Logging mode enabled, will not send email to anyone, just log.")
 
     return settings
+
 
 def check_for_pid(pid, force):
     """Checks if a pid file is there, and if it is sys.exit.  If force given
@@ -91,7 +103,6 @@ def check_for_pid(pid, force):
         if not force:
             print "PID file %s exists, so assuming Salmon is running.  Give -FORCE to force it to start." % pid
             sys.exit(1)
-            return # for unit tests mocking sys.exit
         else:
             os.unlink(pid)
 
@@ -111,7 +122,7 @@ def start_server(pid, force, chroot, chdir, uid, gid, umask, settings_loader, de
     settings = settings_loader()
 
     if uid and gid:
-        drop_priv(uid, gid) 
+        drop_priv(uid, gid)
     elif uid or gid:
         logging.warning("You probably meant to give a uid and gid, but you gave: uid=%r, gid=%r.  Will not change to any user.", uid, gid)
 

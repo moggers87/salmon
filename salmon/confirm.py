@@ -1,5 +1,5 @@
 """
-Confirmation handling API that helps you get the whole confirm/pending/verify 
+Confirmation handling API that helps you get the whole confirm/pending/verify
 process correct.  It doesn't implement any handlers, but what it does do is
 provide the logic for doing the following:
 
@@ -82,16 +82,16 @@ class ConfirmationStorage(object):
 
 class ConfirmationEngine(object):
     """
-    The confirmation engine is what does the work of sending a confirmation, 
+    The confirmation engine is what does the work of sending a confirmation,
     and verifying that it was confirmed properly.  In order to use it you
-    have to construct the ConfirmationEngine (usually in config/settings.py) and
+    have to construct the ConfirmationEngine (usually in settings module) and
     you write your confirmation message templates for sending.
 
     The primary methods you use are ConfirmationEngine.send and ConfirmationEngine.verify.
     """
     def __init__(self, pending_queue, storage):
         """
-        The pending_queue should be a string with the path to the salmon.queue.Queue 
+        The pending_queue should be a string with the path to the salmon.queue.Queue
         that will store pending messages.  These messages are the originals the user
         sent when they tried to confirm.
 
@@ -183,7 +183,7 @@ class ConfirmationEngine(object):
         vars that template needs.
 
         The result of calling this is that the template message gets sent through
-        the relay, the original message is stored in the pending queue, and 
+        the relay, the original message is stored in the pending queue, and
         data is put into the storage for later calls to verify.
         """
         confirm_address = self.register(target, message)

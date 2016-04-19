@@ -8,3 +8,4 @@
   * Deserializing incoming messages is now done in a slightly more lazy fashion
   * Also allows access to the "pristine" `Message` object without having to back-convert
 - No longer supports Python 2.6 (#42)
+- Settings no longer limited to per app "config" module (#38)

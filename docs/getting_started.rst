@@ -80,13 +80,18 @@ Once you're done, stop the server::
 Configuration
 -------------
 
-All configuration happens in ``config/``
+By deafult, all configuration happens in ``config/``
 
 ``boot.py``
 ^^^^^^^^^^^
 
-This file is used by Salmon during start-up to configure the daemon with various
-things, such as starting the ``SMTPReceiver``.
+This file is used by Salmon during start-up to configure the daemon with
+various things, such as starting the ``SMTPReceiver``. It's a bit like the
+``wsgi.py`` file that Python web apps have. If you want to use a different boot
+module, you can specify it with the ``--boot`` argument. E.g. to use
+``myapp/othermodule.py``, do::
+
+    salmon start --boot myapp.othermodule
 
 ``testing.py``
 ^^^^^^^^^^^^^^
@@ -104,5 +109,9 @@ details.
 ^^^^^^^^^^^^^^^
 
 This file contains generic settings used by the rest of your application, e.g.
-which port the receiver should listen to.
+which port the receiver should listen to. The default settings module is ``config.settings``
 
+You can specify a different settings module via the environment variable
+``SALMON_SETTINGS_MODULE``::
+
+    SALMON_SETTINGS_MODULE="myapp.othersettings" salmon start

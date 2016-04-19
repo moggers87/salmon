@@ -160,7 +160,7 @@ def start_command(parser):
     Runs a salmon server out of the current directory
     """
     def command(pid, force, chdir, boot, chroot=False, uid=False, gid=False, umask=False, debug=False, daemon=True):
-        loader = lambda: utils.import_settings(True, from_dir=os.getcwd(), boot_module=boot)
+        loader = lambda: utils.import_settings(True, boot_module=boot)
         utils.start_server(pid, force, chroot, chdir, uid, gid, umask, loader, debug, daemon)
 
     parser.set_defaults(func=command)

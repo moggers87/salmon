@@ -1,7 +1,7 @@
 from mock import Mock, patch
 from nose.tools import with_setup
 
-from salmon import mail
+from salmon import mail, utils
 from salmon.routing import Router
 
 
@@ -20,6 +20,7 @@ def cleanup_router():
     Router.clear_routes()
     Router.clear_states()
     Router.HANDLERS.clear()
+    utils.settings = None
 
 
 @with_setup(teardown=cleanup_router)
@@ -38,6 +39,8 @@ def test_queue_handler():
 @with_setup(teardown=cleanup_router)
 def test_forward(smtp_mock):
     smtp_mock.return_value = Mock()
+
+    utils.import_settings(False)
 
     import salmon.handlers.forward  # noqa
     Router.deliver(create_message())
