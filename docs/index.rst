@@ -22,10 +22,11 @@ Salmon has been released uner the GNU GPLv3, as published by the FSF.
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
-   getting_started
-   Salmon API guide <salmon>
+    getting_started
+    routing
+    Salmon API guide <salmon>
 
 
 Indices and tables
