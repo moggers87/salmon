@@ -193,6 +193,11 @@ class MailBase(object):
         return normalize_header(key) in self.mime_part
 
     def __setitem__(self, key, value):
+        try:
+            del self.mime_part[normalize_header(key)]
+        except KeyError:
+            pass
+
         self.mime_part[normalize_header(key)] = value
 
     def __delitem__(self, key):
@@ -204,6 +209,10 @@ class MailBase(object):
     def keys(self):
         """Returns header keys."""
         return self.mime_part.keys()
+
+    def append_header(self, key, value):
+        """Like __set_item__, but won't replace header values"""
+        self.mime_part[normalize_header(key)] = value
 
     @property
     def body(self):
