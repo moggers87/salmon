@@ -26,6 +26,7 @@ Contents:
 
     getting_started
     routing
+    mail_objects
     Salmon API guide <salmon>
 
 
