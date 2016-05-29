@@ -323,3 +323,18 @@ def test_odd_roundtrip_bug():
     for decoded in decoded_addrs:
         encoded = encoding.header_to_mime_encoding(decoded)
         assert '<' in encoded and '"' in encoded, "Address wasn't encoded correctly:\n%s" % encoded
+
+def test_multiple_headers():
+    msg = encoding.MailBase()
+    msg["To"] = "somedude@localhost"
+    msg["From"] = "nobody@localhost"
+    assert("From" in msg)
+    assert_equal(msg["From"], "nobody@localhost")
+    msg["From"] = "somebody@localhost"
+    assert_equal(msg["From"], "somebody@localhost")
+    assert_equal(msg.keys(), ["To", "From"])
+
+    # appending headers
+    msg.append_header("To", "nobody@example.com")
+    assert_equal(msg["To"], "somedude@localhost")
+    assert_equal(msg.keys(), ["To", "From", "To"])

@@ -30,6 +30,14 @@ def test_mail_request():
     msg["From"] = "nobody@localhost"
     assert("From" in msg)
     assert_equal(msg["From"], "nobody@localhost")
+    msg["From"] = "somebody@localhost"
+    assert_equal(msg["From"], "somebody@localhost")
+    assert_equal(msg.keys(), ["To", "From"])
+
+    # appending headers
+    msg.Email.append_header("To", "nobody@example.com")
+    assert_equal(msg["To"], "somedude@localhost")
+    assert_equal(msg.keys(), ["To", "From", "To"])
 
     # validate that upper and lower case work for headers
     assert("FroM" in msg)
@@ -125,11 +133,8 @@ def test_mail_request_attachments():
 
     readme = open("./README.md").read()
 
-    # BUG: Python's MIME text attachment decoding drops trailing newline chars
-
     assert msg_parts[0].body == sample_parts[0].body
-    # python drops chars at the end, so can't compare equally
-    assert readme.startswith(msg_parts[1].body)
+    assert readme == msg_parts[1].body
     assert msg.body() == sample_parts[0].body
 
     # test that we get at least one message for messages without attachments
