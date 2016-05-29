@@ -275,7 +275,7 @@ def queue_command(parser):
     command_group.add_argument("--clear", action="store_true", default=argparse.SUPPRESS, help="clear queue")
     command_group.add_argument("--keys", action="store_true", default=argparse.SUPPRESS, help="print queue keys")
 
-    parser.add_argument("queue", default="./run/queue", help="path of queue")
+    parser.add_argument("name", nargs="?", default="./run/queue", help="path of queue", metavar="queue")
 
 
 def routes_command(parser):
