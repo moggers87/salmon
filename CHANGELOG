@@ -2,6 +2,7 @@
 
 - Removed lots of cruft (#19)
 - Moved from modargs to argparse - command line interface has changed (#28)
+  * Improved tests for command line (#47)
 - Moved from PyDNS to dnspython
 - Tests can now be run without having to start a log-server first (#6)
 - MailRequest objects are now wrappers around Python's `email.message.Message` class. (#40)

@@ -54,18 +54,8 @@ operation.
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Python mail server", epilog=copyright_notice, formatter_class=argparse.RawDescriptionHelpFormatter)
-
-    parser.add_argument("-v", "--version", action="version", version=version_info)
-    subparsers = parser.add_subparsers(metavar="<command>")
-
-    for cmd, help_txt in COMMANDS:
-        function = globals()["{0}_command".format(cmd)]
-        cmd_parser = subparsers.add_parser(cmd, description=function.func_doc, help=help_txt, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-        function(cmd_parser)
-
-    args = parser.parse_args()
+    """Salmon script entry point"""
+    args = _parser.parse_args()
 
     # get function reference from args and then remove it
     cmd = args.func
@@ -110,7 +100,7 @@ def send_command(parser):
     Sends an email to someone as a test message.
     See the sendmail command for a sendmail replacement.
     """
-    def command(port, host, username=None, password=None, ssl=None, starttls=None, sender=None, to=None, subject=None, body=None, attach=False):
+    def command(port, host, username=None, password=None, ssl=None, starttls=None, sender=None, to=None, subject=None, body=None, attach=None):
         message = mail.MailResponse(From=sender, To=to, Subject=subject, Body=body)
         if attach:
             message.attach(attach)
@@ -128,7 +118,7 @@ def send_command(parser):
     parser.add_argument("--to", metavar="EMAIL", default=argparse.SUPPRESS)
     parser.add_argument("--subject", default=argparse.SUPPRESS)
     parser.add_argument("--body", default=argparse.SUPPRESS)
-    parser.add_argument("--attach", action="store_true", default=argparse.SUPPRESS)
+    parser.add_argument("--attach", default=argparse.SUPPRESS)
 
     tls_group = parser.add_mutually_exclusive_group()
     tls_group.add_argument("--ssl", action="store_true", default=argparse.SUPPRESS)
@@ -275,7 +265,7 @@ def queue_command(parser):
     command_group.add_argument("--clear", action="store_true", default=argparse.SUPPRESS, help="clear queue")
     command_group.add_argument("--keys", action="store_true", default=argparse.SUPPRESS, help="print queue keys")
 
-    parser.add_argument("queue", default="./run/queue", help="path of queue")
+    parser.add_argument("name", nargs="?", default="./run/queue", help="path of queue", metavar="queue")
 
 
 def routes_command(parser):
@@ -402,3 +392,17 @@ def blast_command(parser):
     parser.add_argument("--port", default=8823, type=int, help="port to listen on")
     parser.add_argument("--host", default="127.0.0.1", help="address to listen on")
     parser.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help="debug mode")
+
+
+# Bring it all together
+
+_parser = argparse.ArgumentParser(description="Python mail server", epilog=copyright_notice, formatter_class=argparse.RawDescriptionHelpFormatter)
+
+_parser.add_argument("-v", "--version", action="version", version=version_info)
+_subparsers = _parser.add_subparsers(metavar="<command>")
+
+for cmd, help_txt in COMMANDS:
+    function = globals()["{0}_command".format(cmd)]
+    cmd_parser = _subparsers.add_parser(cmd, description=function.func_doc,
+            help=help_txt, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    function(cmd_parser)
