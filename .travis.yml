@@ -11,9 +11,13 @@ matrix:
       install: pip install tox
       script: tox -e $TOX_ENV
 
-install: python setup.py develop
+install:
+    - python setup.py develop
+    - travis_retry pip install -q codecov
 
 script: python setup.py nosetests
+
+after_success: codecov
 
 notifications:
     irc:
