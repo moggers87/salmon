@@ -1,5 +1,5 @@
 """
-The majority of the server related things Salmon needs to run, like receivers, 
+The majority of the server related things Salmon needs to run, like receivers,
 relays, and queue processors.
 """
 
@@ -54,7 +54,7 @@ class SMTPError(Exception):
 
     def error_for_code(self, code):
         primary, secondary, tertiary = str(code)
-        
+
         primary = PRIMARY_STATUS_CODES.get(primary, "")
         secondary = SECONDARY_STATUS_CODES.get(secondary, "")
         combined = COMBINED_STATUS_CODES.get(primary + secondary, "")
@@ -64,7 +64,7 @@ class SMTPError(Exception):
 
 class Relay(object):
     """
-    Used to talk to your "relay server" or smart host, this is probably the most 
+    Used to talk to your "relay server" or smart host, this is probably the most
     important class in the handlers next to the salmon.routing.Router.
     It supports a few simple operations for sending mail, replying, and can
     log the protocol it uses to stderr if you set debug=1 on __init__.
@@ -157,6 +157,32 @@ class Relay(object):
         self.deliver(msg)
 
 
+class SMTPChannel(smtpd.SMTPChannel):
+    """Replaces the standard SMTPChannel with one that rejects more than one recipient"""
+
+    def smtp_RCPT(self, arg):
+        if self.__rcpttos:
+            # We can't properly handle multiple RCPT TOs in SMTPReceiver
+            #
+            # SMTP can only return one reply at the end of DATA, making it an
+            # all or nothing reply. As we can't roll back a previously
+            # successful delivery and the delivery happens without there being
+            # a queue, we can end up in a state where one recipient has
+            # received their mail and another has not (due to a 550 response
+            # raised by the handler). At that point there's no reasonable
+            # response to give the client - we haven't delivered everything,
+            # but we haven't delivered *nothing* either.
+            #
+            # So we bug out early and hope for the best. At worst mail will
+            # bounce, but nothing will be lost.
+            #
+            # Of course, if smtpd.SMTPServer or SMTPReceiver implemented a
+            # queue and bounces like you're meant too...
+            logging.warning("Client attempted to deliver mail with multiple RCPT TOs. This is not supported.")
+            self.push("451 Will not accept multiple recipients on one transaction")
+        else:
+            super(SMTPChannel, self).smtp_RCPT(arg)
+
 
 class SMTPReceiver(smtpd.SMTPServer):
     """Receives emails and hands it to the Router for further processing."""
@@ -167,7 +193,7 @@ class SMTPReceiver(smtpd.SMTPServer):
         in deployment you'd give 0.0.0.0 for "all internet devices" but consult
         your operating system.
 
-        This uses smtpd.SMTPServer in the __init__, which means that you have to 
+        This uses smtpd.SMTPServer in the __init__, which means that you have to
         call this far after you use python-daemonize or else daemonize will
         close the socket.
         """
@@ -184,6 +210,12 @@ class SMTPReceiver(smtpd.SMTPServer):
         self.poller = threading.Thread(target=asyncore.loop,
                 kwargs={'timeout':0.1, 'use_poll':True})
         self.poller.start()
+
+    def handle_accept(self):
+        pair = self.accept()
+        if pair is not None:
+            conn, addr = pair
+            channel = SMTPChannel(self, conn, addr)
 
     def process_message(self, Peer, From, To, Data):
         """
@@ -217,7 +249,7 @@ class LMTPReceiver(lmtpd.LMTPServer):
         localhost. If socket is not None, it will be assumed to be a path name
         and a UNIX socket will be set up instead.
 
-        This uses lmtpd.LMTPServer in the __init__, which means that you have to 
+        This uses lmtpd.LMTPServer in the __init__, which means that you have to
         call this far after you use python-daemonize or else daemonize will
         close the socket.
         """
@@ -303,7 +335,7 @@ class QueueReceiver(object):
 
 	        inq.remove(key)
 
-            if one_shot: 
+            if one_shot:
                 return
             else:
                 time.sleep(self.sleep)
