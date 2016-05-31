@@ -179,9 +179,9 @@ class SMTPChannel(smtpd.SMTPChannel):
             # Of course, if smtpd.SMTPServer or SMTPReceiver implemented a
             # queue and bounces like you're meant too...
             logging.warning("Client attempted to deliver mail with multiple RCPT TOs. This is not supported.")
-            self.push("451 Will not accept multiple recipients on one transaction")
+            self.push("451 Will not accept multiple recipients in one transaction")
         else:
-            super(SMTPChannel, self).smtp_RCPT(arg)
+            smtpd.SMTPChannel.smtp_RCPT(self, arg)
 
 
 class SMTPReceiver(smtpd.SMTPServer):
