@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/moggers87/salmon.svg?branch=master)](https://travis-ci.org/moggers87/salmon)
+[![Coverage](https://codecov.io/github/moggers87/salmon/coverage.svg?branch=master)](https://codecov.io/github/moggers87/salmon)
+
 Salmon - A Python SMTPd
 =======================
 
