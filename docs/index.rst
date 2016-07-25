@@ -29,6 +29,13 @@ Contents:
     mail_objects
     Salmon API guide <salmon>
 
+About Salmon
+============
+
+.. toctree::
+    :maxdepth: 2
+
+    changelog
 
 Indices and tables
 ==================
