@@ -5,11 +5,11 @@
 
 .. A lot of this material should be in README.md too
 
-Salmon - A Python SMTPd
-=======================
+Salmon - A Python Mail Server
+=============================
 
-Salmon is a pure Python SMTP server designed to create robust and complex mail
-applications in the style of modern web frameworks. Unlike traditional SMTP
+Salmon is a pure Python mail server designed to create robust and complex mail
+applications in the style of modern web frameworks. Unlike traditional mail
 servers such as Postfix and Sendmail, Salmon has all the features of a web
 application stack (templates, routing, handlers, state machine, Python) without
 the need to configure alias files, arcane command syntax, or juggle a swarm of

@@ -1,8 +1,8 @@
-Salmon - A Python SMTPd
-=======================
+Salmon - A Python Mail Server
+=============================
 
-Salmon is a pure Python SMTP server designed to create robust and complex mail
-applications in the style of modern web frameworks. Unlike traditional SMTP
+Salmon is a pure Python mail server designed to create robust and complex mail
+applications in the style of modern web frameworks. Unlike traditional mail
 servers such as Postfix and Sendmail, Salmon has all the features of a web
 application stack (templates, routing, handlers, state machine, Python) without
 the need to configure alias files, arcane command syntax, or juggle a swarm of
@@ -15,7 +15,7 @@ Features
 ========
 
 Salmon supports running in many contexts for processing mail using the best
-technology currently available.  Since Salmon is aiming to be a modern SMTP
+technology currently available.  Since Salmon is aiming to be a modern mail
 server and Mail processing framework, it has some features you don't find in any
 other Mail server.
 
@@ -39,7 +39,7 @@ spell checking with PyEnchant.
 libraries, or any other systems you need to talk to.
 * Yet, you don't *have* to configure everything to get stated.  A simple
 salmon gen command lets you get an application up and running quick.
-* Finally, many helpful commands for general SMTP server debugging and cleaning.
+* Finally, many helpful commands for general mail server debugging and cleaning.
 
 
 Installing
