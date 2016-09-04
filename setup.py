@@ -6,7 +6,6 @@ except ImportError:
     from distutils.core import setup
 
 install_requires = [
-    'argparse',
     'chardet',
     'lmtpd>=4',
     'dnspython',
