@@ -1,5 +1,5 @@
 """
-The majority of the server related things Salmon needs to run, like receivers, 
+The majority of the server related things Salmon needs to run, like receivers,
 relays, and queue processors.
 """
 
@@ -15,13 +15,12 @@ import traceback
 from dns import resolver
 import lmtpd
 
-from salmon import queue, mail, routing, version
+from salmon import queue, mail, routing, __version__
 from salmon.bounce import PRIMARY_STATUS_CODES, SECONDARY_STATUS_CODES, COMBINED_STATUS_CODES
 
 
-ver = version.VERSION['version'] # yo dawg
-smtpd.__version__ = "Salmon Mail router SMTPD, version %s" % ver
-lmtpd.__version__ = "Salmon Mail router LMTPD, version %s" % ver
+smtpd.__version__ = "Salmon Mail router SMTPD, version %s" % __version__
+lmtpd.__version__ = "Salmon Mail router LMTPD, version %s" % __version__
 
 
 def undeliverable_message(raw_message, failure_type):
@@ -54,7 +53,7 @@ class SMTPError(Exception):
 
     def error_for_code(self, code):
         primary, secondary, tertiary = str(code)
-        
+
         primary = PRIMARY_STATUS_CODES.get(primary, "")
         secondary = SECONDARY_STATUS_CODES.get(secondary, "")
         combined = COMBINED_STATUS_CODES.get(primary + secondary, "")
@@ -64,7 +63,7 @@ class SMTPError(Exception):
 
 class Relay(object):
     """
-    Used to talk to your "relay server" or smart host, this is probably the most 
+    Used to talk to your "relay server" or smart host, this is probably the most
     important class in the handlers next to the salmon.routing.Router.
     It supports a few simple operations for sending mail, replying, and can
     log the protocol it uses to stderr if you set debug=1 on __init__.
@@ -167,7 +166,7 @@ class SMTPReceiver(smtpd.SMTPServer):
         in deployment you'd give 0.0.0.0 for "all internet devices" but consult
         your operating system.
 
-        This uses smtpd.SMTPServer in the __init__, which means that you have to 
+        This uses smtpd.SMTPServer in the __init__, which means that you have to
         call this far after you use python-daemonize or else daemonize will
         close the socket.
         """
@@ -217,7 +216,7 @@ class LMTPReceiver(lmtpd.LMTPServer):
         localhost. If socket is not None, it will be assumed to be a path name
         and a UNIX socket will be set up instead.
 
-        This uses lmtpd.LMTPServer in the __init__, which means that you have to 
+        This uses lmtpd.LMTPServer in the __init__, which means that you have to
         call this far after you use python-daemonize or else daemonize will
         close the socket.
         """
@@ -303,7 +302,7 @@ class QueueReceiver(object):
 
 	        inq.remove(key)
 
-            if one_shot: 
+            if one_shot:
                 return
             else:
                 time.sleep(self.sleep)

@@ -1,6 +1,3 @@
-from salmon import server, utils, mail, routing, queue, encoding, version
-import salmon
-
 import argparse
 import email
 import glob
@@ -9,6 +6,9 @@ import os
 import shutil
 import signal
 import sys
+
+from salmon import server, utils, mail, routing, queue, encoding
+import salmon
 
 
 COMMANDS = (
@@ -29,9 +29,8 @@ DEFAULT_PID_FILE = "./run/stmp.pid"
 
 version_info = """
 Salmon-Version:  %s
-Repository-Revision:  %s
 Version-File:  %s
-""" % (version.VERSION['version'], version.VERSION['rev'], version.__file__)
+""" % (salmon.__version__, salmon.__file__)
 
 copyright_notice = """
 Salmon is Copyright (C) Matt Molyneaux 2014-2015.  Licensed GPLv3.
