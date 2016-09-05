@@ -23,7 +23,6 @@ Submodules
    salmon.server
    salmon.testing
    salmon.utils
-   salmon.version
    salmon.view
 
 Module contents

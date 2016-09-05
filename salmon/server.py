@@ -15,13 +15,12 @@ import traceback
 from dns import resolver
 import lmtpd
 
-from salmon import queue, mail, routing, version
+from salmon import queue, mail, routing, __version__
 from salmon.bounce import PRIMARY_STATUS_CODES, SECONDARY_STATUS_CODES, COMBINED_STATUS_CODES
 
 
-ver = version.VERSION['version'] # yo dawg
-smtpd.__version__ = "Salmon Mail router SMTPD, version %s" % ver
-lmtpd.__version__ = "Salmon Mail router LMTPD, version %s" % ver
+smtpd.__version__ = "Salmon Mail router SMTPD, version %s" % __version__
+lmtpd.__version__ = "Salmon Mail router LMTPD, version %s" % __version__
 
 
 def undeliverable_message(raw_message, failure_type):
