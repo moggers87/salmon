@@ -99,12 +99,12 @@ def send_command(parser):
     Sends an email to someone as a test message.
     See the sendmail command for a sendmail replacement.
     """
-    def command(port, host, username=None, password=None, ssl=None, starttls=None, sender=None, to=None, subject=None, body=None, attach=None):
+    def command(port, host, username=None, password=None, ssl=None, starttls=None, lmtp=None, sender=None, to=None, subject=None, body=None, attach=None):
         message = mail.MailResponse(From=sender, To=to, Subject=subject, Body=body)
         if attach:
             message.attach(attach)
 
-        relay = server.Relay(host, port=port, username=username, password=password, ssl=ssl, starttls=starttls, debug=False)
+        relay = server.Relay(host, port=port, username=username, password=password, ssl=ssl, starttls=starttls, lmtp=lmtp, debug=False)
         relay.deliver(message)
 
     parser.set_defaults(func=command)
@@ -118,6 +118,7 @@ def send_command(parser):
     parser.add_argument("--subject", default=argparse.SUPPRESS)
     parser.add_argument("--body", default=argparse.SUPPRESS)
     parser.add_argument("--attach", default=argparse.SUPPRESS)
+    parser.add_argument("--lmtp", action="store_true", default=argparse.SUPPRESS)
 
     tls_group = parser.add_mutually_exclusive_group()
     tls_group.add_argument("--ssl", action="store_true", default=argparse.SUPPRESS)
@@ -130,8 +131,8 @@ def sendmail_command(parser):
     like mutt as an MTA.  It reads the email to send on the stdin
     and then delivers it based on the port and host settings.
     """
-    def command(port, host, recipients, debug=False):
-        relay = server.Relay(host, port=port, debug=debug)
+    def command(port, host, recipients, debug=False, lmtp=False):
+        relay = server.Relay(host, port=port, debug=debug, lmtp=lmtp)
         data = sys.stdin.read()
         msg = mail.MailRequest(None, recipients, None, data)
         relay.deliver(msg)
@@ -140,6 +141,7 @@ def sendmail_command(parser):
 
     parser.add_argument("--port", default=8825, type=int, help="Port to listen on")
     parser.add_argument("--host", default="127.0.0.1", help="Address to listen on")
+    parser.add_argument("--lmtp", action="store_true", default=argparse.SUPPRESS, help="Use LMTP rather than SMTP")
     parser.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help="Debug mode")
     parser.add_argument("recipients", action="append")
 
@@ -372,13 +374,13 @@ def blast_command(parser):
     and blast it at your server.  It does nothing to the message, so
     it will be real messages hitting your server, not cleansed ones.
     """
-    def command(input, host, port, debug=False):
+    def command(input, host, port, lmtp=None, debug=False):
         try:
             inbox = mailbox.mbox(input)
         except IOError:
             inbox = mailbox.Maildir(input, factory=None)
 
-        relay = server.Relay(host, port=port, debug=debug)
+        relay = server.Relay(host, port=port, lmtp=lmtp, debug=debug)
 
         for key in inbox.keys():
             msgfile = inbox.get_file(key)
@@ -390,6 +392,7 @@ def blast_command(parser):
     parser.add_argument("input", help="input maildir or mbox")
     parser.add_argument("--port", default=8823, type=int, help="port to listen on")
     parser.add_argument("--host", default="127.0.0.1", help="address to listen on")
+    parser.add_argument("--lmtp", action="store_true", default=argparse.SUPPRESS)
     parser.add_argument("--debug", action="store_true", default=argparse.SUPPRESS, help="debug mode")
 
 

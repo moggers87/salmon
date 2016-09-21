@@ -69,13 +69,13 @@ class Relay(object):
     log the protocol it uses to stderr if you set debug=1 on __init__.
     """
     def __init__(self, host='127.0.0.1', port=25, username=None, password=None,
-                 ssl=False, starttls=False, debug=0):
+                 ssl=False, starttls=False, debug=0, lmtp=False):
         """
         The hostname and port we're connecting to, and the debug level (default to 0).
         Optional username and password for smtp authentication.
         If ssl is True smtplib.SMTP_SSL will be used.
         If starttls is True (and ssl False), smtp connection will be put in TLS mode.
-        It does the hard work of delivering messages to the relay host.
+        If lmtp is true, then smtplib.LMTP will be used. Mutually exclusive with ssl.
         """
         self.hostname = host
         self.port = port
@@ -84,10 +84,16 @@ class Relay(object):
         self.password = password
         self.ssl = ssl
         self.starttls = starttls
+        self.lmtp = lmtp
+
+        assert not (ssl and lmtp), "LMTP over SSL not supported. Use STARTTLS instead."
+        assert not (ssl and starttls), "SSL and STARTTLS make no sense together"
 
     def configure_relay(self, hostname):
         if self.ssl:
             relay_host = smtplib.SMTP_SSL(hostname, self.port)
+        elif self.lmtp:
+            relay_host = smtplib.LMTP(hostname, self.port)
         else:
             relay_host = smtplib.SMTP(hostname, self.port)
 
@@ -98,7 +104,7 @@ class Relay(object):
         if self.username and self.password:
             relay_host.login(self.username, self.password)
 
-        assert relay_host, 'Code error, tell Zed.'
+        assert relay_host, 'Code error, file a bug.'
         return relay_host
 
     def deliver(self, message, To=None, From=None):
@@ -107,7 +113,7 @@ class Relay(object):
         configured relay server.
 
         You can pass in an alternate To and From, which will be used in the
-        SMTP send lines rather than what's in the message.
+        SMTP/LMTP send lines rather than what's in the message.
         """
         # Check in multiple places for To and From.
         # Ordered in preference.
