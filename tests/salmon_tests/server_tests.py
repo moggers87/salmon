@@ -37,13 +37,22 @@ def test_LMTPreceiver():
     receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
 
 
-def test_relay_deliver():
+@patch("salmon.server.smtplib.SMTP")
+def test_relay_deliver(client_mock):
     relay = server.Relay("localhost", port=8899)
 
     relay.deliver(test_mail_response_plain_text())
     relay.deliver(test_mail_response_html())
     relay.deliver(test_mail_response_html_and_plain_text())
     relay.deliver(test_mail_response_attachments())
+    assert_equal(client_mock.return_value.sendmail.call_count, 4)
+
+
+@patch("salmon.server.smtplib.LMTP")
+def test_relay_lmtp(client_mock):
+    relay = server.Relay("localhost", port=8899, lmtp=True)
+    relay.deliver(test_mail_response_plain_text())
+    assert_equal(client_mock.return_value.sendmail.call_count, 1)
 
 
 @patch('salmon.server.resolver.query')
