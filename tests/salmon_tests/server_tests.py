@@ -1,6 +1,6 @@
 # Copyright (C) 2008 Zed A. Shaw.  Licensed under the terms of the GPLv3.
 from mock import Mock, patch
-from nose.tools import assert_equal, with_setup
+from nose.tools import assert_equal, assert_raises, with_setup
 
 from salmon import mail, server, queue, routing
 
@@ -37,13 +37,57 @@ def test_LMTPreceiver():
     receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
 
 
+def test_Relay_asserts_ssl_options():
+    """Relay raises an AssertionError if the ssl option is used in combination with starttls or lmtp"""
+    with assert_raises(AssertionError):
+        server.Relay("localhost", ssl=True, starttls=True)
+
+    with assert_raises(AssertionError):
+        server.Relay("localhost", ssl=True, lmtp=True)
+
+    with assert_raises(AssertionError):
+        server.Relay("localhost", ssl=True, starttls=True, lmtp=True)
+
+    # no error
+    server.Relay("localhost", starttls=True, lmtp=True)
+
+
 def test_relay_deliver():
+    # this test actually delivers to a test server
     relay = server.Relay("localhost", port=8899)
 
     relay.deliver(test_mail_response_plain_text())
     relay.deliver(test_mail_response_html())
     relay.deliver(test_mail_response_html_and_plain_text())
     relay.deliver(test_mail_response_attachments())
+
+
+@patch("salmon.server.smtplib.SMTP")
+def test_relay_smtp(client_mock):
+    relay = server.Relay("localhost", port=8899)
+    relay.deliver(test_mail_response_plain_text())
+    assert_equal(client_mock.return_value.sendmail.call_count, 1)
+    assert_equal(client_mock.return_value.starttls.call_count, 0)
+
+    client_mock.reset_mock()
+    relay = server.Relay("localhost", port=8899, starttls=True)
+    relay.deliver(test_mail_response_plain_text())
+    assert_equal(client_mock.return_value.sendmail.call_count, 1)
+    assert_equal(client_mock.return_value.starttls.call_count, 1)
+
+
+@patch("salmon.server.smtplib.LMTP")
+def test_relay_lmtp(client_mock):
+    relay = server.Relay("localhost", port=8899, lmtp=True)
+    relay.deliver(test_mail_response_plain_text())
+    assert_equal(client_mock.return_value.sendmail.call_count, 1)
+
+
+@patch("salmon.server.smtplib.SMTP_SSL")
+def test_relay_smtp_ssl(client_mock):
+    relay = server.Relay("localhost", port=8899, ssl=True)
+    relay.deliver(test_mail_response_plain_text())
+    assert_equal(client_mock.return_value.sendmail.call_count, 1)
 
 
 @patch('salmon.server.resolver.query')
