@@ -12,6 +12,7 @@
   * Header setting now replaces by default (#44)
 - End support of Python 2.6 (#42)
 - Settings no longer limited to per app "config" module (#38)
+- Allow ``salmon.server.Relay`` to talk to LMTP servers (#41)
 
 Earlier Releases
 ================
