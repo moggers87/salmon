@@ -25,16 +25,86 @@ def test_router():
     routing.Router.deliver(msg)
 
 
-def test_SMTPreceiver():
+def test_SMTPChannel_rcpt():
+    channel = server.SMTPChannel(Mock(), Mock(), Mock())
+    channel.push = Mock()
+    channel.smtp_MAIL("FROM: you@example.com")
+
+    channel.push.reset_mock()
+    channel.smtp_RCPT("TO: me@example.com")
+    assert_equal(channel.push.call_args[0], ("250 Ok",))
+
+    channel.push.reset_mock()
+    channel.smtp_RCPT("TO: them@example.com")
+    assert_equal(channel.push.call_args[0], ("451 Will not accept multiple recipients in one transaction",))
+
+
+def test_SMTPReceiver_process_message():
     receiver = server.SMTPReceiver(host="localhost", port=8895)
     msg = test_mail_request()
-    receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
+
+    with patch("salmon.server.routing.Router") as router_mock, \
+            patch("salmon.server.undeliverable_message"):
+        response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
+        assert response is None, response
+
+    with patch("salmon.server.routing.Router") as router_mock, \
+            patch("salmon.server.undeliverable_message"):
+        router_mock.deliver.side_effect = Exception()
+        response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
+        assert response is None, response
+
+    with patch("salmon.server.routing.Router") as router_mock, \
+            patch("salmon.server.undeliverable_message"):
+        router_mock.deliver.side_effect = server.SMTPError(450, "Not found")
+        response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
+        assert_equal(response, "450 Not found")
 
 
-def test_LMTPreceiver():
+def test_LMTPReceiver_process_message():
     receiver = server.LMTPReceiver(host="localhost", port=8894)
     msg = test_mail_request()
-    receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
+
+    with patch("salmon.server.routing.Router") as router_mock, \
+            patch("salmon.server.undeliverable_message"):
+        response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
+        assert response is None, response
+
+    with patch("salmon.server.routing.Router") as router_mock, \
+            patch("salmon.server.undeliverable_message"):
+        router_mock.deliver.side_effect = Exception()
+        response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
+        assert response is None, response
+
+    with patch("salmon.server.routing.Router") as router_mock, \
+            patch("salmon.server.undeliverable_message"):
+        router_mock.deliver.side_effect = server.SMTPError(450, "Not found")
+        response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
+        assert_equal(response, "450 Not found")
+
+
+@patch("salmon.queue.Queue")
+def test_QueueReceiver_process_message(queue_mock):
+    receiver = server.QueueReceiver("run/queue/thingy")
+    msg = test_mail_request()
+
+    with patch("salmon.server.routing.Router") as router_mock, \
+            patch("salmon.server.undeliverable_message"):
+        response = receiver.process_message(msg)
+        assert response is None, response
+
+    with patch("salmon.server.routing.Router") as router_mock, \
+            patch("salmon.server.undeliverable_message"):
+        router_mock.deliver.side_effect = Exception()
+        response = receiver.process_message(msg)
+        assert response is None, response
+
+    with patch("salmon.server.routing.Router") as router_mock, \
+            patch("salmon.server.undeliverable_message"):
+        router_mock.deliver.side_effect = server.SMTPError(450, "Not found")
+        response = receiver.process_message(msg)
+        # queue doesn't actually support SMTPErrors
+        assert response is None, response
 
 
 def test_Relay_asserts_ssl_options():
