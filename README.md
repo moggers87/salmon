@@ -31,7 +31,7 @@ servers.
 Python unicode back into nice clean ascii and/or UTF-8 mail.
 * Supports working with Maildir queues to defer work and distribute it to
 multiple machines.
-* Can run as an non-root user on port 25 to reduce the risk of intrusion.
+* Can run as an non-root user on privileged ports to reduce the risk of intrusion.
 * Salmon can also run in a completely separate virtualenv for easy deployment.
 * A flexible and easy to use routing system lets you write stateful or state*less*
 handlers of your email.
@@ -41,7 +41,7 @@ spell checking with PyEnchant.
 * Easily configurable to use alternative sending and receiving systems, database
 libraries, or any other systems you need to talk to.
 * Yet, you don't *have* to configure everything to get stated.  A simple
-salmon gen command lets you get an application up and running quick.
+`salmon gen` command lets you get an application up and running quick.
 * Finally, many helpful commands for general mail server debugging and cleaning.
 
 
