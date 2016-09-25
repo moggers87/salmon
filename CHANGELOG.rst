@@ -13,6 +13,9 @@
 - End support of Python 2.6 (#42)
 - Settings no longer limited to per app "config" module (#38)
 - Allow ``salmon.server.Relay`` to talk to LMTP servers (#41)
+- Make ``LMTPReceiver`` the default in the prototype app (#48)
+- Properly work around SMTPReceiver bug caused by Python's ``smtpd`` module (#48)
+  * This means that Salmon will no longer accept multiple RCPT TOs over SMTP
 
 Earlier Releases
 ================

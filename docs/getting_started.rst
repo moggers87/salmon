@@ -14,6 +14,8 @@ Now run the ``gen`` command to create the basic layout of your first project::
 
 Then change directory to ``myproject``
 
+.. warning:: Users of older versions of Salmon should note that the project
+   template now uses LMPTReceiver as its default
 
 Handlers
 --------
@@ -42,7 +44,7 @@ Now send an email to our server::
     Trying 127.0.0.1...
     Connected to localhost.
     Escape character is '^]'.
-    220 localhost Salmon Mail router SMTPD, version 3
+    220 localhost Salmon Mail router LMTPD, version 3
     MAIL FROM: sender@example.com
     250 Ok
     RCPT TO: rcpt@example.com
@@ -86,7 +88,7 @@ By deafult, all configuration happens in ``config/``
 ^^^^^^^^^^^
 
 This file is used by Salmon during start-up to configure the daemon with
-various things, such as starting the ``SMTPReceiver``. It's a bit like the
+various things, such as starting the ``LMTPReceiver``. It's a bit like the
 ``wsgi.py`` file that Python web apps have. If you want to use a different boot
 module, you can specify it with the ``--boot`` argument. E.g. to use
 ``myapp/othermodule.py``, do::

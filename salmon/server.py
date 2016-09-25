@@ -162,6 +162,32 @@ class Relay(object):
         self.deliver(msg)
 
 
+class SMTPChannel(smtpd.SMTPChannel):
+    """Replaces the standard SMTPChannel with one that rejects more than one recipient"""
+
+    def smtp_RCPT(self, arg):
+        if self.__rcpttos:
+            # We can't properly handle multiple RCPT TOs in SMTPReceiver
+            #
+            # SMTP can only return one reply at the end of DATA, making it an
+            # all or nothing reply. As we can't roll back a previously
+            # successful delivery and the delivery happens without there being
+            # a queue, we can end up in a state where one recipient has
+            # received their mail and another has not (due to a 550 response
+            # raised by the handler). At that point there's no reasonable
+            # response to give the client - we haven't delivered everything,
+            # but we haven't delivered *nothing* either.
+            #
+            # So we bug out early and hope for the best. At worst mail will
+            # bounce, but nothing will be lost.
+            #
+            # Of course, if smtpd.SMTPServer or SMTPReceiver implemented a
+            # queue and bounces like you're meant too...
+            logging.warning("Client attempted to deliver mail with multiple RCPT TOs. This is not supported.")
+            self.push("451 Will not accept multiple recipients in one transaction")
+        else:
+            smtpd.SMTPChannel.smtp_RCPT(self, arg)
+
 
 class SMTPReceiver(smtpd.SMTPServer):
     """Receives emails and hands it to the Router for further processing."""
@@ -189,6 +215,12 @@ class SMTPReceiver(smtpd.SMTPServer):
         self.poller = threading.Thread(target=asyncore.loop,
                 kwargs={'timeout':0.1, 'use_poll':True})
         self.poller.start()
+
+    def handle_accept(self):
+        pair = self.accept()
+        if pair is not None:
+            conn, addr = pair
+            channel = SMTPChannel(self, conn, addr)
 
     def process_message(self, Peer, From, To, Data):
         """
