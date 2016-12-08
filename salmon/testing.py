@@ -62,7 +62,7 @@ def spelling(file_name, contents, language="en_US"):
 
 def relay(hostname="127.0.0.1", port=8824):
     """Wires up a default relay on port 8824 (the default salmon log port)."""
-    return server.Relay(hostname, port, debug=0, in_test=True)
+    return server.Relay(hostname, port, debug=0)
 
 
 def queue(queue_dir=TEST_QUEUE):

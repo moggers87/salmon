@@ -45,7 +45,7 @@ def test_send_command():
     command = get_command("send")
     command("--sender", 'test@localhost', "--to", 'test@localhost', "--body",
             'Test body', "--subject", 'Test subject', "--attach", 'setup.py', "--port",
-            "8899", "--host", "127.0.0.1")
+            "7899", "--host", "127.0.0.1")
 
 
 def test_status_command():
@@ -153,7 +153,7 @@ def test_sendmail_command():
     sys.stdin.read.return_value = str(msg)
 
     command = get_command("sendmail")
-    command("--host", "127.0.0.1", "--port", "8899", "test@localhost")
+    command("--host", "127.0.0.1", "--port", "7899", "test@localhost")
 
 
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
@@ -239,4 +239,4 @@ def test_cleans_command_with_encoding_error(from_message):
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_blast_command():
     command = get_command("blast")
-    command("--host", "127.0.0.1", "--port", "8899", "run/queue")
+    command("--host", "127.0.0.1", "--port", "7899", "run/queue")

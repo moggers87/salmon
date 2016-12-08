@@ -1,4 +1,5 @@
 # Copyright (C) 2008 Zed A. Shaw.  Licensed under the terms of the GPLv3.
+import socket
 from mock import Mock, patch
 from nose.tools import assert_equal, assert_raises, with_setup
 
@@ -124,7 +125,7 @@ def test_Relay_asserts_ssl_options():
 
 def test_relay_deliver():
     # this test actually delivers to a test server
-    relay = server.Relay("localhost", port=8899)
+    relay = server.Relay("localhost", port=7899)
 
     relay.deliver(test_mail_response_plain_text())
     relay.deliver(test_mail_response_html())
@@ -132,15 +133,22 @@ def test_relay_deliver():
     relay.deliver(test_mail_response_attachments())
 
 
+def test_relay_asserts_no_relay():
+    """Relay raises socket.error if there is no relay"""
+    relay = server.Relay("localhost", port=1234)
+
+    with assert_raises(socket.error):
+        relay.deliver(test_mail_response_plain_text())
+
 @patch("salmon.server.smtplib.SMTP")
 def test_relay_smtp(client_mock):
-    relay = server.Relay("localhost", port=8899)
+    relay = server.Relay("localhost", port=7899)
     relay.deliver(test_mail_response_plain_text())
     assert_equal(client_mock.return_value.sendmail.call_count, 1)
     assert_equal(client_mock.return_value.starttls.call_count, 0)
 
     client_mock.reset_mock()
-    relay = server.Relay("localhost", port=8899, starttls=True)
+    relay = server.Relay("localhost", port=7899, starttls=True)
     relay.deliver(test_mail_response_plain_text())
     assert_equal(client_mock.return_value.sendmail.call_count, 1)
     assert_equal(client_mock.return_value.starttls.call_count, 1)
@@ -148,14 +156,14 @@ def test_relay_smtp(client_mock):
 
 @patch("salmon.server.smtplib.LMTP")
 def test_relay_lmtp(client_mock):
-    relay = server.Relay("localhost", port=8899, lmtp=True)
+    relay = server.Relay("localhost", port=7899, lmtp=True)
     relay.deliver(test_mail_response_plain_text())
     assert_equal(client_mock.return_value.sendmail.call_count, 1)
 
 
 @patch("salmon.server.smtplib.SMTP_SSL")
 def test_relay_smtp_ssl(client_mock):
-    relay = server.Relay("localhost", port=8899, ssl=True)
+    relay = server.Relay("localhost", port=7899, ssl=True)
     relay.deliver(test_mail_response_plain_text())
     assert_equal(client_mock.return_value.sendmail.call_count, 1)
 
@@ -164,7 +172,7 @@ def test_relay_smtp_ssl(client_mock):
 def test_relay_deliver_mx_hosts(query):
     query.return_value = [Mock()]
     query.return_value[0].exchange = "localhost"
-    relay = server.Relay(None, port=8899)
+    relay = server.Relay(None, port=7899)
 
     msg = test_mail_response_plain_text()
     msg['to'] = 'user@localhost'
@@ -176,7 +184,7 @@ def test_relay_deliver_mx_hosts(query):
 def test_relay_resolve_relay_host(query):
     from dns import resolver
     query.side_effect = resolver.NoAnswer
-    relay = server.Relay(None, port=8899)
+    relay = server.Relay(None, port=7899)
     host = relay.resolve_relay_host('user@localhost')
     assert_equal(host, 'localhost')
     assert query.called
@@ -191,7 +199,7 @@ def test_relay_resolve_relay_host(query):
 
 
 def test_relay_reply():
-    relay = server.Relay("localhost", port=8899)
+    relay = server.Relay("localhost", port=7899)
     print "Relay: %r" % relay
 
     relay.reply(test_mail_request(), 'from@localhost', 'Test subject', 'Body')

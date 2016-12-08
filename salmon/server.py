@@ -69,7 +69,7 @@ class Relay(object):
     log the protocol it uses to stderr if you set debug=1 on __init__.
     """
     def __init__(self, host='127.0.0.1', port=25, username=None, password=None,
-                 ssl=False, starttls=False, debug=0, lmtp=False, in_test=False):
+                 ssl=False, starttls=False, debug=0, lmtp=False):
         """
         The hostname and port we're connecting to, and the debug level (default to 0).
         Optional username and password for smtp authentication.
@@ -85,7 +85,6 @@ class Relay(object):
         self.ssl = ssl
         self.starttls = starttls
         self.lmtp = lmtp
-        self.in_test = in_test
 
         assert not (ssl and lmtp), "LMTP over SSL not supported. Use STARTTLS instead."
         assert not (ssl and starttls), "SSL and STARTTLS make no sense together"
@@ -127,10 +126,7 @@ class Relay(object):
             relay_host = self.configure_relay(hostname)
         except socket.error:
             logging.exception("Failed to connect to host %s:%d", hostname, self.port)
-            if self.in_test:
-                return
-            else:
-                raise
+            raise
 
         relay_host.sendmail(sender, recipient, str(message))
         relay_host.quit()
