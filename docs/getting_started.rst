@@ -10,7 +10,7 @@ Install Salmon from PyPI::
 
 Now run the ``gen`` command to create the basic layout of your first project::
 
-    $ salmon gen myproject
+    $ salmon gen -project myproject
 
 Then change directory to ``myproject``
 
