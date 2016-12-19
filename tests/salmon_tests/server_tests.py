@@ -123,7 +123,8 @@ def test_Relay_asserts_ssl_options():
     server.Relay("localhost", starttls=True, lmtp=True)
 
 
-def test_relay_deliver():
+@patch("salmon.server.smtplib.SMTP")
+def test_relay_deliver(client_mock):
     # this test actually delivers to a test server
     relay = server.Relay("localhost", port=7899)
 
@@ -132,6 +133,8 @@ def test_relay_deliver():
     relay.deliver(test_mail_response_html_and_plain_text())
     relay.deliver(test_mail_response_attachments())
 
+    assert_equal(client_mock.return_value.sendmail.call_count, 4)
+
 
 def test_relay_asserts_no_relay():
     """Relay raises socket.error if there is no relay"""
@@ -139,6 +142,7 @@ def test_relay_asserts_no_relay():
 
     with assert_raises(socket.error):
         relay.deliver(test_mail_response_plain_text())
+
 
 @patch("salmon.server.smtplib.SMTP")
 def test_relay_smtp(client_mock):
@@ -168,8 +172,9 @@ def test_relay_smtp_ssl(client_mock):
     assert_equal(client_mock.return_value.sendmail.call_count, 1)
 
 
+@patch("salmon.server.smtplib.SMTP")
 @patch('salmon.server.resolver.query')
-def test_relay_deliver_mx_hosts(query):
+def test_relay_deliver_mx_hosts(query, client_mock):
     query.return_value = [Mock()]
     query.return_value[0].exchange = "localhost"
     relay = server.Relay(None, port=7899)
@@ -178,6 +183,7 @@ def test_relay_deliver_mx_hosts(query):
     msg['to'] = 'user@localhost'
     relay.deliver(msg)
     assert query.called
+    assert_equal(client_mock.return_value.sendmail.call_count, 1)
 
 
 @patch('salmon.server.resolver.query')
@@ -198,11 +204,14 @@ def test_relay_resolve_relay_host(query):
     assert query.called
 
 
-def test_relay_reply():
+@patch("salmon.server.smtplib.SMTP")
+def test_relay_reply(client_mock):
     relay = server.Relay("localhost", port=7899)
     print "Relay: %r" % relay
 
     relay.reply(test_mail_request(), 'from@localhost', 'Test subject', 'Body')
+
+    assert_equal(client_mock.return_value.sendmail.call_count, 1)
 
 
 def raises_exception(*x, **kw):
