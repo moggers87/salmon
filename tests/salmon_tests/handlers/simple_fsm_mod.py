@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from salmon.routing import *
 
 
@@ -14,34 +16,34 @@ Router.defaults(host="localhost",
 
 @route("(list_name)-(action)@(host)")
 def START(message, list_name=None, action=None, host=None):
-    print "START", message, list_name, action, host
+    print("START", message, list_name, action, host)
     if action == 'explode':
-        print "EXPLODE!"
+        print("EXPLODE!")
         raise RuntimeError("Exploded on purpose.")
     return CONFIRM
 
     
 @route("(list_name)-confirm-(id_number)@(host)", id_number="[0-9]+")
 def CONFIRM(message, list_name=None, id_number=None, host=None):
-    print "CONFIRM", message, list_name, id_number, host
+    print("CONFIRM", message, list_name, id_number, host)
     return POSTING
 
 
 @route("(list_name)-(action)@(host)")
 def POSTING(message, list_name=None, action=None, host=None):
-    print "POSTING", message, list_name, action, host
+    print("POSTING", message, list_name, action, host)
     return NEXT
 
 
 @route_like(POSTING)
 def NEXT(message, list_name=None, action=None, host=None):
-    print "NEXT", message, list_name, action, host
+    print("NEXT", message, list_name, action, host)
     return END
 
 
 @route("(anything)@(host)", anything=".*")
 def END(message, anything=None, host=None):
-    print "END", anything, host
+    print("END", anything, host)
     return START
 
 
@@ -49,7 +51,7 @@ def END(message, anything=None, host=None):
 @stateless
 @nolocking
 def PASSING(message, *args, **kw):
-    print "PASSING", args, kw
+    print("PASSING", args, kw)
 
 
 try:
@@ -57,7 +59,7 @@ try:
     @stateless
     @route("badstateless@(host)")
     def BAD_STATELESS(message, *args, **kw):
-        print "BAD_STATELESS", args, kw
+        print("BAD_STATELESS", args, kw)
 except AssertionError:
     pass
 else:

@@ -14,6 +14,7 @@ import traceback
 
 from dns import resolver
 import lmtpd
+import six
 
 from salmon import queue, mail, routing, __version__
 from salmon.bounce import PRIMARY_STATUS_CODES, SECONDARY_STATUS_CODES, COMBINED_STATUS_CODES
@@ -230,7 +231,7 @@ class SMTPReceiver(smtpd.SMTPServer):
         try:
             logging.debug("Message received from Peer: %r, From: %r, to To %r.", Peer, From, To)
             routing.Router.deliver(mail.MailRequest(Peer, From, To, Data))
-        except SMTPError, err:
+        except SMTPError as err:
             # looks like they want to return an error, so send it out
             return str(err)
         except Exception:
@@ -238,10 +239,13 @@ class SMTPReceiver(smtpd.SMTPServer):
                           Peer, From, To)
             undeliverable_message(Data, "Error in message %r:%r:%r, look in logs." % (Peer, From, To))
 
-
     def close(self):
         """Doesn't do anything except log who called this, since nobody should.  Ever."""
-        logging.error(traceback.format_exc())
+        if six.PY3:
+            trace = traceback.format_exc(chain=False)
+        else:
+            trace = traceback.format_exc()
+        logging.error(trace)
 
 
 class LMTPReceiver(lmtpd.LMTPServer):
@@ -283,7 +287,7 @@ class LMTPReceiver(lmtpd.LMTPServer):
         try:
             logging.debug("Message received from Peer: %r, From: %r, to To %r.", Peer, From, To)
             routing.Router.deliver(mail.MailRequest(Peer, From, To, Data))
-        except SMTPError, err:
+        except SMTPError as err:
             # looks like they want to return an error, so send it out
             # and yes, you should still use SMTPError in your handlers
             return str(err)
@@ -294,7 +298,12 @@ class LMTPReceiver(lmtpd.LMTPServer):
 
     def close(self):
         """Doesn't do anything except log who called this, since nobody should.  Ever."""
-        logging.error(traceback.format_exc())
+        if six.PY3:
+            trace = traceback.format_exc(chain=False)
+        else:
+            trace = traceback.format_exc()
+        logging.error(trace)
+
 
 class QueueReceiver(object):
     """
@@ -337,8 +346,7 @@ class QueueReceiver(object):
                     logging.debug("Pulled message with key: %r off", key)
                     self.process_message(msg)
                     logging.debug("Removed %r key from queue.", key)
-
-	        inq.remove(key)
+                    inq.remove(key)
 
             if one_shot:
                 return
@@ -354,7 +362,7 @@ class QueueReceiver(object):
         try:
             logging.debug("Message received from Peer: %r, From: %r, to To %r.", msg.Peer, msg.From, msg.To)
             routing.Router.deliver(msg)
-        except SMTPError, err:
+        except SMTPError as err:
             # looks like they want to return an error, so send it out
             logging.exception("Raising SMTPError when running in a QueueReceiver is unsupported.")
             undeliverable_message(msg.Data, err.message)

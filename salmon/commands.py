@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import argparse
 import email
 import glob
@@ -57,7 +59,12 @@ def main():
     args = _parser.parse_args()
 
     # get function reference from args and then remove it
-    cmd = args.func
+    try:
+        cmd = args.func
+    except AttributeError:
+        # python 3 only
+        raise SystemExit(2)
+
     del args.func
 
     # pass all other attrs to function as kwargs
@@ -186,16 +193,16 @@ def stop_command(parser):
             pid_files = [pid]
 
             if not os.path.exists(pid):
-                print "PID file %s doesn't exist, maybe Salmon isn't running?" % pid
+                print("PID file %s doesn't exist, maybe Salmon isn't running?" % pid)
                 sys.exit(1)
                 return  # for unit tests mocking sys.exit
 
-        print "Stopping processes with the following PID files: %s" % pid_files
+        print("Stopping processes with the following PID files: %s" % pid_files)
 
         for pid_f in pid_files:
             pid = open(pid_f).readline()
 
-            print "Attempting to stop salmon at pid %d" % int(pid)
+            print("Attempting to stop salmon at pid %d" % int(pid))
 
             try:
                 if kill:
@@ -205,7 +212,7 @@ def stop_command(parser):
 
                 os.unlink(pid_f)
             except OSError as exc:
-                print "ERROR stopping Salmon on PID %d: %s" % (int(pid), exc)
+                print("ERROR stopping Salmon on PID %d: %s" % (int(pid), exc))
 
     parser.set_defaults(func=command)
 
@@ -222,9 +229,9 @@ def status_command(parser):
     def command(pid):
         if os.path.exists(pid):
             pid = open(pid).readline()
-            print "Salmon running with PID %d" % int(pid)
+            print("Salmon running with PID %d" % int(pid))
         else:
-            print "Salmon not running."
+            print("Salmon not running.")
 
     parser.set_defaults(func=command)
 
@@ -236,25 +243,25 @@ def queue_command(parser):
     Lets you do most of the operations available to a queue.
     """
     def command(name, pop=False, get=False, keys=False, remove=False, count=False, clear=False):
-        print "Using queue: %r" % name
+        print("Using queue: %r" % name)
 
         inq = queue.Queue(name)
 
         if pop:
             key, msg = inq.pop()
             if key:
-                print "KEY: ", key
-                print msg
+                print("KEY: %s" % key)
+                print(msg)
         elif get:
-            print inq.get(get)
+            print(inq.get(get))
         elif remove:
             inq.remove(remove)
         elif count:
-            print "Queue %s contains %d messages" % (name, inq.count())
+            print("Queue %s contains %d messages" % (name, inq.count()))
         elif clear:
             inq.clear()
         elif keys:
-            print "\n".join(inq.keys())
+            print("\n".join(inq.keys()))
 
     parser.set_defaults(func=command)
 
@@ -283,26 +290,26 @@ def routes_command(parser):
         for module in modules:
             __import__(module, globals(), locals())
 
-        print "Routing ORDER: ", routing.Router.ORDER
-        print "Routing TABLE: \n---"
+        print("Routing ORDER: ", routing.Router.ORDER)
+        print("Routing TABLE: \n---")
         for format in routing.Router.REGISTERED:
-            print "%r: " % format,
+            print("%r: " % format, end="")
             regex, functions = routing.Router.REGISTERED[format]
             for func in functions:
-                print "%s.%s " % (func.__module__, func.__name__),
+                print("%s.%s " % (func.__module__, func.__name__), end="")
                 match = regex.match(test)
                 if test and match:
                     test_case_matches.append((format, func, match))
 
-            print "\n---"
+            print("\n---")
 
         if test_case_matches:
-            print "\nTEST address %r matches:" % test
+            print("\nTEST address %r matches:" % test)
             for format, func, match in test_case_matches:
-                print "  %r %s.%s" % (format, func.__module__, func.__name__)
-                print "  -  %r" % (match.groupdict())
+                print("  %r %s.%s" % (format, func.__module__, func.__name__))
+                print("  -  %r" % (match.groupdict()))
         elif test:
-            print "\nTEST address %r didn't match anything." % test
+            print("\nTEST address %r didn't match anything." % test)
 
     parser.set_defaults(func=command)
 
@@ -319,7 +326,7 @@ def gen_command(parser):
         template = os.path.join(salmon.__path__[0], "data", "prototype")
 
         if os.path.exists(project) and not force:
-            print "Project %s exists, delete it first." % project
+            print("Project %s exists, delete it first." % project)
             sys.exit(1)
             return
         elif force:
@@ -353,14 +360,14 @@ def cleanse_command(parser):
             try:
                 mail = encoding.from_message(msg)
                 outbox.add(encoding.to_string(mail))
-            except encoding.EncodingError, exc:
-                print "ERROR: ", exc
+            except encoding.EncodingError as exc:
+                print("ERROR: %s" % exc)
                 error_count += 1
 
         outbox.close()
         inbox.close()
 
-        print "TOTAL ERRORS:", error_count
+        print("TOTAL ERRORS: %s" % error_count)
 
     parser.set_defaults(func=command)
 
@@ -405,6 +412,6 @@ _subparsers = _parser.add_subparsers(metavar="<command>")
 
 for cmd, help_txt in COMMANDS:
     function = globals()["{0}_command".format(cmd)]
-    cmd_parser = _subparsers.add_parser(cmd, description=function.func_doc,
+    cmd_parser = _subparsers.add_parser(cmd, description=function.__doc__,
             help=help_txt, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     function(cmd_parser)

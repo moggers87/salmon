@@ -17,7 +17,7 @@ from salmon import mail
 
 # we calculate this once, since the hostname shouldn't change for every
 # email we put in a queue
-HASHED_HOSTNAME = hashlib.md5(socket.gethostname()).hexdigest()
+HASHED_HOSTNAME = hashlib.md5(socket.gethostname().encode("utf-8")).hexdigest()
 
 class SafeMaildir(mailbox.Maildir):
     def _create_tmp(self):
@@ -27,12 +27,12 @@ class SafeMaildir(mailbox.Maildir):
         path = os.path.join(self._path, 'tmp', uniq)
         try:
             os.stat(path)
-        except OSError, e:
+        except OSError as e:
             if e.errno == errno.ENOENT:
                 mailbox.Maildir._count += 1
                 try:
                     return mailbox._create_carefully(path)
-                except OSError, e:
+                except OSError as e:
                     if e.errno != errno.EEXIST:
                         raise
             else:
@@ -53,7 +53,7 @@ class QueueError(Exception):
 class Queue(object):
     """
     Provides a simplified API for dealing with 'queues' in Salmon.
-    It currently just supports maildir queues since those are the 
+    It currently just supports maildir queues since those are the
     most robust, but could implement others later.
     """
 
@@ -117,13 +117,13 @@ class Queue(object):
                                 key, self.pop_limit, self.oversize_dir)
                     os.rename(over_name, os.path.join(self.oversize_dir, key))
                 else:
-                    logging.info("Message key %s over size limit %d, DELETING (set oversize_dir).", 
+                    logging.info("Message key %s over size limit %d, DELETING (set oversize_dir).",
                                 key, self.pop_limit)
                     os.unlink(over_name)
             else:
                 try:
                     msg = self.get(key)
-                except QueueError, exc:
+                except QueueError as exc:
                     raise exc
                 finally:
                     self.remove(key)
@@ -138,14 +138,14 @@ class Queue(object):
         """
         msg_file = self.mbox.get_file(key)
 
-        if not msg_file: 
+        if not msg_file:
             return None
 
         msg_data = msg_file.read()
 
         try:
             return mail.MailRequest(self.dir, None, None, msg_data)
-        except Exception, exc:
+        except Exception as exc:
             logging.exception("Failed to decode message: %s; msg_data: %r",   exc, msg_data)
             return None
 
@@ -153,7 +153,7 @@ class Queue(object):
     def remove(self, key):
         """Removes the queue, but not returned."""
         self.mbox.remove(key)
-    
+
     def count(self):
         """Returns the number of messages in the queue."""
         return len(self.mbox)
@@ -167,7 +167,7 @@ class Queue(object):
         # man this is probably a really bad idea
         while self.count() > 0:
             self.pop()
-    
+
     def keys(self):
         """
         Returns the keys in the queue.
@@ -180,6 +180,3 @@ class Queue(object):
             return os.path.getsize(file_name) > self.pop_limit, file_name
         else:
             return False, None
-
-
-

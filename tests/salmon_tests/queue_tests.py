@@ -47,10 +47,10 @@ def test_pop():
 
     assert hasattr(msg, "Data"), "MailRequest doesn't have Data attribute"
 
-    assert msg['to'] == "test@localhost"
-    assert msg['from'] == "test@localhost"
-    assert msg['subject'] == "Test"
-    assert msg.body() == "Test"
+    assert msg['to'] == "test@localhost", "%s != 'test@locahost'" % msg['to']
+    assert msg['from'] == "test@localhost", "%s != 'test@locahost'" % msg['from']
+    assert msg['subject'] == "Test", "%s != 'Test'" % msg['subject']
+    assert msg.body() == "Test", "%s != 'Test'" % msg.body()
 
     assert q.count() == 0, "Queue should be empty."
     assert not q.pop()[0]
@@ -125,13 +125,10 @@ def test_oversize_protections():
     overq.clear()
 
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 @patch('os.stat', new=Mock())
 @raises(mailbox.ExternalClashError)
 def test_SafeMaildir_name_clash():
-    try:
-        shutil.rmtree("run/queue")
-    except EnvironmentError:
-        pass
     sq = queue.SafeMaildir('run/queue')
     sq.add("TEST")
 
@@ -151,14 +148,10 @@ def test_SafeMaildir_throws_errno_failure():
     sq.add("TEST")
 
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 @patch('os.stat', new=Mock())
 @raises(OSError)
 def test_SafeMaildir_reraise_weird_errno():
-    try:
-        shutil.rmtree("run/queue")
-    except EnvironmentError:
-        pass
-
     os.stat.side_effect = raise_OSError
     sq = queue.SafeMaildir('run/queue')
     sq.add('TEST')

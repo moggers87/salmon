@@ -58,6 +58,15 @@ import email.utils
 import shelve
 import threading
 
+try:
+    from importlib import reload
+except ImportError:
+    try:
+        from imp import reload
+    except ImportError:
+        from __builtin__ import reload
+
+
 ROUTE_FIRST_STATE = 'START'
 LOG = logging.getLogger("routing")
 DEFAULT_STATE_KEY = lambda mod, msg: mod

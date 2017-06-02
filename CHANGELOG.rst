@@ -16,6 +16,9 @@
 - Make ``LMTPReceiver`` the default in the prototype app (#48)
 - Properly work around SMTPReceiver bug caused by Python's ``smtpd`` module (#48)
   * This means that Salmon will no longer accept multiple RCPT TOs over SMTP
+- Python 3 support (#7)
+  * You'll now require ``setuptools`` to install (this won't be a problem for those upgrading)
+  * No more support for Windows - it never worked for production on that platform anyway
 
 Earlier Releases
 ================

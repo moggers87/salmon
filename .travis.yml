@@ -3,6 +3,8 @@ language: python
 python:
     - "pypy"
     - "2.7"
+    - "3.5"
+    - "3.6"
 
 matrix:
   include:
@@ -12,7 +14,7 @@ matrix:
       script: tox -e $TOX_ENV
 
 install:
-    - python setup.py develop
+    - travis_retry pip install -e .
     - travis_retry pip install -q codecov
 
 script: python setup.py nosetests

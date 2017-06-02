@@ -61,7 +61,7 @@ def test_daemonize_not_fully(dc_open):
     assert not dc_open.called
     dc_open.reset_mock()
 
-    context = utils.daemonize("run/tests.pid", ".", "/tmp", 0002, do_open=True)
+    context = utils.daemonize("run/tests.pid", ".", "/tmp", 0o002, do_open=True)
     assert context
     assert dc_open.called
 

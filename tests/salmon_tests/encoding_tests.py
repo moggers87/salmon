@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from email import encoders
 from email.utils import parseaddr
 import mailbox
@@ -14,7 +15,7 @@ from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
 
 
 BAD_HEADERS = [
-    u'"\u8003\u53d6\u5206\u4eab" <Ernest.Beard@msa.hinet.net>'.encode('utf-8'),
+    '"\u8003\u53d6\u5206\u4eab" <Ernest.Beard@msa.hinet.net>',
     '"=?windows-1251?B?RXhxdWlzaXRlIFJlcGxpY2E=?="\n\t<wolfem@barnagreatlakes.com>',
     '=?iso-2022-jp?B?Zmlicm91c19mYXZvcmF0ZUB5YWhvby5jby5qcA==?=<fibrous_favorate@yahoo.co.jp>',
 
@@ -193,7 +194,7 @@ def test_MIMEPart():
     text2 = encoding.MIMEPart("text/plain")
     text2.set_payload("The second payload.")
 
-    image_data = open("tests/salmon.png").read()
+    image_data = open("tests/salmon.png", "rb").read()
     img1 = encoding.MIMEPart("image/png")
     img1.set_payload(image_data)
     img1.set_param('attachment', '', header='Content-Disposition')
@@ -236,7 +237,7 @@ def test_attach_text():
 
 def test_attach_file():
     mail = encoding.MailBase()
-    png = open("tests/salmon.png").read()
+    png = open("tests/salmon.png", "rb").read()
     mail.attach_file("salmon.png", png, "image/png", "attachment")
     msg = encoding.to_message(mail)
 
@@ -246,7 +247,7 @@ def test_attach_file():
 
 
 def test_content_encoding_headers_are_maintained():
-    inmail = encoding.from_file(open("tests/signed.msg"))
+    inmail = encoding.from_file(open("tests/signed.msg", "rb"))
 
     ctype, ctype_params = inmail.content_encoding['Content-Type']
 
@@ -276,7 +277,8 @@ def test_odd_content_type_with_charset():
 
 
 def test_specially_borked_lua_message():
-    assert encoding.from_file(open("tests/borked.msg"))
+    msg = encoding.from_file(open("tests/borked.msg", "rb"))
+    assert msg
 
 
 def raises_TypeError(*args):
@@ -287,20 +289,15 @@ def raises_TypeError(*args):
 @raises(encoding.EncodingError)
 def test_to_message_encoding_error(mp_init):
     mp_init.side_effect = raises_TypeError
-    test = encoding.from_file(open("tests/borked.msg"))
+    test = encoding.from_file(open("tests/borked.msg", "rb"))
     encoding.to_message(test)
 
 
-def raises_UnicodeError(*args):
-    raise UnicodeError()
-
-
+@patch('salmon.encoding.chardet.detect')
 @raises(encoding.EncodingError)
-def test_guess_encoding_and_decode_unicode_error():
-    data = Mock()
-    data.__str__ = Mock()
-    data.__str__.return_value = u"\0\0"
-    data.decode.side_effect = raises_UnicodeError
+def test_guess_encoding_and_decode_unicode_error(detect_mock):
+    data = u"testß".encode("latin-1")
+    detect_mock.return_value = {"confidence": 0.99, "encoding": "utf-8"}
     encoding.guess_encoding_and_decode("ascii", data)
 
 
