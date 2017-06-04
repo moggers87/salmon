@@ -42,11 +42,11 @@ def _decode_header_randomness(addr):
 
 class MailRequest(object):
     """
-    This is what older users of Salmon are accustomed to.  The information
-    you get out of this is *ALWAYS* in Python unicode and should be usable
-    by any API.  Modifying this object will cause other handlers that deal
-    with it to get your modifications, but in general you don't want to do
-    more than maybe tag a few headers.
+    This is what older users of Salmon are accustomed to.  The information you
+    get out of this is *ALWAYS* in Python str (unicode in Python 2.7) and
+    should be usable by any API.  Modifying this object will cause other
+    handlers that deal with it to get your modifications, but in general you
+    don't want to do more than maybe tag a few headers.
     """
     def __init__(self, Peer, From, To, Data):
         """

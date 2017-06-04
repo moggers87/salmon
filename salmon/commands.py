@@ -14,7 +14,7 @@ import salmon
 
 
 COMMANDS = (
-    ("start", "starts aserver"),
+    ("start", "starts a server"),
     ("stop", "stops a server"),
     ("status", "displays status of server"),
     ("gen", "generate new project"),
@@ -343,8 +343,8 @@ def gen_command(parser):
 def cleanse_command(parser):
     """
     Uses Salmon mail cleansing and canonicalization system to take an
-    input maildir (or mbox) and replicate the email over into another
-    maildir.  It's used mostly for testing and cleaning.
+    input Maildir (or mbox) and replicate the email over into another
+    Maildir.  It's used mostly for testing and cleaning.
     """
     def command(input, output):
         error_count = 0
@@ -371,13 +371,13 @@ def cleanse_command(parser):
 
     parser.set_defaults(func=command)
 
-    parser.add_argument("input", help="input maildir or mbox")
-    parser.add_argument("output", help="output maildir")
+    parser.add_argument("input", help="input Maildir or mbox")
+    parser.add_argument("output", help="output Maildir")
 
 
 def blast_command(parser):
     """
-    Given a maildir, this command will go through each email
+    Given a Maildir, this command will go through each email
     and blast it at your server.  It does nothing to the message, so
     it will be real messages hitting your server, not cleansed ones.
     """
@@ -396,7 +396,7 @@ def blast_command(parser):
 
     parser.set_defaults(func=command)
 
-    parser.add_argument("input", help="input maildir or mbox")
+    parser.add_argument("input", help="input Maildir or mbox")
     parser.add_argument("--port", default=8823, type=int, help="port to listen on")
     parser.add_argument("--host", default="127.0.0.1", help="address to listen on")
     parser.add_argument("--lmtp", action="store_true", default=argparse.SUPPRESS)

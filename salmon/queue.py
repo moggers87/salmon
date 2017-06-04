@@ -53,7 +53,7 @@ class QueueError(Exception):
 class Queue(object):
     """
     Provides a simplified API for dealing with 'queues' in Salmon.
-    It currently just supports maildir queues since those are the
+    It currently just supports Maildir queues since those are the
     most robust, but could implement others later.
     """
 
@@ -68,7 +68,7 @@ class Queue(object):
         processing is done and is based on the size of the file on disk.  The
         purpose is to prevent people from sending 10MB attachments.  If a
         message is over the pop_limit then it is placed into the
-        oversize_dir (which should be a maildir).
+        oversize_dir (which should be a Maildir).
 
         The oversize protection only works on pop messages off, not
         putting them in, get, or any other call.  If you use get you can

@@ -3,13 +3,13 @@ Salmon takes the policy that email it receives is most likely complete garbage
 using bizarre pre-Unicode formats that are irrelevant and unnecessary in today's
 modern world.  These emails must be cleansed of their unholy stench of
 randomness and turned into something nice and clean that a regular Python
-programmer can work with:  unicode.
+programmer can work with:  Unicode.
 
 That's the receiving end, but on the sending end Salmon wants to make the world
 better by not increasing the suffering.  To that end, Salmon will canonicalize
 all email it sends to be ascii or utf-8 (whichever is simpler and works to
 encode the data).  When you get an email from Salmon, it is a pristine easily
-parseable clean unit of goodness you can count on.
+parsable clean unit of goodness you can count on.
 
 To accomplish these tasks, Salmon goes back to basics and assert a few simple
 rules on each email it receives:
@@ -25,12 +25,12 @@ rules on each email it receives:
 6) It does this by decoding all codecs, and if the codec LIES, then it will
    attempt to statistically detect the codec using chardet.
 7) If it can't detect the codec, and the codec lies, then the email is bad.
-8) All text bodies and attachments are then converted to Python unicode in the
-   same way as the headers.
+8) All text bodies and attachments are then converted to Python unicode/str
+   (for Python 2.7 and 3.x respectively) in the same way as the headers.
 9) All other attachments are converted to raw strings as-is.
 
 Once Salmon has done this, your Python handler can now assume that all
-MailRequest objects are happily unicode enabled and ready to go.  The rule is:
+MailRequest objects are happily Unicode enabled and ready to go.  The rule is:
 
     IF IT CANNOT BE UNICODE, THEN PYTHON CANNOT WORK WITH IT.
 
@@ -461,7 +461,7 @@ def properly_encode_header(value, encoder, not_email):
     addresses by changing the '@' to '-AT-'.  This is where
     VALUE_IS_EMAIL_ADDRESS exists.  It's a simple lambda returning True/False
     to check if a header value has an email address.  If you need to make this
-    checVk different, then change this.
+    check different, then change this.
     """
     # i suspect this function and those that call it are doing too much
     # TODO: investigate

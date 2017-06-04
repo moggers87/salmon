@@ -45,7 +45,7 @@ class ConfirmationStorage(object):
         your own you don't need this.
 
         NOTE: To support proper equality and shelve storage, this encodes the
-        key into ASCII.  Make a different subclass if you need unicode and your
+        key into ASCII.  Make a different subclass if you need Unicode and your
         storage supports it.
         """
         key = target + ':' + from_address

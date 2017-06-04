@@ -52,14 +52,14 @@ def respond(variables, Body=None, Html=None, **kwd):
                           Html='template.html',
                           From='test@test.com',
                           To='receiver@test.com',
-                          Subject='Test body from "%(dude)s".')
+                          Subject='Test body from "%(person)s".')
 
     In this case you're using locals() to gather the variables needed for
     the 'template.txt' and 'template.html' templates.  Each template is
     setup to be a text/plain or text/html attachment.  The From/To/Subject
     are setup as needed.  Finally, the locals() are also available as
     simple Python keyword templates in the From/To/Subject so you can pass
-    in variables to modify those when needed (as in the %(dude)s in Subject).
+    in variables to modify those when needed (as in the %(person)s in Subject).
     """
 
     assert Body or Html, "You need to give either the Body or Html template of the mail."

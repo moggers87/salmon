@@ -195,7 +195,7 @@ class SMTPReceiver(smtpd.SMTPServer):
 
     def __init__(self, host='127.0.0.1', port=8825):
         """
-        Initializes to bind on the given port and host/ipaddress.  Typically
+        Initializes to bind on the given port and host/IP address.  Typically
         in deployment you'd give 0.0.0.0 for "all internet devices" but consult
         your operating system.
 
@@ -253,7 +253,7 @@ class LMTPReceiver(lmtpd.LMTPServer):
 
     def __init__(self, host='127.0.0.1', port=8824, socket=None):
         """
-        Initializes to bind on the given port and host/ipaddress. Remember that
+        Initializes to bind on the given port and host/IP address. Remember that
         LMTP isn't for use over a WAN, so bind it to either a LAN address or
         localhost. If socket is not None, it will be assumed to be a path name
         and a UNIX socket will be set up instead.
@@ -308,7 +308,7 @@ class LMTPReceiver(lmtpd.LMTPServer):
 class QueueReceiver(object):
     """
     Rather than listen on a socket this will watch a queue directory and
-    process messages it recieves from that.  It works in almost the exact
+    process messages it receives from that.  It works in almost the exact
     same way otherwise.
     """
 
