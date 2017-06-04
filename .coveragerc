@@ -1,2 +1,3 @@
 [run]
 source = salmon
+omit = salmon/data/*

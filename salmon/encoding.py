@@ -305,7 +305,7 @@ class MIMEPart(Message):
         self.set_payload(encoded, charset=charset)
 
     def extract_payload(self, mail):
-        if mail.body == None:
+        if mail.body is None:
             return  # only None, '' is still ok
 
         ctype, ctype_params = mail.content_encoding['Content-Type']
@@ -481,7 +481,7 @@ def header_to_mime_encoding(value, not_email=False):
     if not value: return ""
 
     encoder = Charset(DEFAULT_ENCODING)
-    if type(value) == list:
+    if isinstance(value, list):
         return "; ".join(properly_encode_header(v, encoder, not_email) for v in value)
     else:
         return properly_encode_header(value, encoder, not_email)
@@ -490,7 +490,7 @@ def header_to_mime_encoding(value, not_email=False):
 def header_from_mime_encoding(header):
     if header is None:
         return header
-    elif type(header) == list:
+    elif isinstance(header, list):
         return [properly_decode_header(h) for h in header]
     elif isinstance(header, email.header.Header):
         return six.text_type(header)
