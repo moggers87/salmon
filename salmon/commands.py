@@ -59,12 +59,7 @@ def main():
     args = _parser.parse_args()
 
     # get function reference from args and then remove it
-    try:
-        cmd = args.func
-    except AttributeError:
-        # python 3 only
-        raise SystemExit(2)
-
+    cmd = args.func
     del args.func
 
     # pass all other attrs to function as kwargs
@@ -409,6 +404,7 @@ _parser = argparse.ArgumentParser(description="Python mail server", epilog=copyr
 
 _parser.add_argument("-v", "--version", action="version", version=version_info)
 _subparsers = _parser.add_subparsers(metavar="<command>")
+_subparsers.required = True
 
 for cmd, help_txt in COMMANDS:
     function = globals()["{0}_command".format(cmd)]
