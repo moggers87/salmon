@@ -1,19 +1,13 @@
-import sys
-
 from setuptools import setup
+
 
 install_requires = [
     'chardet',
+    'dnspython',
     'lmtpd>=4',
     'python-daemon',
     'six',
 ]
-
-
-if sys.version_info[0] == 2:
-    install_requires.append('dnspython')
-elif sys.version_info[0] == 3:
-    install_requires.append('dnspython3')
 
 test_requires = [
     'coverage',
