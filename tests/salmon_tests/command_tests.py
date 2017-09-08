@@ -41,11 +41,13 @@ def get_command(command):
     return func
 
 
-def test_send_command():
+@patch("salmon.server.smtplib.SMTP")
+def test_send_command(client_mock):
     command = get_command("send")
     command("--sender", 'test@localhost', "--to", 'test@localhost', "--body",
             'Test body', "--subject", 'Test subject', "--attach", 'setup.py', "--port",
             "8899", "--host", "127.0.0.1")
+    assert_equal(client_mock.return_value.sendmail.call_count, 1)
 
 
 def test_status_command():
@@ -145,7 +147,8 @@ def test_log_command(MockSMTPReceiver):
 
 
 @patch('sys.stdin', new=Mock())
-def test_sendmail_command():
+@patch("salmon.server.smtplib.SMTP")
+def test_sendmail_command(client_mock):
     sys.stdin.read.function()
 
     msg = mail.MailResponse(To="tests@localhost", From="tests@localhost",
@@ -154,6 +157,7 @@ def test_sendmail_command():
 
     command = get_command("sendmail")
     command("--host", "127.0.0.1", "--port", "8899", "test@localhost")
+    assert_equal(client_mock.return_value.sendmail.call_count, 1)
 
 
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
