@@ -180,7 +180,7 @@ def test_relay_deliver_mx_hosts(client_mock, query):
     msg = test_mail_response_plain_text()
     msg['to'] = 'user@localhost'
     relay.deliver(msg)
-    assert query.called
+    assert_equal(query.call_count, 1)
 
 
 @patch('salmon.server.resolver.query')
@@ -190,7 +190,7 @@ def test_relay_resolve_relay_host(query):
     relay = server.Relay(None, port=8899)
     host = relay.resolve_relay_host('user@localhost')
     assert_equal(host, 'localhost')
-    assert query.called
+    assert_equal(query.call_count, 1)
 
     query.reset_mock()
     query.side_effect = None  # reset_mock doens't clear return_value or side_effect
@@ -229,7 +229,7 @@ def test_queue_receiver():
     run_queue.push(str(test_mail_response_plain_text()))
     assert run_queue.count() > 0
     receiver.start(one_shot=True)
-    assert run_queue.count() == 0
+    assert_equal(run_queue.count(), 0)
 
     routing.Router.deliver.side_effect = raises_exception
     receiver.process_message(mail.MailRequest('localhost', 'test@localhost', 'test@localhost', 'Fake body.'))
@@ -251,16 +251,16 @@ def test_SMTPReceiver():
 
 def test_SMTPError():
     err = server.SMTPError(550)
-    assert str(err) == '550 Permanent Failure Mail Delivery Protocol Status', "Error is wrong: %r" % str(err)
+    assert_equal(str(err), '550 Permanent Failure Mail Delivery Protocol Status')
 
     err = server.SMTPError(400)
-    assert str(err) == '400 Persistent Transient Failure Other or Undefined Status', "Error is wrong: %r" % str(err)
+    assert_equal(str(err), '400 Persistent Transient Failure Other or Undefined Status')
 
     err = server.SMTPError(425)
-    assert str(err) == '425 Persistent Transient Failure Mailbox Status', "Error is wrong: %r" % str(err)
+    assert_equal(str(err), '425 Persistent Transient Failure Mailbox Status')
 
     err = server.SMTPError(999)
-    assert str(err) == "999 ", "Error is wrong: %r" % str(err)
+    assert_equal(str(err), "999 ")
 
     err = server.SMTPError(999, "Bogus Error Code")
-    assert str(err) == "999 Bogus Error Code"
+    assert_equal(str(err), "999 Bogus Error Code")

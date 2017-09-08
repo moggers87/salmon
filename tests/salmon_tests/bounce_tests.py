@@ -11,7 +11,7 @@ def test_bounce_analyzer_on_bounce():
     bm = mail.MailRequest(None, None, None, open("tests/bounce.msg").read())
     assert bm.is_bounce()
     assert bm.bounce
-    assert bm.bounce.score == 1.0
+    assert_equal(bm.bounce.score, 1.0)
     assert bm.bounce.probable()
     assert_equal(bm.bounce.primary_status, (5, u'Permanent Failure'))
     assert_equal(bm.bounce.secondary_status, (1, u'Addressing Status'))
@@ -35,7 +35,7 @@ def test_bounce_analyzer_on_regular():
     bm = mail.MailRequest(None, None, None, open("tests/signed.msg").read())
     assert not bm.is_bounce()
     assert bm.bounce
-    assert bm.bounce.score == 0.0
+    assert_equal(bm.bounce.score, 0.0)
     assert not bm.bounce.probable()
     assert_equal(bm.bounce.primary_status, (None, None))
     assert_equal(bm.bounce.secondary_status, (None, None))

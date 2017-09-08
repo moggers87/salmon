@@ -1,5 +1,5 @@
 from mock import Mock, patch
-from nose.tools import with_setup
+from nose.tools import assert_equal, with_setup
 
 from salmon import mail, utils
 from salmon.routing import Router
@@ -45,5 +45,5 @@ def test_forward(smtp_mock):
     import salmon.handlers.forward  # noqa
     Router.deliver(create_message())
 
-    assert smtp_mock.return_value.sendmail.called
-    assert smtp_mock.return_value.quit.called
+    assert_equal(smtp_mock.return_value.sendmail.call_count, 1)
+    assert_equal(smtp_mock.return_value.quit.call_count, 1)
