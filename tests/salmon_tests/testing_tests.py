@@ -1,7 +1,7 @@
 import os
 
 from mock import Mock, patch
-from nose.tools import with_setup
+from nose.tools import assert_equal, with_setup
 
 from salmon.testing import (
     RouterConversation,
@@ -22,10 +22,10 @@ relay = relay(port=8899)
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_clear_queue():
     queue().push("Test")
-    assert queue().count() > 0
+    assert_equal(queue().count(), 1)
 
     clear_queue()
-    assert queue().count() == 0
+    assert_equal(queue().count(), 0)
 
 
 @patch("smtplib.SMTP")
@@ -35,8 +35,8 @@ def test_relay(smtp_mock):
 
     relay.send('test@localhost', 'zedshaw@localhost', 'Test message', 'Test body')
 
-    assert smtp_mock.return_value.sendmail.called
-    assert smtp_mock.return_value.quit.called
+    assert_equal(smtp_mock.return_value.sendmail.call_count, 1)
+    assert_equal(smtp_mock.return_value.quit.call_count, 1)
 
 
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)

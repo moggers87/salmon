@@ -122,12 +122,7 @@ class Relay(object):
 
         hostname = self.hostname or self.resolve_relay_host(recipient)
 
-        try:
-            relay_host = self.configure_relay(hostname)
-        except socket.error:
-            logging.exception("Failed to connect to host %s:%d", hostname, self.port)
-            return
-
+        relay_host = self.configure_relay(hostname)
         relay_host.sendmail(sender, recipient, str(message))
         relay_host.quit()
 

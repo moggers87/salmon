@@ -57,8 +57,8 @@ def test_ConfirmationEngine_send(smtp_mock):
 
     engine.send(relay(port=8899), 'testing', message, 'confirmation.msg', locals())
 
-    assert smtp_mock.return_value.sendmail.called
-    assert smtp_mock.return_value.quit.called
+    assert_equal(smtp_mock.return_value.sendmail.call_count, 1)
+    assert_equal(smtp_mock.return_value.quit.call_count, 1)
     assert delivered('somedude', to_queue=engine.pending)
 
     return smtp_mock.return_value.sendmail.call_args[0][2]

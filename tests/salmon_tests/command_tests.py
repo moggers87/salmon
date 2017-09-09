@@ -41,11 +41,13 @@ def get_command(command):
     return func
 
 
-def test_send_command():
+@patch("salmon.server.smtplib.SMTP")
+def test_send_command(client_mock):
     command = get_command("send")
     command("--sender", 'test@localhost', "--to", 'test@localhost', "--body",
             'Test body', "--subject", 'Test subject', "--attach", 'setup.py', "--port",
             "8899", "--host", "127.0.0.1")
+    assert_equal(client_mock.return_value.sendmail.call_count, 1)
 
 
 def test_status_command():
@@ -72,22 +74,22 @@ def test_queue_command(MockQueue):
     command = get_command("queue")
 
     command("--pop")
-    assert mq.pop.called
+    assert_equal(mq.pop.call_count, 1)
 
     command("--get", 'somekey')
-    assert mq.get.called
+    assert_equal(mq.get.call_count, 1)
 
     command("--remove", 'somekey')
-    assert mq.remove.called
+    assert_equal(mq.remove.call_count, 1)
 
     command("--clear")
-    assert mq.clear.called
+    assert_equal(mq.clear.call_count, 1)
 
     command("--keys")
-    assert mq.keys.called
+    assert_equal(mq.keys.call_count, 1)
 
     command("--count")
-    assert mq.count.called
+    assert_equal(mq.count.call_count, 1)
 
 
 @patch('sys.exit', new=Mock())
@@ -135,17 +137,18 @@ def test_log_command(MockSMTPReceiver):
 
     setup()  # make sure it's clear for fake.pid
     command("--host", "127.0.0.1", "--port", "8825", "--pid", "run/fake.pid")
-    assert utils.daemonize.called
-    assert ms.start.called
+    assert_equal(utils.daemonize.call_count, 1)
+    assert_equal(ms.start.call_count, 1)
 
     # test that it exits on existing pid
     make_fake_pid_file()
     command("--host", "127.0.0.1", "--port", "8825", "--pid", "run/fake.pid")
-    assert sys.exit.called
+    assert_equal(sys.exit.call_count, 1)
 
 
 @patch('sys.stdin', new=Mock())
-def test_sendmail_command():
+@patch("salmon.server.smtplib.SMTP")
+def test_sendmail_command(client_mock):
     sys.stdin.read.function()
 
     msg = mail.MailResponse(To="tests@localhost", From="tests@localhost",
@@ -154,6 +157,7 @@ def test_sendmail_command():
 
     command = get_command("sendmail")
     command("--host", "127.0.0.1", "--port", "8899", "test@localhost")
+    assert_equal(client_mock.return_value.sendmail.call_count, 1)
 
 
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
@@ -166,13 +170,13 @@ def test_start_command():
     # normal start
     command = get_command("start")
     command("--pid", "smtp.pid")
-    assert utils.daemonize.call_count == 1
-    assert utils.import_settings.called
+    assert_equal(utils.daemonize.call_count, 1)
+    assert_equal(utils.import_settings.call_count, 1)
 
     # start with pid file existing already
     make_fake_pid_file()
     command("--pid", "run/fake.pid")
-    assert sys.exit.called
+    assert_equal(sys.exit.call_count, 1)
 
     # start with pid file existing and force given
     assert os.path.exists("run/fake.pid")
@@ -181,16 +185,16 @@ def test_start_command():
 
     # start with a uid but no gid
     command("--uid", "1000", "--pid", "run/fake.pid", "--force")
-    assert not utils.drop_priv.called
+    assert_equal(utils.drop_priv.call_count, 0)
 
     # start with a uid/gid given that's valid
     command("--uid", "1000", "--gid", "1000", "--pid", "run/fake.pid", "--force")
-    assert utils.drop_priv.called
+    assert_equal(utils.drop_priv.call_count, 1)
 
     # non daemon start
     daemonize_call_count = utils.daemonize.call_count
     command("--pid", "run/fake.pid", "--no-daemon", "--force")
-    assert utils.daemonize.call_count == daemonize_call_count  # same count -> not called
+    assert_equal(utils.daemonize.call_count, daemonize_call_count)  # same count -> not called
 
 
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
@@ -200,10 +204,8 @@ def test_start_command():
 def test_stop_command():
     command = get_command("stop")
     # gave a bad pid file
-    try:
-        command("--pid", "run/dontexit.pid")
-    except IOError:
-        assert sys.exit.called
+    command("--pid", "run/dontexit.pid")
+    assert_equal(sys.exit.call_count, 1)
 
     make_fake_pid_file()
     command("--pid", "run/fake.pid")
@@ -211,9 +213,10 @@ def test_stop_command():
     make_fake_pid_file()
     command("--all", "run")
 
+    os_kill_count = os.kill.call_count
     make_fake_pid_file()
     command("--pid", "run/fake.pid", "--force")
-    assert os.kill.called
+    assert_equal(os.kill.call_count, os_kill_count + 1)  # kill should have been called once more
     assert not os.path.exists("run/fake.pid")
 
     make_fake_pid_file()

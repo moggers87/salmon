@@ -47,12 +47,12 @@ def test_pop():
 
     assert hasattr(msg, "Data"), "MailRequest doesn't have Data attribute"
 
-    assert msg['to'] == "test@localhost"
-    assert msg['from'] == "test@localhost"
-    assert msg['subject'] == "Test"
-    assert msg.body() == "Test"
+    assert_equal(msg['to'], "test@localhost")
+    assert_equal(msg['from'], "test@localhost")
+    assert_equal(msg['subject'], "Test")
+    assert_equal(msg.body(), "Test")
 
-    assert q.count() == 0, "Queue should be empty."
+    assert_equal(q.count(), 0)
     assert not q.pop()[0]
 
 
@@ -75,10 +75,10 @@ def test_remove():
 
     key = q.push(str(msg))
     assert key, "Didn't get a key for test_get push."
-    assert q.count() == 2, "Wrong count %d should be 2" % q.count()
+    assert_equal(q.count(), 2)
 
     q.remove(key)
-    assert q.count() == 1, "Wrong count %d should be 1" % q.count()
+    assert_equal(q.count(), 1)
 
 
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
