@@ -1,4 +1,6 @@
 # Copyright (C) 2008 Zed A. Shaw.  Licensed under the terms of the GPLv3.
+import socket
+
 from mock import Mock, patch
 from nose.tools import assert_equal, assert_raises, with_setup
 
@@ -195,6 +197,13 @@ def test_relay_reply():
     print "Relay: %r" % relay
 
     relay.reply(test_mail_request(), 'from@localhost', 'Test subject', 'Body')
+
+
+def test_relay_raises_exception():
+    # previously, salmon would eat up socket errors and just log something. Not cool!
+    relay = server.Relay("example.com", port=8899)
+    with assert_raises(socket.error):
+        relay.deliver(test_mail_response_plain_text())
 
 
 def raises_exception(*x, **kw):

@@ -16,6 +16,7 @@
 - Make ``LMTPReceiver`` the default in the prototype app (#48)
 - Properly work around SMTPReceiver bug caused by Python's ``smtpd`` module (#48)
   * This means that Salmon will no longer accept multiple RCPT TOs over SMTP
+- Don't catch ``socket.error`` when delivering messages via ``salmon.server.Relay`` (#49)
 
 Earlier Releases
 ================
