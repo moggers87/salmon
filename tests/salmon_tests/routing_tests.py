@@ -1,4 +1,4 @@
-from nose.tools import assert_raises, raises, with_setup
+from nose.tools import assert_equal, assert_raises, raises, with_setup
 from mock import Mock, patch
 
 from salmon.routing import route, Router, StateStorage, MemoryStorage, ShelveStorage
@@ -13,38 +13,38 @@ def test_MemoryStorage():
     store = MemoryStorage()
     store.set(test_MemoryStorage.__module__, "tester@localhost", "TESTED")
 
-    assert store.get(test_MemoryStorage.__module__, "tester@localhost") == "TESTED"
+    assert_equal(store.get(test_MemoryStorage.__module__, "tester@localhost"), "TESTED")
 
-    assert store.get(test_MemoryStorage.__module__, "tester2@localhost") == "START"
+    assert_equal(store.get(test_MemoryStorage.__module__, "tester2@localhost"), "START")
 
     store.clear()
 
-    assert store.get(test_MemoryStorage.__module__, "tester@localhost") == "START"
+    assert_equal(store.get(test_MemoryStorage.__module__, "tester@localhost"), "START")
 
 
 def test_ShelveStorage():
     store = ShelveStorage("run/states.db")
 
     store.set(test_ShelveStorage.__module__, "tester@localhost", "TESTED")
-    assert store.get(test_MemoryStorage.__module__, "tester@localhost") == "TESTED"
+    assert_equal( store.get(test_MemoryStorage.__module__, "tester@localhost"), "TESTED")
 
-    assert store.get(test_MemoryStorage.__module__, "tester2@localhost") == "START"
+    assert_equal(store.get(test_MemoryStorage.__module__, "tester2@localhost"), "START")
 
     store.clear()
-    assert store.get(test_MemoryStorage.__module__, "tester@localhost") == "START"
+    assert_equal(store.get(test_MemoryStorage.__module__, "tester@localhost"), "START")
 
 
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_RoutingBase():
     # check that Router is in a pristine state
-    assert len(Router.ORDER) == 0
-    assert len(Router.REGISTERED) == 0
+    assert_equal( len(Router.ORDER), 0)
+    assert_equal(len(Router.REGISTERED), 0)
 
     setup_router(['salmon_tests.handlers.simple_fsm_mod'])
     from .handlers import simple_fsm_mod
 
-    assert len(Router.ORDER) > 0
-    assert len(Router.REGISTERED) > 0
+    assert_equal(len(Router.ORDER), 5)
+    assert_equal(len(Router.REGISTERED), 5)
 
     message = MailRequest('fakepeer', 'zedshaw@localhost', 'users-subscribe@localhost', "")
     Router.deliver(message)
@@ -77,8 +77,8 @@ def test_RoutingBase():
 
     Router.reload()
     assert 'salmon_tests.handlers.simple_fsm_mod' in Router.HANDLERS
-    assert len(Router.ORDER)
-    assert len(Router.REGISTERED)
+    assert_equal(len(Router.ORDER), 5)
+    assert_equal(len(Router.REGISTERED), 5)
 
 
 def test_Router_undeliverable_queue():
@@ -89,7 +89,7 @@ def test_Router_undeliverable_queue():
     msg = MailRequest('fakepeer', 'from@localhost', 'to@localhost', "Nothing")
 
     Router.deliver(msg)
-    assert Router.UNDELIVERABLE_QUEUE.push.called
+    assert_equal(Router.UNDELIVERABLE_QUEUE.push.call_count, 1)
 
 
 @raises(NotImplementedError)
@@ -127,19 +127,19 @@ def test_route___get___raises():
 def test_reload_raises():
     Router.LOG_EXCEPTIONS = True
     Router.reload()
-    assert routing.LOG.exception.called
+    assert_equal(routing.LOG.exception.call_count, 1)
 
     Router.LOG_EXCEPTIONS = False
     routing.LOG.exception.reset_mock()
     assert_raises(ImportError, Router.reload)
-    assert not routing.LOG.exception.called
+    assert_equal(routing.LOG.exception.call_count, 0)
 
     routing.LOG.exception.reset_mock()
     Router.LOG_EXCEPTIONS = True
     Router.load(['fake.handler'])
-    assert routing.LOG.exception.called
+    assert_equal(routing.LOG.exception.call_count, 1)
 
     Router.LOG_EXCEPTIONS = False
     routing.LOG.exception.reset_mock()
     assert_raises(ImportError, Router.load, ['fake.handler'])
-    assert not routing.LOG.exception.called
+    assert_equal(routing.LOG.exception.call_count, 0)

@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import sys
+import socket
 
 from mock import Mock, patch
 from nose.tools import assert_equal, assert_raises, with_setup
@@ -135,14 +136,22 @@ def test_Relay_asserts_ssl_options():
     server.Relay("localhost", starttls=True, lmtp=True)
 
 
-def test_relay_deliver():
-    # this test actually delivers to a test server
+@patch("salmon.server.smtplib.SMTP")
+def test_relay_deliver(client_mock):
+    # test that relay will actually call smtplib.SMTP
     relay = server.Relay("localhost", port=8899)
 
     relay.deliver(test_mail_response_plain_text())
+    assert_equal(client_mock.return_value.sendmail.call_count, 1)
+
     relay.deliver(test_mail_response_html())
+    assert_equal(client_mock.return_value.sendmail.call_count, 2)
+
     relay.deliver(test_mail_response_html_and_plain_text())
+    assert_equal(client_mock.return_value.sendmail.call_count, 3)
+
     relay.deliver(test_mail_response_attachments())
+    assert_equal(client_mock.return_value.sendmail.call_count, 4)
 
 
 @patch("salmon.server.smtplib.SMTP")
@@ -174,7 +183,8 @@ def test_relay_smtp_ssl(client_mock):
 
 
 @patch('salmon.server.resolver.query')
-def test_relay_deliver_mx_hosts(query):
+@patch("salmon.server.smtplib.SMTP")
+def test_relay_deliver_mx_hosts(client_mock, query):
     query.return_value = [Mock()]
     query.return_value[0].exchange = "localhost"
     relay = server.Relay(None, port=8899)
@@ -182,7 +192,7 @@ def test_relay_deliver_mx_hosts(query):
     msg = test_mail_response_plain_text()
     msg['to'] = 'user@localhost'
     relay.deliver(msg)
-    assert query.called
+    assert_equal(query.call_count, 1)
 
 
 @patch('salmon.server.resolver.query')
@@ -192,7 +202,7 @@ def test_relay_resolve_relay_host(query):
     relay = server.Relay(None, port=8899)
     host = relay.resolve_relay_host('user@localhost')
     assert_equal(host, 'localhost')
-    assert query.called
+    assert_equal(query.call_count, 1)
 
     query.reset_mock()
     query.side_effect = None  # reset_mock doens't clear return_value or side_effect
@@ -200,14 +210,23 @@ def test_relay_resolve_relay_host(query):
     query.return_value[0].exchange = "mx.example.com"
     host = relay.resolve_relay_host('user@example.com')
     assert_equal(host, 'mx.example.com')
-    assert query.called
+    assert_equal(query.call_count, 1)
 
 
-def test_relay_reply():
+@patch("salmon.server.smtplib.SMTP")
+def test_relay_reply(client_mock):
     relay = server.Relay("localhost", port=8899)
     print("Relay: %r" % relay)
 
     relay.reply(test_mail_request(), 'from@localhost', 'Test subject', 'Body')
+    assert_equal(client_mock.return_value.sendmail.call_count, 1)
+
+
+def test_relay_raises_exception():
+    # previously, salmon would eat up socket errors and just log something. Not cool!
+    relay = server.Relay("example.com", port=8899)
+    with assert_raises(socket.error):
+        relay.deliver(test_mail_response_plain_text())
 
 
 def raises_exception(*x, **kw):
@@ -222,7 +241,7 @@ def test_queue_receiver():
     run_queue.push(str(test_mail_response_plain_text()))
     assert run_queue.count() > 0
     receiver.start(one_shot=True)
-    assert run_queue.count() == 0
+    assert_equal(run_queue.count(), 0)
 
     routing.Router.deliver.side_effect = raises_exception
     receiver.process_message(mail.MailRequest('localhost', 'test@localhost', 'test@localhost', 'Fake body.'))
@@ -244,16 +263,16 @@ def test_SMTPReceiver():
 
 def test_SMTPError():
     err = server.SMTPError(550)
-    assert str(err) == '550 Permanent Failure Mail Delivery Protocol Status', "Error is wrong: %r" % str(err)
+    assert_equal(str(err), '550 Permanent Failure Mail Delivery Protocol Status')
 
     err = server.SMTPError(400)
-    assert str(err) == '400 Persistent Transient Failure Other or Undefined Status', "Error is wrong: %r" % str(err)
+    assert_equal(str(err), '400 Persistent Transient Failure Other or Undefined Status')
 
     err = server.SMTPError(425)
-    assert str(err) == '425 Persistent Transient Failure Mailbox Status', "Error is wrong: %r" % str(err)
+    assert_equal(str(err), '425 Persistent Transient Failure Mailbox Status')
 
     err = server.SMTPError(999)
-    assert str(err) == "999 ", "Error is wrong: %r" % str(err)
+    assert_equal(str(err), "999 ")
 
     err = server.SMTPError(999, "Bogus Error Code")
-    assert str(err) == "999 Bogus Error Code"
+    assert_equal(str(err), "999 Bogus Error Code")

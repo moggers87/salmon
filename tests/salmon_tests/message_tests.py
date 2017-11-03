@@ -17,11 +17,11 @@ def test_mail_request():
     # try with a half-assed message
     msg = mail.MailRequest("localhost", "zedfrom@localhost",
                            "zedto@localhost", "Fake body.")
-    assert msg['to'] == "zedto@localhost", "To is %r" % msg['to']
-    assert msg['from'] == "zedfrom@localhost", "From is %r" % msg['from']
+    assert_equal(msg['to'], "zedto@localhost")
+    assert_equal(msg['from'], "zedfrom@localhost")
 
     msg = mail.MailRequest("localhost", "somedude@localhost", ["somedude@localhost"], sample_message)
-    assert msg.original == sample_message
+    assert_equal(msg.original, sample_message)
 
     assert_equal(msg['From'], "somedude@localhost")
 
@@ -101,14 +101,14 @@ def test_mail_response_attachments():
     assert_raises(AssertionError, sample.attach, data=readme_data, disposition="inline")
 
     sample.attach(filename="./README.md", content_type="text/plain", disposition="inline")
-    assert len(sample.attachments) == 1
+    assert_equal(len(sample.attachments), 1)
     assert sample.multipart
 
     msg = sample.to_message()
     assert_equal(len(msg.get_payload()), 2)
 
     sample.clear()
-    assert len(sample.attachments) == 0
+    assert_equal(len(sample.attachments), 0)
     assert not sample.multipart
 
     sample.attach(data=readme_data, filename="./README.md", content_type="text/plain")
@@ -143,7 +143,7 @@ def test_mail_request_attachments():
     sample = test_mail_response_plain_text()
     msg = mail.MailRequest("localhost", None, None, str(sample))
     msg_parts = msg.all_parts()
-    assert len(msg_parts) == 0, "Length is %d should be 0." % len(msg_parts)
+    assert_equal(len(msg_parts), 0)
     assert msg.body()
 
 
@@ -168,7 +168,7 @@ def test_mail_response_mailing_list_headers():
 
     headers = ['Sender', 'Reply-To', 'List-Id', 'Return-Path', 'In-Reply-To', 'References', 'Precedence']
     for header in headers:
-        assert msg[header] == req[header], "%s != %s" % (msg[header], req[header])
+        assert msg[header] == req[header], "%s: %r != %r" % (header, msg[header], req[header])
 
     # try a delete
     del msg['Precedence']

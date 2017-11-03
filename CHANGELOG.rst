@@ -19,6 +19,7 @@
 - Python 3 support (#7)
   * You'll now require ``setuptools`` to install (this won't be a problem for those upgrading)
   * No more support for Windows - it never worked for production on that platform anyway
+- Don't catch ``socket.error`` when delivering messages via ``salmon.server.Relay`` (#49)
 
 Earlier Releases
 ================

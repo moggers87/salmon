@@ -102,7 +102,7 @@ def check_for_pid(pid, force):
     then it will remove the file and not exit if it's there."""
     if os.path.exists(pid):
         if not force:
-            print("PID file %s exists, so assuming Salmon is running.  Give -FORCE to force it to start." % pid)
+            print("PID file %s exists, so assuming Salmon is running.  Give --force to force it to start." % pid)
             sys.exit(1)
         else:
             os.unlink(pid)

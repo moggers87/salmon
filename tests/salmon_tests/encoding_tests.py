@@ -43,13 +43,13 @@ def test_MailBase():
     m['Content-Type'] = 'text/plain; charset=iso-8859-1'
     m['MIME-Version'] = '1.0'
 
-    assert m['To'] == "testing@localhost"
-    assert m['TO'] == m['To']
-    assert m['to'] == m['To']
+    assert_equal(m['To'], "testing@localhost")
+    assert_equal(m['TO'], m['To'])
+    assert_equal(m['to'], m['To'])
 
-    assert m['Subject'] == the_subject
-    assert m['subject'] == m['Subject']
-    assert m['sUbjeCt'] == m['Subject']
+    assert_equal(m['Subject'], the_subject)
+    assert_equal(m['subject'], m['Subject'])
+    assert_equal(m['sUbjeCt'], m['Subject'])
 
     msg = encoding.to_message(m)
     m2 = encoding.from_message(msg)
@@ -207,9 +207,9 @@ def test_MIMEPart():
 
     mail = encoding.from_message(multi)
 
-    assert mail.parts[0].body == "The first payload."
-    assert mail.parts[1].body == "The second payload."
-    assert mail.parts[2].body == image_data
+    assert_equal(mail.parts[0].body, "The first payload.")
+    assert_equal(mail.parts[1].body, "The second payload.")
+    assert_equal(mail.parts[2].body, image_data)
 
     encoding.to_message(mail)
 
@@ -226,12 +226,12 @@ def test_attach_text():
     mail.attach_text("This is some text.", 'text/plain')
 
     msg = encoding.to_message(mail)
-    assert msg.get_payload(0).get_payload() == "This is some text."
+    assert_equal(msg.get_payload(0).get_payload(), "This is some text.")
     assert encoding.to_string(mail)
 
     mail.attach_text("<html><body><p>Hi there.</p></body></html>", "text/html")
     msg = encoding.to_message(mail)
-    assert len(msg.get_payload()) == 2
+    assert_equal(len(msg.get_payload()), 2)
     assert encoding.to_string(mail)
 
 
@@ -242,8 +242,8 @@ def test_attach_file():
     msg = encoding.to_message(mail)
 
     payload = msg.get_payload(0)
-    assert payload.get_payload(decode=True) == png
-    assert payload.get_filename() == "salmon.png", payload.get_filename()
+    assert_equal(payload.get_payload(decode=True), png)
+    assert_equal(payload.get_filename(), "salmon.png")
 
 
 def test_content_encoding_headers_are_maintained():
