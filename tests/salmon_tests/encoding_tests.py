@@ -176,7 +176,7 @@ def test_headers_round_trip():
         original = encoding.header_from_mime_encoding(header)
 
         assert original
-        assert "=?" not in original and "?=" not in original, "Didn't decode: %r" % (encoding.SCANNER.scan(header),)
+        assert "=?" not in original and "?=" not in original, "Didn't decode: %r" % header
 
         encoded = encoding.header_to_mime_encoding(original)
         assert encoded

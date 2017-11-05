@@ -9,7 +9,7 @@ def simple_key_gen(module_name, message):
 
 
 # common routing capture regexes go in here, you can override them in @route
-Router.defaults(host="localhost", 
+Router.defaults(host="localhost",
                 action="[a-zA-Z0-9]+",
                 list_name="[a-zA-Z.0-9]+")
 
@@ -22,7 +22,7 @@ def START(message, list_name=None, action=None, host=None):
         raise RuntimeError("Exploded on purpose.")
     return CONFIRM
 
-    
+
 @route("(list_name)-confirm-(id_number)@(host)", id_number="[0-9]+")
 def CONFIRM(message, list_name=None, id_number=None, host=None):
     print("CONFIRM", message, list_name, id_number, host)

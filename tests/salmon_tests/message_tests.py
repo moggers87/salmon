@@ -255,6 +255,15 @@ def test_to_from_works():
 
 def test_decode_header_randomness():
     assert_equal(mail._decode_header_randomness(None), set())
+
+    # with strings
     assert_equal(mail._decode_header_randomness(["z@localhost", '"Z A" <z@localhost>']), set(["z@localhost", "z@localhost"]))
     assert_equal(mail._decode_header_randomness("z@localhost"), set(["z@localhost"]))
+
+    # with bytes
+    assert_equal(mail._decode_header_randomness([b"z@localhost", b'"Z A" <z@localhost>']), set(["z@localhost", "z@localhost"]))
+    assert_equal(mail._decode_header_randomness(b"z@localhost"), set(["z@localhost"]))
+
+    # with literal nonsense
     assert_raises(encoding.EncodingError, mail._decode_header_randomness, 1)
+    assert_raises(encoding.EncodingError, mail._decode_header_randomness, [1, "m@localhost"])
