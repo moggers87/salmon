@@ -139,9 +139,9 @@ behave correctly given that constraint then please voice your concerns.
 Development
 ===========
 
-Salmon is written entirely in Python and runs on Python 2.7 but not 3k yet.  It
-should hopefully run on any platform that supports Python and has Unix
-semantics.
+Salmon is written entirely in Python and runs on Python 2.7 with experimental
+support for Python 3. It should hopefully run on any platform that supports
+Python and has Unix semantics.
 
 If you find yourself lost in source code, just yell.
 
