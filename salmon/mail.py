@@ -33,8 +33,16 @@ def _decode_header_randomness(addr):
     if not addr:
         return set()
     elif isinstance(addr, list):
-        return set(parseaddr(a.lower())[1] for a in addr)
+        addr_set = set()
+        for a in addr:
+            for returned_addr in _decode_header_randomness(a):
+                addr_set.add(returned_addr)
+
+        return addr_set
     elif isinstance(addr, six.string_types):
+        return set([parseaddr(addr.lower())[1]])
+    elif isinstance(addr, six.binary_type):
+        addr = addr.decode()
         return set([parseaddr(addr.lower())[1]])
     else:
         raise encoding.EncodingError("Address must be a string or a list not: %r", type(addr))
