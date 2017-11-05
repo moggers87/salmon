@@ -19,7 +19,7 @@ modules (not just your handlers) will get reloaded.
 The spelling function will use PyEnchant to spell check a string.  If it finds
 any errors it prints them out, and returns False.
 """
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
 import re
 

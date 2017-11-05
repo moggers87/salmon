@@ -2,6 +2,7 @@
 The majority of the server related things Salmon needs to run, like receivers,
 relays, and queue processors.
 """
+from __future__ import print_function, unicode_literals
 
 import asyncore
 import logging

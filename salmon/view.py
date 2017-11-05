@@ -5,6 +5,7 @@ the template loaders in your boot module.
 
 After that these functions should just work.
 """
+from __future__ import print_function, unicode_literals
 
 from salmon import mail
 import email

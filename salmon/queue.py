@@ -4,6 +4,7 @@ do get a lot more features from the Python library, so if you need
 to do some serious surgery go use that.  This works as a good
 API for the 90% case of "put mail in, get mail out" queues.
 """
+from __future__ import print_function, unicode_literals
 
 import errno
 import hashlib

@@ -64,6 +64,7 @@ email is not formatted right and/or spam.
 If you find an instance where this is not the case, then submit it to the
 project as a test case.
 """
+from __future__ import print_function, unicode_literals
 
 from email import encoders
 from email.charset import Charset

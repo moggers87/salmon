@@ -9,7 +9,7 @@ that you've received, so it doesn't have functions for attaching files and such.
 MailResponse is used when you are going to write an email, so it has the
 APIs for doing attachments and such.
 """
-
+from __future__ import print_function, unicode_literals
 
 from email.utils import parseaddr
 import mimetypes
