@@ -1,4 +1,7 @@
 # Copyright (C) 2008 Zed A. Shaw.  Licensed under the terms of the GPLv3.
+from __future__ import print_function
+
+import sys
 import socket
 
 from mock import Mock, patch
@@ -15,6 +18,13 @@ from .message_tests import (
 )
 from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
 
+SMTP_MESSAGE_DEFS = {
+    2: {"ok": "250 Ok"},
+    3: {"ok": "250 OK"},
+}
+
+SMTP_MESSAGES = SMTP_MESSAGE_DEFS[sys.version_info[0]]
+
 
 def test_router():
     routing.Router.deliver(test_mail_request())
@@ -26,15 +36,17 @@ def test_router():
 
     routing.Router.deliver(msg)
 
-
-def test_SMTPChannel_rcpt():
+# TODO: this test is running slow, find out why
+@patch("asynchat.async_chat.push")
+def test_SMTPChannel_rcpt(push_mock):
     channel = server.SMTPChannel(Mock(), Mock(), Mock())
+    channel.seen_greeting = True
     channel.push = Mock()
     channel.smtp_MAIL("FROM: you@example.com")
 
     channel.push.reset_mock()
     channel.smtp_RCPT("TO: me@example.com")
-    assert_equal(channel.push.call_args[0], ("250 Ok",))
+    assert_equal(channel.push.call_args[0], (SMTP_MESSAGES["ok"],))
 
     channel.push.reset_mock()
     channel.smtp_RCPT("TO: them@example.com")
@@ -204,7 +216,7 @@ def test_relay_resolve_relay_host(query):
 @patch("salmon.server.smtplib.SMTP")
 def test_relay_reply(client_mock):
     relay = server.Relay("localhost", port=8899)
-    print "Relay: %r" % relay
+    print("Relay: %r" % relay)
 
     relay.reply(test_mail_request(), 'from@localhost', 'Test subject', 'Body')
     assert_equal(client_mock.return_value.sendmail.call_count, 1)

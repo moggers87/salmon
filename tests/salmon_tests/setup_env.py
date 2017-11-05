@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import os
 from shutil import rmtree
 
@@ -8,9 +10,9 @@ from . import dirs
 
 def clear_dir(dir_path):
     for dir_item in os.listdir(dir_path):
-        print dir_item
+        print(dir_item)
         full_path = '%s/%s' % (dir_path, dir_item)
-        print full_path
+        print(full_path)
         if os.path.isfile(full_path):
             os.unlink(full_path)
         else:

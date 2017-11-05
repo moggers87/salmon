@@ -1,4 +1,3 @@
-
 """
 The meat of Salmon, doing all the work that actually takes an email and makes
 sure that your code gets it.
@@ -49,6 +48,7 @@ after that.
 The @state_key_generator is different since it's not intended to go on a handler
 but instead on a simple function, so it shouldn't be combined with the others.
 """
+from __future__ import print_function, unicode_literals
 
 from functools import wraps
 import re
@@ -57,6 +57,12 @@ import sys
 import email.utils
 import shelve
 import threading
+
+try:
+    from importlib import reload
+except ImportError:
+    from __builtin__ import reload
+
 
 ROUTE_FIRST_STATE = 'START'
 LOG = logging.getLogger("routing")
@@ -96,7 +102,7 @@ class MemoryStorage(StateStorage):
     """
     The default simplified storage for the Router to hold the states.  This
     should only be used in testing, as you'll lose all your contacts and their
-    states if your server shutsdown.  It is also horribly NOT thread safe.
+    states if your server shuts down.  It is also horribly NOT thread safe.
     """
     def __init__(self):
         self.states = {}
@@ -510,7 +516,7 @@ class route(object):
         raise NotImplementedError("Not supported on methods yet, only module functions.")
 
     def parse_format(self, format, captures):
-        """Does the grunt work of convertion format+captures into the regex."""
+        """Does the grunt work of conversion format+captures into the regex."""
         for key in captures:
             format = format.replace("(" + key + ")", "(?P<%s>%s)" % (key, captures[key]))
         return "^" + format + "$"
@@ -560,7 +566,7 @@ def stateless(func):
     This is how you create a handler that processes all messages matching the
     given format+captures in a @route.
 
-    Another way to think about a @stateless handler is that it is a passthrough
+    Another way to think about a @stateless handler is that it is a pass-through
     handler that does its processing and then passes the results on to others.
 
     Stateless handlers are NOT guaranteed to run before the handler with state.
@@ -576,7 +582,7 @@ def stateless(func):
 def nolocking(func):
     """
     Normally salmon.routing.Router has a lock around each call to all handlers
-    to prevent them from stepping on eachother.  It's assumed that 95% of the
+    to prevent them from stepping on each other.  It's assumed that 95% of the
     time this is what you want, so it's the default.  You probably want
     everything to go in order and not step on other things going off from other
     threads in the system.

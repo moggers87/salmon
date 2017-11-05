@@ -3,13 +3,13 @@ Salmon takes the policy that email it receives is most likely complete garbage
 using bizarre pre-Unicode formats that are irrelevant and unnecessary in today's
 modern world.  These emails must be cleansed of their unholy stench of
 randomness and turned into something nice and clean that a regular Python
-programmer can work with:  unicode.
+programmer can work with:  Unicode.
 
 That's the receiving end, but on the sending end Salmon wants to make the world
 better by not increasing the suffering.  To that end, Salmon will canonicalize
 all email it sends to be ascii or utf-8 (whichever is simpler and works to
 encode the data).  When you get an email from Salmon, it is a pristine easily
-parseable clean unit of goodness you can count on.
+parsable clean unit of goodness you can count on.
 
 To accomplish these tasks, Salmon goes back to basics and assert a few simple
 rules on each email it receives:
@@ -25,12 +25,12 @@ rules on each email it receives:
 6) It does this by decoding all codecs, and if the codec LIES, then it will
    attempt to statistically detect the codec using chardet.
 7) If it can't detect the codec, and the codec lies, then the email is bad.
-8) All text bodies and attachments are then converted to Python unicode in the
-   same way as the headers.
+8) All text bodies and attachments are then converted to Python unicode/str
+   (for Python 2.7 and 3.x respectively) in the same way as the headers.
 9) All other attachments are converted to raw strings as-is.
 
 Once Salmon has done this, your Python handler can now assume that all
-MailRequest objects are happily unicode enabled and ready to go.  The rule is:
+MailRequest objects are happily Unicode enabled and ready to go.  The rule is:
 
     IF IT CANNOT BE UNICODE, THEN PYTHON CANNOT WORK WITH IT.
 
@@ -64,11 +64,12 @@ email is not formatted right and/or spam.
 If you find an instance where this is not the case, then submit it to the
 project as a test case.
 """
+from __future__ import print_function, unicode_literals
 
 from email import encoders
 from email.charset import Charset
-from email.mime.base import MIMEBase
 from email.message import Message
+from email.mime.base import MIMEBase
 from email.utils import parseaddr
 import email
 import re
@@ -76,6 +77,7 @@ import string
 import sys
 
 import chardet
+import six
 
 DEFAULT_ENCODING = "utf-8"
 DEFAULT_ERROR_HANDLING = "strict"
@@ -297,11 +299,14 @@ class MIMEPart(Message):
         except UnicodeError:
             encoded = content.encode('utf-8')
             charset = 'utf-8'
+        except AttributeError:
+            # content is already bytes
+            encoded = content
 
         self.set_payload(encoded, charset=charset)
 
     def extract_payload(self, mail):
-        if mail.body == None:
+        if mail.body is None:
             return  # only None, '' is still ok
 
         ctype, ctype_params = mail.content_encoding['Content-Type']
@@ -363,9 +368,9 @@ def to_message(mail):
 
     try:
         out = MIMEPart(ctype, **params)
-    except TypeError, exc:
+    except TypeError as exc:
         raise EncodingError("Content-Type malformed, not allowed: %r; %r (Python ERROR: %s" %
-                            (ctype, params, exc.message))
+                            (ctype, params, getattr(exc, "message", "(No error message)")))
 
     for k in mail.keys():
         if k in ADDRESS_HEADERS_WHITELIST:
@@ -377,15 +382,17 @@ def to_message(mail):
             del out[k]
             out[k] = value
         else:
-            out[k.encode('ascii')] = value
+            out[k] = value
 
     out.extract_payload(mail)
 
     # make sure payload respects cte
     cte, cte_params = mail.content_encoding['Content-Transfer-Encoding']
     if cte == "quoted-printable":
+        del out['Content-Transfer-Encoding']
         encoders.encode_quopri(out)
     elif cte == "base64":
+        del out['Content-Transfer-Encoding']
         encoders.encode_base64(out)
 
     # go through the children
@@ -405,7 +412,11 @@ def to_string(mail, envelope_header=False):
 
 def from_string(data):
     """Takes a string, and tries to clean it up into a clean MailBase."""
-    return from_message(email.message_from_string(data))
+    try:
+        msg = email.message_from_string(data)
+    except TypeError:
+        msg = email.message_from_bytes(data)
+    return from_message(msg)
 
 
 def to_file(mail, fileobj):
@@ -414,7 +425,12 @@ def to_file(mail, fileobj):
 
 def from_file(fileobj):
     """Reads an email and cleans it up to make a MailBase."""
-    return from_message(email.message_from_file(fileobj))
+    try:
+        msg = email.message_from_file(fileobj)
+    except TypeError:
+        fileobj.seek(0)
+        msg = email.message_from_binary_file(fileobj)
+    return from_message(msg)
 
 
 def normalize_header(header):
@@ -449,21 +465,28 @@ def properly_encode_header(value, encoder, not_email):
     check different, then change this.
     """
     try:
-        return value.encode("ascii")
+        value.encode("ascii")
+        return value
     except UnicodeEncodeError:
         if not_email is False and VALUE_IS_EMAIL_ADDRESS(value):
             # this could have an email address, make sure we don't screw it up
             name, address = parseaddr(value)
-            return '"%s" <%s>' % (encoder.header_encode(name.encode("utf-8")), address)
+            if six.PY2:
+                # python 2 decodes to ascii, python 3 wants no decoding at all!
+                name = name.encode("utf-8")
+            return '"%s" <%s>' % (encoder.header_encode(name), address)
 
-        return encoder.header_encode(value.encode("utf-8"))
+        if six.PY2:
+            # python 2 decodes to ascii, python 3 wants no decoding at all!
+            value = value.encode("utf-8")
+        return "%s" % encoder.header_encode(value)
 
 
 def header_to_mime_encoding(value, not_email=False):
     if not value: return ""
 
     encoder = Charset(DEFAULT_ENCODING)
-    if type(value) == list:
+    if isinstance(value, list):
         return "; ".join(properly_encode_header(v, encoder, not_email) for v in value)
     else:
         return properly_encode_header(value, encoder, not_email)
@@ -472,21 +495,23 @@ def header_to_mime_encoding(value, not_email=False):
 def header_from_mime_encoding(header):
     if header is None:
         return header
-    elif type(header) == list:
+    elif isinstance(header, list):
         return [properly_decode_header(h) for h in header]
+    elif isinstance(header, email.header.Header):
+        return six.text_type(header)
     else:
         return properly_decode_header(header)
 
 
 def guess_encoding_and_decode(original, data, errors=DEFAULT_ERROR_HANDLING):
     try:
-        charset = chardet.detect(str(data))
+        charset = chardet.detect(data)
 
         if not charset['encoding']:
-            raise EncodingError("Header claimed %r charset, but detection found none.  Decoding failed." % original)
+            raise EncodingError("Header claimed %r charset, but detection found none. Decoding failed." % original)
 
         return data.decode(charset["encoding"], errors)
-    except UnicodeError, exc:
+    except UnicodeError as exc:
         raise EncodingError("Header lied and claimed %r charset, guessing said "
                             "%r charset, neither worked so this is a bad email: "
                             "%s." % (original, charset, exc))
@@ -494,16 +519,13 @@ def guess_encoding_and_decode(original, data, errors=DEFAULT_ERROR_HANDLING):
 
 def attempt_decoding(charset, dec):
     try:
-        if isinstance(dec, unicode):
+        if isinstance(dec, six.text_type):
             # it's already unicode so just return it
             return dec
         else:
             return dec.decode(charset)
-    except UnicodeError:
+    except (UnicodeError, LookupError):
         # looks like the charset lies, try to detect it
-        return guess_encoding_and_decode(charset, dec)
-    except LookupError:
-        # they gave a crap encoding
         return guess_encoding_and_decode(charset, dec)
 
 
@@ -511,7 +533,13 @@ def apply_charset_to_header(charset, encoding, data):
     if encoding == 'b' or encoding == 'B':
         dec = email.base64mime.decode(data.encode('ascii'))
     elif encoding == 'q' or encoding == 'Q':
-        dec = email.quoprimime.header_decode(data.encode('ascii'))
+        if six.PY2:
+            # python 2 decodes to ascii, python 3 wants no decoding at all!
+            data = data.encode('ascii')
+        dec = email.quoprimime.header_decode(data)
+        if six.PY3:
+            # and Python 3 gives us some bytes encoded as unicode chars, so encode them to bytes
+            dec = bytes(dec, "raw-unicode-escape")
     else:
         raise EncodingError("Invalid header encoding %r should be 'Q' or 'B'." % encoding)
 
@@ -532,24 +560,24 @@ def _match(data, pattern, pos):
 
 
 
-def _tokenize(data, next):
+def _tokenize(data, next_token):
     enc_data = None
 
-    left, enc_header, next = _match(data, ENCODING_REGEX, next)
+    left, enc_header, next_token = _match(data, ENCODING_REGEX, next_token)
 
-    if next != -1:
-        enc_data, _, next = _match(data, ENCODING_END_REGEX, next)
+    if next_token != -1:
+        enc_data, _, next_token = _match(data, ENCODING_END_REGEX, next_token)
 
-    return left, enc_header, enc_data, next
+    return left, enc_header, enc_data, next_token
 
 
 def _scan(data):
-    next = 0
+    next_token = 0
     continued = False
-    while next != -1:
-        left, enc_header, enc_data, next = _tokenize(data, next)
+    while next_token != -1:
+        left, enc_header, enc_data, next_token = _tokenize(data, next_token)
 
-        if next != -1 and INDENT_REGEX.match(data, next):
+        if next_token != -1 and INDENT_REGEX.match(data, next_token):
             continued = True
         else:
             continued = False
@@ -564,16 +592,16 @@ def _parse_charset_header(data):
     try:
         while True:
             if not oddness:
-                left, enc_header, enc_data, continued = scanner.next()
+                left, enc_header, enc_data, continued = six.next(scanner)
             else:
                 left, enc_header, enc_data, continued = oddness
                 oddness = None
 
             while continued:
-                l, eh, ed, continued = scanner.next()
+                l, eh, ed, continued = six.next(scanner)
 
                 if not eh:
-                    assert not ed, "Parsing error, give Zed this: %r" % data
+                    assert not ed, "Parsing error: %r" % data
                     oddness = (" " + l.lstrip(), eh, ed, continued)
                 elif eh[0] == enc_header[0] and eh[1] == enc_header[1]:
                     enc_data += ed
@@ -595,5 +623,3 @@ def _parse_charset_header(data):
 
 def properly_decode_header(header):
     return u"".join(_parse_charset_header(header))
-
-

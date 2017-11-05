@@ -23,7 +23,7 @@ def test_MemoryStorage():
 
 
 def test_ShelveStorage():
-    store = ShelveStorage("tests/states.db")
+    store = ShelveStorage("run/states.db")
 
     store.set(test_ShelveStorage.__module__, "tester@localhost", "TESTED")
     assert_equal( store.get(test_MemoryStorage.__module__, "tester@localhost"), "TESTED")
@@ -41,7 +41,7 @@ def test_RoutingBase():
     assert_equal(len(Router.REGISTERED), 0)
 
     setup_router(['salmon_tests.handlers.simple_fsm_mod'])
-    from handlers import simple_fsm_mod
+    from .handlers import simple_fsm_mod
 
     assert_equal(len(Router.ORDER), 5)
     assert_equal(len(Router.REGISTERED), 5)
@@ -122,7 +122,7 @@ def test_route___get___raises():
     br.wont_work("raises")
 
 
-@patch('__builtin__.reload', new=Mock(side_effect=ImportError))
+@patch('salmon.routing.reload', new=Mock(side_effect=ImportError))
 @patch('salmon.routing.LOG', new=Mock())
 def test_reload_raises():
     Router.LOG_EXCEPTIONS = True

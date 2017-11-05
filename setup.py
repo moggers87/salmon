@@ -1,20 +1,13 @@
-import sys
+from setuptools import setup
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
 
 install_requires = [
     'chardet',
-    'lmtpd>=4',
     'dnspython',
+    'lmtpd>=4',
+    'python-daemon',
+    'six',
 ]
-
-if sys.platform != 'win32':  # Can daemonize
-    install_requires.append('python-daemon<1.7')
-else:
-    install_requires.append('lockfile')
 
 test_requires = [
     'coverage',
@@ -48,7 +41,7 @@ config = {
         'Topic :: Communications :: Email',
         'Topic :: Software Development :: Libraries :: Application Frameworks'
         ],
-    "entry_points": {
+    'entry_points': {
         'console_scripts':
             ['salmon = salmon.commands:main'],
     },

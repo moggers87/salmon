@@ -3,6 +3,7 @@ Bounce analysis module for Salmon.  It uses an algorithm that tries
 to simply collect the headers that are most likely found in a bounce
 message, and then determine a probability based on what it finds.
 """
+from __future__ import print_function, unicode_literals
 
 import re
 from functools import wraps
@@ -126,7 +127,7 @@ def detect(msg):
 
     The detection algorithm is very simple but still accurate.  For each header
     it finds it adds a point to the score.  It then uses the regex in BOUNCE_MATCHERS
-    to see if the value of that header is parseable, and if it is it adds another
+    to see if the value of that header is parsable, and if it is it adds another
     point to the score.  The final probability is based on how many headers and matchers
     were found out of the total possible.
 
@@ -215,7 +216,7 @@ class BounceAnalyzer(object):
             self.diagnostic_codes = self.headers['Diagnostic-Code'][0][1:]
         else:
             self.diagnostic_codes = [None, None]
-       
+
         if 'Action' in self.headers:
             self.action = self.headers['Action'][0][0]
         else:
@@ -249,7 +250,7 @@ class BounceAnalyzer(object):
 
     def probable(self, threshold=0.3):
         """
-        Determines if this is probably a bounce based on the score 
+        Determines if this is probably a bounce based on the score
         probability.  Default threshold is 0.3 which is conservative.
         """
         return self.score > threshold
@@ -301,4 +302,3 @@ class bounce_to(object):
                 return func(message, *args, **kw)
 
         return bounce_wrapper
-

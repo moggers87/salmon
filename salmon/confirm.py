@@ -13,6 +13,7 @@ provide the logic for doing the following:
 You then just work this into your project's state flow, write your own
 templates, and possibly write your own storage.
 """
+from __future__ import print_function, unicode_literals
 
 import uuid
 from salmon import queue, view
@@ -45,7 +46,7 @@ class ConfirmationStorage(object):
         your own you don't need this.
 
         NOTE: To support proper equality and shelve storage, this encodes the
-        key into ASCII.  Make a different subclass if you need unicode and your
+        key into ASCII.  Make a different subclass if you need Unicode and your
         storage supports it.
         """
         key = target + ':' + from_address

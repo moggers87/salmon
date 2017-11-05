@@ -1,21 +1,24 @@
 """
 The salmon.mail module contains nothing more than wrappers around the big work
 done in salmon.encoding.  These are the actual APIs that you'll interact with
-when doing email, and they mostly replicate the salmon.encoding.MailBase 
+when doing email, and they mostly replicate the salmon.encoding.MailBase
 functionality.
 
-The main design criteria is that MailRequest is mostly for reading email 
+The main design criteria is that MailRequest is mostly for reading email
 that you've received, so it doesn't have functions for attaching files and such.
 MailResponse is used when you are going to write an email, so it has the
 APIs for doing attachments and such.
 """
+from __future__ import print_function, unicode_literals
 
-
-import mimetypes
-from salmon import encoding, bounce
 from email.utils import parseaddr
+import mimetypes
 import os
 import warnings
+
+import six
+
+from salmon import encoding, bounce
 
 
 # You can change this to 'Delivered-To' on servers that support it like Postfix
@@ -24,14 +27,22 @@ ROUTABLE_TO_HEADER='to'
 
 def _decode_header_randomness(addr):
     """
-    This fixes the given address so that it is *always* a set() of 
+    This fixes the given address so that it is *always* a set() of
     just email addresses suitable for routing.
     """
     if not addr:
         return set()
     elif isinstance(addr, list):
-        return set(parseaddr(a.lower())[1] for a in addr)
-    elif isinstance(addr, basestring):
+        addr_set = set()
+        for a in addr:
+            for returned_addr in _decode_header_randomness(a):
+                addr_set.add(returned_addr)
+
+        return addr_set
+    elif isinstance(addr, six.string_types):
+        return set([parseaddr(addr.lower())[1]])
+    elif isinstance(addr, six.binary_type):
+        addr = addr.decode()
         return set([parseaddr(addr.lower())[1]])
     else:
         raise encoding.EncodingError("Address must be a string or a list not: %r", type(addr))
@@ -39,11 +50,11 @@ def _decode_header_randomness(addr):
 
 class MailRequest(object):
     """
-    This is what older users of Salmon are accustomed to.  The information
-    you get out of this is *ALWAYS* in Python unicode and should be usable 
-    by any API.  Modifying this object will cause other handlers that deal
-    with it to get your modifications, but in general you don't want to do
-    more than maybe tag a few headers.
+    This is what older users of Salmon are accustomed to.  The information you
+    get out of this is *ALWAYS* in Python str (unicode in Python 2.7) and
+    should be usable by any API.  Modifying this object will cause other
+    handlers that deal with it to get your modifications, but in general you
+    don't want to do more than maybe tag a few headers.
     """
     def __init__(self, Peer, From, To, Data):
         """
@@ -118,7 +129,7 @@ class MailRequest(object):
 
     def __str__(self):
         """
-        Converts this to a string usable for storage into a queue or 
+        Converts this to a string usable for storage into a queue or
         transmission.
         """
         return encoding.to_string(self.Email)
@@ -140,7 +151,7 @@ class MailRequest(object):
 
     def is_bounce(self, threshold=0.3):
         """
-        Determines whether the message is a bounce message based on 
+        Determines whether the message is a bounce message based on
         salmon.bounce.BounceAnalzyer given threshold.  0.3 is a good
         conservative base.
         """
@@ -208,7 +219,7 @@ class MailResponse(object):
         data/content_type/filename/disposition combination.
 
         For convenience, if you don't give data and only a filename, then it
-        will read that file's contents when you call to_message() later.  If you 
+        will read that file's contents when you call to_message() later.  If you
         give data and filename then it will assume you've filled data with what
         the file's contents are and filename is just the name to use.
         """

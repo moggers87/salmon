@@ -19,11 +19,15 @@ modules (not just your handlers) will get reloaded.
 The spelling function will use PyEnchant to spell check a string.  If it finds
 any errors it prints them out, and returns False.
 """
+from __future__ import print_function, unicode_literals
+
+import re
+
+import six
 
 from salmon import server, routing, mail
 from salmon.queue import Queue
 from nose.tools import assert_equal
-import re
 
 TEST_QUEUE = "run/queue"
 
@@ -43,18 +47,18 @@ def spelling(file_name, contents, language="en_US"):
         from enchant.checker import SpellChecker
         from enchant.tokenize import EmailFilter, URLFilter
     except ImportError:
-        print "Failed to load PyEnchant.  Make sure it's installed and salmon spell works."
+        print("Failed to load PyEnchant.  Make sure it's installed and salmon spell works.")
         return True
 
     failures = 0
     chkr = SpellChecker(language, filters=[EmailFilter, URLFilter])
     chkr.set_text(contents)
     for err in chkr:
-        print "%s: %s \t %r" % (file_name, err.word, contents[err.wordpos - 20:err.wordpos + 20])
+        print("%s: %s \t %r" % (file_name, err.word, contents[err.wordpos - 20:err.wordpos + 20]))
         failures += 1
 
     if failures:
-        print "You have %d spelling errors in %s.  Run salmon spell.." % (failures, file_name)
+        print("You have %d spelling errors in %s.  Run salmon spell.." % (failures, file_name))
         return False
     else:
         return True
@@ -92,7 +96,7 @@ def delivered(pattern, to_queue=None):
             return False
 
         regp = re.compile(pattern)
-        if regp.search(str(msg)):
+        if regp.search(pattern.__class__(msg)):
             msg = inq.get(key)
             return msg
 
@@ -136,11 +140,11 @@ class TestConversation(object):
         if expect:
             msg = delivered(expect)
             if not msg:
-                print "MESSAGE IN QUEUE:"
+                print("MESSAGE IN QUEUE:")
                 inq = queue()
                 for key in inq.keys():
-                    print "-----"
-                    print inq.get(key)
+                    print("-----")
+                    print(inq.get(key))
 
             assert msg, "Expected %r when sending to %r with '%s:%s' message." % (expect,
                                                                                   To, self.Subject or Subject, Body)
@@ -175,5 +179,3 @@ def assert_in_state(module, To, From, state):
     fake = {'to': To}
     state_key = routing.Router.state_key(module, fake)
     assert_equal(routing.Router.STATE_STORE.get(state_key, From), state)
-
-

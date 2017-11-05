@@ -125,13 +125,10 @@ def test_oversize_protections():
     overq.clear()
 
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 @patch('os.stat', new=Mock())
 @raises(mailbox.ExternalClashError)
 def test_SafeMaildir_name_clash():
-    try:
-        shutil.rmtree("run/queue")
-    except EnvironmentError:
-        pass
     sq = queue.SafeMaildir('run/queue')
     sq.add("TEST")
 
@@ -151,14 +148,10 @@ def test_SafeMaildir_throws_errno_failure():
     sq.add("TEST")
 
 
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 @patch('os.stat', new=Mock())
 @raises(OSError)
 def test_SafeMaildir_reraise_weird_errno():
-    try:
-        shutil.rmtree("run/queue")
-    except EnvironmentError:
-        pass
-
     os.stat.side_effect = raise_OSError
     sq = queue.SafeMaildir('run/queue')
     sq.add('TEST')
