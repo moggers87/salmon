@@ -68,8 +68,8 @@ from __future__ import print_function, unicode_literals
 
 from email import encoders
 from email.charset import Charset
-from email.mime.base import MIMEBase
 from email.message import Message
+from email.mime.base import MIMEBase
 from email.utils import parseaddr
 import email
 import re
@@ -464,8 +464,6 @@ def properly_encode_header(value, encoder, not_email):
     to check if a header value has an email address.  If you need to make this
     check different, then change this.
     """
-    # i suspect this function and those that call it are doing too much
-    # TODO: investigate
     try:
         value.encode("ascii")
         return value
@@ -473,9 +471,15 @@ def properly_encode_header(value, encoder, not_email):
         if not_email is False and VALUE_IS_EMAIL_ADDRESS(value):
             # this could have an email address, make sure we don't screw it up
             name, address = parseaddr(value)
-            return '"%s" <%s>' % (name, address)
+            if six.PY2:
+                # python 2 decodes to ascii, python 3 wants no decoding at all!
+                name = name.encode("utf-8")
+            return '"%s" <%s>' % (encoder.header_encode(name), address)
 
-        return value
+        if six.PY2:
+            # python 2 decodes to ascii, python 3 wants no decoding at all!
+            value = value.encode("utf-8")
+        return "%s" % encoder.header_encode(value)
 
 
 def header_to_mime_encoding(value, not_email=False):
@@ -504,7 +508,7 @@ def guess_encoding_and_decode(original, data, errors=DEFAULT_ERROR_HANDLING):
         charset = chardet.detect(data)
 
         if not charset['encoding']:
-            raise EncodingError("Header claimed %r charset, but detection found none.  Decoding failed." % original)
+            raise EncodingError("Header claimed %r charset, but detection found none. Decoding failed." % original)
 
         return data.decode(charset["encoding"], errors)
     except UnicodeError as exc:
@@ -529,7 +533,13 @@ def apply_charset_to_header(charset, encoding, data):
     if encoding == 'b' or encoding == 'B':
         dec = email.base64mime.decode(data.encode('ascii'))
     elif encoding == 'q' or encoding == 'Q':
+        if six.PY2:
+            # python 2 decodes to ascii, python 3 wants no decoding at all!
+            data = data.encode('ascii')
         dec = email.quoprimime.header_decode(data)
+        if six.PY3:
+            # and Python 3 gives us some bytes encoded as unicode chars, so encode them to bytes
+            dec = bytes(dec, "raw-unicode-escape")
     else:
         raise EncodingError("Invalid header encoding %r should be 'Q' or 'B'." % encoding)
 
@@ -613,5 +623,3 @@ def _parse_charset_header(data):
 
 def properly_decode_header(header):
     return u"".join(_parse_charset_header(header))
-
-
