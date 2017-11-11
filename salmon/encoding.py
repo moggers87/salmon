@@ -76,6 +76,7 @@ import email
 import re
 import string
 import sys
+import warnings
 
 import chardet
 import six
@@ -295,6 +296,10 @@ class MIMEPart(Message):
 
     def add_text(self, content, charset=None):
         # this is text, so encode it in canonical form
+        if charset is not None:
+            warnings.warn("You are adding text that is neither ASCII nor UTF-8. Please reconsider your choice.",
+                    UnicodeWarning)
+
         charset = charset or 'ascii'
         try:
             encoded = content.encode(charset)
