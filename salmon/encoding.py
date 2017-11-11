@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 """
 Salmon takes the policy that email it receives is most likely complete garbage
-using bizarre pre-Unicode formats that are irrelevant and unnecessary in today's
-modern world.  These emails must be cleansed of their unholy stench of
-randomness and turned into something nice and clean that a regular Python
-programmer can work with:  Unicode.
+using bizarre pre-Unicode formats that are irrelevant and unnecessary in
+today's modern world. These are turned into something nice and clean that a
+regular Python programmer can work with:  Unicode.
 
 That's the receiving end, but on the sending end Salmon wants to make the world
-better by not increasing the suffering.  To that end, Salmon will canonicalize
+better by not increasing the suffering. To that end, Salmon will canonicalize
 all email it sends to be ascii or utf-8 (whichever is simpler and works to
-encode the data).  When you get an email from Salmon, it is a pristine easily
-parsable clean unit of goodness you can count on.
+encode the data). It is possible to use other encodings (Salmon doesn't live in
+some fictional world), but this generally frowned upon.
 
 To accomplish these tasks, Salmon goes back to basics and assert a few simple
 rules on each email it receives:
@@ -31,7 +30,7 @@ rules on each email it receives:
 9) All other attachments are converted to raw strings as-is.
 
 Once Salmon has done this, your Python handler can now assume that all
-MailRequest objects are happily Unicode enabled and ready to go.  The rule is:
+MailRequest objects are happily Unicode enabled and ready to go. The rule is:
 
     IF IT CANNOT BE UNICODE, THEN PYTHON CANNOT WORK WITH IT.
 
@@ -39,24 +38,27 @@ On the outgoing end (when you send a MailResponse), Salmon tries to create the
 email it wants to receive by canonicalizing it:
 
 1) All email will be encoded in the simplest cleanest way possible without
-losing information.
-2) All headers are converted to 'ascii', and if that doesn't work, then 'utf-8'.
-3) All text/* attachments and bodies are converted to ascii, and if that doesn't
-work, 'utf-8'.
+   losing information.
+2) All headers are converted to 'ascii', and if that doesn't work, then
+   'utf-8'.
+3) All text/* attachments and bodies are converted to ascii, and if that
+   doesn't work, 'utf-8'. It is possible to override this, but you're a bad
+   person if you do
 4) All other attachments are left alone.
-5) All email addresses are normalized and encoded if they have not been already.
+5) All email addresses are normalized and encoded if they have not been
+   already.
 
 The end result is an email that has the highest probability of not containing
 any obfuscation techniques, hidden characters, bad characters, improper
 formatting, invalid non-characterset headers, or any of the other billions of
-things email clients do to the world.  The output rule of Salmon is:
+things email clients do to the world. The output rule of Salmon is:
 
-    ALL EMAIL IS ASCII FIRST, THEN UTF-8, AND IF CANNOT BE EITHER THOSE IT WILL
-    NOT BE SENT.
+    ALL EMAIL IS ASCII FIRST, THEN ENCODED ASCII-SAFE, AND IF IT CANNOT BE
+    EITHER OF THOSE IT WILL NOT BE SENT.
 
-Following these simple rules, this module does the work of converting email
-to the canonical format and sending the canonical format.  The code is
-probably the most complex part of Salmon since the job it does is difficult.
+Following these simple rules, this module does the work of converting email to
+the canonical format and sending the canonical format. The code is probably the
+most complex part of Salmon since the job it does is difficult.
 
 Test results show that Salmon can safely canonicalize most email from any
 culture (not just English) to the canonical form, and that if it can't then the
