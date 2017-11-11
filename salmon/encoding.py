@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Salmon takes the policy that email it receives is most likely complete garbage
 using bizarre pre-Unicode formats that are irrelevant and unnecessary in today's
@@ -107,18 +108,18 @@ class ContentEncoding(object):
     params. Note that changes to the params dict won't be reflected in the
     underlying MailBase unless the tuple is reassigned:
 
-    >>> value = mail.content_encoding["Content-Type"]
-    >>> print value
-    ('text/html', {'charset': 'us-ascii'})
-    >>> value[1]['charset'] = 'utf-8'
-    >>> print mail["Content-Type"]  # unchanged
-    ('text/html', {'charset': 'us-ascii'})
-    >>> mail.content_encoding["Content-Type"] = value
-    >>> print mail["Content-Type"]
-    ('text/html', {'charset': 'utf-8'})
+        >>> value = mail.content_encoding["Content-Type"]
+        >>> print(value)
+        ('text/html', {'charset': 'us-ascii'})
+        >>> value[1]['charset'] = 'utf-8'
+        >>> print(mail["Content-Type"])  # unchanged
+        ('text/html', {'charset': 'us-ascii'})
+        >>> mail.content_encoding["Content-Type"] = value
+        >>> print(mail["Content-Type"])
+        ('text/html', {'charset': 'utf-8'})
 
     Will raise EncodingError if you try to access a header that isn't in
-    CONTENT_ENCODING_KEYS
+    ``CONTENT_ENCODING_KEYS``
     """
     def __init__(self, base):
         self.base = base
@@ -286,7 +287,8 @@ class MIMEPart(Message):
     def __init__(self, type_, **params):
         self.mimetype = type_
 
-        # classes from email.* are all old-style :(
+        # classes from email.* are all old-style in Python, so don't replace
+        # this with super()
         Message.__init__(self)
 
         self.add_header('Content-Type', type_, **params)
@@ -423,6 +425,7 @@ def to_file(mail, fileobj):
     """Writes a canonicalized message to the given file."""
     fileobj.write(to_string(mail))
 
+
 def from_file(fileobj):
     """Reads an email and cleans it up to make a MailBase."""
     try:
@@ -518,6 +521,8 @@ def guess_encoding_and_decode(original, data, errors=DEFAULT_ERROR_HANDLING):
 
 
 def attempt_decoding(charset, dec):
+    """Attempts to decode bytes into unicode, calls guess_encoding_and_decode
+    if the given charset is wrong."""
     try:
         if isinstance(dec, six.text_type):
             # it's already unicode so just return it
@@ -530,9 +535,16 @@ def attempt_decoding(charset, dec):
 
 
 def apply_charset_to_header(charset, encoding, data):
-    if encoding == 'b' or encoding == 'B':
+    """Given a charset and encoding, decode data into unicode, e.g.
+
+        >>> print(apply_charset_to_header("utf-8", "Q", "=142ukasz"))
+        łukasz
+
+    ``encoding`` is case insensitive and must be one of B or Q
+    """
+    if encoding.upper() == 'B':
         dec = email.base64mime.decode(data.encode('ascii'))
-    elif encoding == 'q' or encoding == 'Q':
+    elif encoding.upper() == 'Q':
         if six.PY2:
             # python 2 decodes to ascii, python 3 wants no decoding at all!
             data = data.encode('ascii')
@@ -546,63 +558,66 @@ def apply_charset_to_header(charset, encoding, data):
     return attempt_decoding(charset, dec)
 
 
-
-
 def _match(data, pattern, pos):
     found = pattern.search(data, pos)
     if found:
-        # contract: returns data before the match, and the match groups
-        left = data[pos:found.start()]
-        return left, found.groups(), found.end()
+        # there might be text that doesn't need decoding between the end of the
+        # last match (pos) and the start of the new one (found.start())
+        before_match = data[pos:found.start()]
+        return before_match, found.groups(), found.end()
     else:
-        left = data[pos:]
-        return left, None, -1
-
+        before_match = data[pos:]
+        return before_match, None, -1
 
 
 def _tokenize(data, next_token):
     enc_data = None
 
-    left, enc_header, next_token = _match(data, ENCODING_REGEX, next_token)
+    before_match, enc_header, next_token = _match(data, ENCODING_REGEX, next_token)
 
     if next_token != -1:
         enc_data, _, next_token = _match(data, ENCODING_END_REGEX, next_token)
 
-    return left, enc_header, enc_data, next_token
+    return before_match, enc_header, enc_data, next_token
 
 
 def _scan(data):
     next_token = 0
     continued = False
+
     while next_token != -1:
-        left, enc_header, enc_data, next_token = _tokenize(data, next_token)
+        before_match, enc_header, enc_data, next_token = _tokenize(data, next_token)
+        continued = next_token != -1 and INDENT_REGEX.match(data, next_token)
 
-        if next_token != -1 and INDENT_REGEX.match(data, next_token):
-            continued = True
-        else:
-            continued = False
-
-        yield left, enc_header, enc_data, continued
+        yield before_match, enc_header, enc_data, continued
 
 
 def _parse_charset_header(data):
+    """Decodes header, yielding decoded and plain text sections separately
+
+    For example:
+
+        >>> data = '=?utf-8?q?=C5=81ukasz?= the =?utf-16?b?//492B/c?='
+        >>> print(list(_parse_charset_header(data)))
+        [u'\u0141ukasz', u' the ', u'\U0001f41f']
+    """
     scanner = _scan(data)
     oddness = None
 
     try:
         while True:
             if not oddness:
-                left, enc_header, enc_data, continued = six.next(scanner)
+                before_match, enc_header, enc_data, continued = six.next(scanner)
             else:
-                left, enc_header, enc_data, continued = oddness
+                before_match, enc_header, enc_data, continued = oddness
                 oddness = None
 
             while continued:
-                l, eh, ed, continued = six.next(scanner)
+                bm, eh, ed, continued = six.next(scanner)
 
                 if not eh:
                     assert not ed, "Parsing error: %r" % data
-                    oddness = (" " + l.lstrip(), eh, ed, continued)
+                    oddness = (" " + bm.lstrip(), eh, ed, continued)
                 elif eh[0] == enc_header[0] and eh[1] == enc_header[1]:
                     enc_data += ed
                 else:
@@ -611,8 +626,10 @@ def _parse_charset_header(data):
                     oddness = ('', eh, ed, continued)
                     break
 
-            if left:
-                yield attempt_decoding('ascii', left)
+            if before_match:
+                # bytes that weren't encoded to the "before_match", so we can decode it
+                # directly to unicode
+                yield attempt_decoding('ascii', before_match)
 
             if enc_header:
                 yield apply_charset_to_header(enc_header[0], enc_header[1], enc_data)
@@ -622,4 +639,5 @@ def _parse_charset_header(data):
 
 
 def properly_decode_header(header):
+    """Decodes headers from their ASCII-safe representation"""
     return u"".join(_parse_charset_header(header))
