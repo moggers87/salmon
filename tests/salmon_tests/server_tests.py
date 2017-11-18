@@ -6,6 +6,7 @@ import socket
 
 from mock import Mock, patch
 from nose.tools import assert_equal, assert_raises, with_setup
+import six
 
 from salmon import mail, server, queue, routing
 
@@ -19,8 +20,8 @@ from .message_tests import (
 from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
 
 SMTP_MESSAGE_DEFS = {
-    2: {"ok": "250 Ok"},
-    3: {"ok": "250 OK"},
+    2: {"ok": u"250 Ok\r\n".encode()},
+    3: {"ok": u"250 OK\r\n".encode()},
 }
 
 SMTP_MESSAGES = SMTP_MESSAGE_DEFS[sys.version_info[0]]
@@ -36,21 +37,25 @@ def test_router():
 
     routing.Router.deliver(msg)
 
-# TODO: this test is running slow, find out why
+
 @patch("asynchat.async_chat.push")
-def test_SMTPChannel_rcpt(push_mock):
+def test_SMTPChannel(push_mock):
     channel = server.SMTPChannel(Mock(), Mock(), Mock())
+    expected_version = u"220 {} {}\r\n".format(socket.getfqdn(), server.smtpd.__version__).encode()
+
+    assert_equal(push_mock.call_args[0][1:], (expected_version,))
+    assert_equal(type(push_mock.call_args[0][1]), six.binary_type)
+
     channel.seen_greeting = True
-    channel.push = Mock()
-    channel.smtp_MAIL("FROM: you@example.com")
+    channel.smtp_MAIL("FROM: you@example.com\r\n")
 
-    channel.push.reset_mock()
+    push_mock.reset_mock()
     channel.smtp_RCPT("TO: me@example.com")
-    assert_equal(channel.push.call_args[0], (SMTP_MESSAGES["ok"],))
+    assert_equal(push_mock.call_args[0][1:], (SMTP_MESSAGES["ok"],))
 
-    channel.push.reset_mock()
+    push_mock.reset_mock()
     channel.smtp_RCPT("TO: them@example.com")
-    assert_equal(channel.push.call_args[0], ("451 Will not accept multiple recipients in one transaction",))
+    assert_equal(push_mock.call_args[0][1:], (u"451 Will not accept multiple recipients in one transaction\r\n".encode(),))
 
 
 def test_SMTPReceiver_process_message():
