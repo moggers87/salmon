@@ -222,8 +222,10 @@ def test_relay_reply(client_mock):
     assert_equal(client_mock.return_value.sendmail.call_count, 1)
 
 
-def test_relay_raises_exception():
+@patch("socket.create_connection")
+def test_relay_raises_exception(create_mock):
     # previously, salmon would eat up socket errors and just log something. Not cool!
+    create_mock.side_effect = socket.error
     relay = server.Relay("example.com", port=8899)
     with assert_raises(socket.error):
         relay.deliver(test_mail_response_plain_text())
