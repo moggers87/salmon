@@ -20,8 +20,8 @@ from .message_tests import (
 from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
 
 SMTP_MESSAGE_DEFS = {
-    2: {"ok": "250 Ok\r\n"},
-    3: {"ok": "250 OK\r\n"},
+    2: {"ok": u"250 Ok\r\n".encode()},
+    3: {"ok": u"250 OK\r\n".encode()},
 }
 
 SMTP_MESSAGES = SMTP_MESSAGE_DEFS[sys.version_info[0]]
@@ -41,9 +41,11 @@ def test_router():
 @patch("asynchat.async_chat.push")
 def test_SMTPChannel(push_mock):
     channel = server.SMTPChannel(Mock(), Mock(), Mock())
-    assert_equal(push_mock.call_args[0][1:],
-            ("220 {} {}\r\n".format(socket.getfqdn(), server.smtpd.__version__),))
+    expected_version = u"220 {} {}\r\n".format(socket.getfqdn(), server.smtpd.__version__).encode()
+
+    assert_equal(push_mock.call_args[0][1:], (expected_version,))
     assert_equal(type(push_mock.call_args[0][1]), six.binary_type)
+
     channel.seen_greeting = True
     channel.smtp_MAIL("FROM: you@example.com\r\n")
 
@@ -53,7 +55,7 @@ def test_SMTPChannel(push_mock):
 
     push_mock.reset_mock()
     channel.smtp_RCPT("TO: them@example.com")
-    assert_equal(push_mock.call_args[0][1:], ("451 Will not accept multiple recipients in one transaction\r\n",))
+    assert_equal(push_mock.call_args[0][1:], (u"451 Will not accept multiple recipients in one transaction\r\n".encode(),))
 
 
 def test_SMTPReceiver_process_message():
