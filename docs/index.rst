@@ -16,7 +16,7 @@ the need to configure alias files, arcane command syntax, or juggle a swarm of
 fragile processes. Salmon also plays well with other frameworks and libraries,
 such as Django and SQLAlchemy.
 
-Salmon has been released uner the GNU GPLv3, as published by the FSF.
+Salmon has been released under the GNU GPLv3, as published by the FSF.
 
 
 Contents:
