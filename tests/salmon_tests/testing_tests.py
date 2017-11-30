@@ -16,7 +16,7 @@ from salmon.testing import (
 from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
 
 
-relay = relay(port=8899)
+relay = relay(port=0)
 
 
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
