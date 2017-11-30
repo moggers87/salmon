@@ -36,6 +36,9 @@
 - Don't catch ``socket.error`` when delivering messages via
   ``salmon.server.Relay`` (#49)
 
+- Bind to port ``0`` during tests as this lets the OS choose a free port for us
+  (#51)
+
 Earlier Releases
 ================
 
