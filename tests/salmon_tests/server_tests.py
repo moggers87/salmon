@@ -59,7 +59,7 @@ def test_SMTPChannel(push_mock):
 
 
 def test_SMTPReceiver_process_message():
-    receiver = server.SMTPReceiver(host="localhost", port=8895)
+    receiver = server.SMTPReceiver(host="localhost", port=0)
     msg = test_mail_request()
 
     with patch("salmon.server.routing.Router") as router_mock, \
@@ -81,7 +81,7 @@ def test_SMTPReceiver_process_message():
 
 
 def test_LMTPReceiver_process_message():
-    receiver = server.LMTPReceiver(host="localhost", port=8894)
+    receiver = server.LMTPReceiver(host="localhost", port=0)
     msg = test_mail_request()
 
     with patch("salmon.server.routing.Router") as router_mock, \
@@ -144,7 +144,7 @@ def test_Relay_asserts_ssl_options():
 @patch("salmon.server.smtplib.SMTP")
 def test_relay_deliver(client_mock):
     # test that relay will actually call smtplib.SMTP
-    relay = server.Relay("localhost", port=8899)
+    relay = server.Relay("localhost", port=0)
 
     relay.deliver(test_mail_response_plain_text())
     assert_equal(client_mock.return_value.sendmail.call_count, 1)
@@ -161,13 +161,13 @@ def test_relay_deliver(client_mock):
 
 @patch("salmon.server.smtplib.SMTP")
 def test_relay_smtp(client_mock):
-    relay = server.Relay("localhost", port=8899)
+    relay = server.Relay("localhost", port=0)
     relay.deliver(test_mail_response_plain_text())
     assert_equal(client_mock.return_value.sendmail.call_count, 1)
     assert_equal(client_mock.return_value.starttls.call_count, 0)
 
     client_mock.reset_mock()
-    relay = server.Relay("localhost", port=8899, starttls=True)
+    relay = server.Relay("localhost", port=0, starttls=True)
     relay.deliver(test_mail_response_plain_text())
     assert_equal(client_mock.return_value.sendmail.call_count, 1)
     assert_equal(client_mock.return_value.starttls.call_count, 1)
@@ -175,14 +175,14 @@ def test_relay_smtp(client_mock):
 
 @patch("salmon.server.smtplib.LMTP")
 def test_relay_lmtp(client_mock):
-    relay = server.Relay("localhost", port=8899, lmtp=True)
+    relay = server.Relay("localhost", port=0, lmtp=True)
     relay.deliver(test_mail_response_plain_text())
     assert_equal(client_mock.return_value.sendmail.call_count, 1)
 
 
 @patch("salmon.server.smtplib.SMTP_SSL")
 def test_relay_smtp_ssl(client_mock):
-    relay = server.Relay("localhost", port=8899, ssl=True)
+    relay = server.Relay("localhost", port=0, ssl=True)
     relay.deliver(test_mail_response_plain_text())
     assert_equal(client_mock.return_value.sendmail.call_count, 1)
 
@@ -192,7 +192,7 @@ def test_relay_smtp_ssl(client_mock):
 def test_relay_deliver_mx_hosts(client_mock, query):
     query.return_value = [Mock()]
     query.return_value[0].exchange = "localhost"
-    relay = server.Relay(None, port=8899)
+    relay = server.Relay(None, port=0)
 
     msg = test_mail_response_plain_text()
     msg['to'] = 'user@localhost'
@@ -204,7 +204,7 @@ def test_relay_deliver_mx_hosts(client_mock, query):
 def test_relay_resolve_relay_host(query):
     from dns import resolver
     query.side_effect = resolver.NoAnswer
-    relay = server.Relay(None, port=8899)
+    relay = server.Relay(None, port=0)
     host = relay.resolve_relay_host('user@localhost')
     assert_equal(host, 'localhost')
     assert_equal(query.call_count, 1)
@@ -220,7 +220,7 @@ def test_relay_resolve_relay_host(query):
 
 @patch("salmon.server.smtplib.SMTP")
 def test_relay_reply(client_mock):
-    relay = server.Relay("localhost", port=8899)
+    relay = server.Relay("localhost", port=0)
     print("Relay: %r" % relay)
 
     relay.reply(test_mail_request(), 'from@localhost', 'Test subject', 'Body')
@@ -231,7 +231,7 @@ def test_relay_reply(client_mock):
 def test_relay_raises_exception(create_mock):
     # previously, salmon would eat up socket errors and just log something. Not cool!
     create_mock.side_effect = socket.error
-    relay = server.Relay("example.com", port=8899)
+    relay = server.Relay("example.com", port=0)
     with assert_raises(socket.error):
         relay.deliver(test_mail_response_plain_text())
 
@@ -257,7 +257,7 @@ def test_queue_receiver():
 @patch('threading.Thread', new=Mock())
 @patch('salmon.routing.Router', new=Mock())
 def test_SMTPReceiver():
-    receiver = server.SMTPReceiver(port=9999)
+    receiver = server.SMTPReceiver(port=0)
     receiver.start()
     receiver.process_message('localhost', 'test@localhost', 'test@localhost',
                              'Fake body.')

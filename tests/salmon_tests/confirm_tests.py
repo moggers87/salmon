@@ -55,7 +55,7 @@ def test_ConfirmationEngine_send(smtp_mock):
     message = mail.MailRequest('fakepeer', 'somedude@localhost',
                                'testing-subscribe@localhost', 'Fake body.')
 
-    engine.send(relay(port=8899), 'testing', message, 'confirmation.msg', locals())
+    engine.send(relay(port=0), 'testing', message, 'confirmation.msg', locals())
 
     assert_equal(smtp_mock.return_value.sendmail.call_count, 1)
     assert_equal(smtp_mock.return_value.quit.call_count, 1)
