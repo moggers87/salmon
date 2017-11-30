@@ -20,11 +20,12 @@
 - Settings no longer limited to per app "config" module (#38)
 - Allow ``salmon.server.Relay`` to talk to LMTP servers (#41)
 - Make ``LMTPReceiver`` the default in the prototype app (#48)
-- Properly work around SMTPReceiver bug caused by Python's ``smtpd`` module
-  (#48)
+- Properly work around ``SMTPReceiver`` bug caused by an assumption about
+  Python's ``smtpd`` module that should not have been made (#48)
 
   - This means that Salmon will no longer accept multiple RCPT TOs in the same
-    transaction over SMTP
+    transaction over SMTP. Consider using ``LMTPReceiver`` instead as it does
+    not have this restriction.
 
 - Python 3 support (#7)
 
