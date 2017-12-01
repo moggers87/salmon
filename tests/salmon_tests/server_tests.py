@@ -47,8 +47,10 @@ def test_SMTPChannel(push_mock):
     assert_equal(push_mock.call_args[0][1:], (expected_version,))
     assert_equal(type(push_mock.call_args[0][1]), six.binary_type)
 
+    push_mock.reset_mock()
     channel.seen_greeting = True
     channel.smtp_MAIL("FROM: you@example.com\r\n")
+    assert_equal(push_mock.call_args[0][1:], (SMTP_MESSAGES["ok"],))
 
     push_mock.reset_mock()
     channel.smtp_RCPT("TO: me@example.com")
@@ -89,15 +91,17 @@ def test_LMTPChannel(push_mock):
     assert_equal(push_mock.call_args[0][1:], (expected_version,))
     assert_equal(type(push_mock.call_args[0][1]), six.binary_type)
 
-    channel.seen_greeting = True
-    channel.lmtp_MAIL("FROM: you@example.com\r\n")
-
     push_mock.reset_mock()
-    channel.lmtp_RCPT("TO: me@example.com")
+    channel.seen_greeting = True
+    channel.lmtp_MAIL(b"FROM: you@example.com\r\n")
     assert_equal(push_mock.call_args[0][1:], (u"250 2.1.0 Ok\r\n".encode(),))
 
     push_mock.reset_mock()
-    channel.lmtp_RCPT("TO: them@example.com")
+    channel.lmtp_RCPT(b"TO: me@example.com")
+    assert_equal(push_mock.call_args[0][1:], (u"250 2.1.0 Ok\r\n".encode(),))
+
+    push_mock.reset_mock()
+    channel.lmtp_RCPT(b"TO: them@example.com")
     assert_equal(push_mock.call_args[0][1:], (u"250 2.1.0 Ok\r\n".encode(),))
 
 
