@@ -6,6 +6,7 @@ import socket
 
 from mock import Mock, patch
 from nose.tools import assert_equal, assert_raises, with_setup
+import lmtpd
 import six
 
 from salmon import mail, server, queue, routing
@@ -46,8 +47,10 @@ def test_SMTPChannel(push_mock):
     assert_equal(push_mock.call_args[0][1:], (expected_version,))
     assert_equal(type(push_mock.call_args[0][1]), six.binary_type)
 
+    push_mock.reset_mock()
     channel.seen_greeting = True
     channel.smtp_MAIL("FROM: you@example.com\r\n")
+    assert_equal(push_mock.call_args[0][1:], (SMTP_MESSAGES["ok"],))
 
     push_mock.reset_mock()
     channel.smtp_RCPT("TO: me@example.com")
@@ -78,6 +81,28 @@ def test_SMTPReceiver_process_message():
         router_mock.deliver.side_effect = server.SMTPError(450, "Not found")
         response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
         assert_equal(response, "450 Not found")
+
+
+@patch("lmtpd.asynchat.async_chat.push")
+def test_LMTPChannel(push_mock):
+    channel = lmtpd.LMTPChannel(Mock(), Mock(), Mock())
+    expected_version = u"220 {} {}\r\n".format(socket.getfqdn(), server.lmtpd.__version__).encode()
+
+    assert_equal(push_mock.call_args[0][1:], (expected_version,))
+    assert_equal(type(push_mock.call_args[0][1]), six.binary_type)
+
+    push_mock.reset_mock()
+    channel.seen_greeting = True
+    channel.lmtp_MAIL(b"FROM: you@example.com\r\n")
+    assert_equal(push_mock.call_args[0][1:], (u"250 2.1.0 Ok\r\n".encode(),))
+
+    push_mock.reset_mock()
+    channel.lmtp_RCPT(b"TO: me@example.com")
+    assert_equal(push_mock.call_args[0][1:], (u"250 2.1.0 Ok\r\n".encode(),))
+
+    push_mock.reset_mock()
+    channel.lmtp_RCPT(b"TO: them@example.com")
+    assert_equal(push_mock.call_args[0][1:], (u"250 2.1.0 Ok\r\n".encode(),))
 
 
 def test_LMTPReceiver_process_message():
