@@ -65,6 +65,25 @@ def test_MailBase():
         assert k not in m
 
 
+def test_normalized_headers():
+    base = encoding.MailBase()
+
+    # __setitem__ will normalize headers when they're added
+    base["subJect"] = "test"
+    assert_equal(base["Subject"], "test")
+    assert_equal(base.mime_part["Subject"], "test")
+    assert_equal(base.keys(), ["Subject"])
+    assert_equal(base.mime_part.keys(), ["Subject"])
+
+    # if the header wasn't added via __setitem__, it should still be returned
+    # to Salmon users in a normalized form
+    base.mime_part["fRom"] = "test@example.com"
+    assert_equal(base["From"], "test@example.com")
+    assert_equal(base.mime_part["fRom"], "test@example.com")
+    assert_equal(base.keys(), ["Subject", "From"])
+    assert_equal(base.mime_part.keys(), ["Subject", "fRom"])
+
+
 def test_header_to_mime_encoding():
     for i, header in enumerate(DECODED_HEADERS):
         assert_equal(NORMALIZED_HEADERS[i], encoding.header_to_mime_encoding(header))

@@ -214,7 +214,7 @@ class MailBase(object):
 
     def keys(self):
         """Returns header keys."""
-        return self.mime_part.keys()
+        return [normalize_header(key) for key in self.mime_part.keys()]
 
     def append_header(self, key, value):
         """Like __set_item__, but won't replace header values"""
