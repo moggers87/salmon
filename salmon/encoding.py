@@ -199,11 +199,7 @@ class MailBase(object):
         return key in self.mime_part
 
     def __setitem__(self, key, value):
-        try:
-            del self.mime_part[key]
-        except KeyError:
-            pass
-
+        del self.mime_part[key]
         self.mime_part[normalize_header(key)] = value
 
     def __delitem__(self, key):
