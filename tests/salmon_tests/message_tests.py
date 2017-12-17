@@ -37,7 +37,7 @@ def test_mail_request():
     assert_equal(msg.keys(), ["To", "From"])
 
     # appending headers
-    msg.Email.append_header("To", "nobody@example.com")
+    msg.base.append_header("To", "nobody@example.com")
     assert_equal(msg["To"], "somedude@localhost")
     assert_equal(msg.keys(), ["To", "From", "To"])
 

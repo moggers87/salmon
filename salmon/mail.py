@@ -50,11 +50,11 @@ def _decode_header_randomness(addr):
 
 class MailRequest(object):
     """
-    This is what older users of Salmon are accustomed to.  The information you
-    get out of this is *ALWAYS* in Python str (unicode in Python 2.7) and
-    should be usable by any API.  Modifying this object will cause other
-    handlers that deal with it to get your modifications, but in general you
-    don't want to do more than maybe tag a few headers.
+    This is what is given to your message handlers. The information you get out
+    of this is *ALWAYS* in Python str (unicode in Python 2.7) and should be
+    usable by any API.  Modifying this object will cause other handlers that
+    deal with it to get your modifications, but in general you don't want to do
+    more than maybe tag a few headers.
     """
     def __init__(self, Peer, From, To, Data):
         """
@@ -77,16 +77,16 @@ class MailRequest(object):
         except KeyError:
             self.To = None
 
-        self.Email = encoding.from_string(self.Data)
+        self.base = encoding.from_string(self.Data)
 
-        if 'from' not in self.Email:
-            self.Email['from'] = self.From
-        if 'to' not in self.Email:
+        if 'from' not in self.base:
+            self.base['from'] = self.From
+        if 'to' not in self.base:
             # do NOT use ROUTABLE_TO here
-            self.Email['to'] = self.To
+            self.base['to'] = self.To
 
-        self.From = self.From or self.Email['from']
-        self.To = self.To or self.Email[ROUTABLE_TO_HEADER]
+        self.From = self.From or self.base['from']
+        self.To = self.To or self.base[ROUTABLE_TO_HEADER]
 
         self.bounce = None
 
@@ -101,7 +101,7 @@ class MailRequest(object):
 
     def all_parts(self):
         """Returns all multipart mime parts.  This could be an empty list."""
-        return self.Email.parts
+        return self.base.parts
 
     def body(self):
         """
@@ -110,43 +110,46 @@ class MailRequest(object):
         it's not then it just returns the body.  If returns
         None then this message has nothing for a body.
         """
-        if self.Email.parts:
-            return self.Email.parts[0].body
+        if self.base.parts:
+            return self.base.parts[0].body
         else:
-            return self.Email.body
+            return self.base.body
 
     def __contains__(self, key):
-        return self.Email.__contains__(key)
+        return self.base.__contains__(key)
 
     def __getitem__(self, name):
-        return self.Email.__getitem__(name)
+        return self.base.__getitem__(name)
 
     def __setitem__(self, name, val):
-        self.Email.__setitem__(name, val)
+        self.base.__setitem__(name, val)
 
     def __delitem__(self, name):
-        del self.Email[name]
+        del self.base[name]
 
     def __str__(self):
         """
         Converts this to a string usable for storage into a queue or
         transmission.
         """
-        return encoding.to_string(self.Email)
+        return encoding.to_string(self.base)
+
+    def items(self):
+        return self.base.items()
 
     def keys(self):
-        return self.Email.keys()
+        return self.base.keys()
 
     def to_message(self):
         """
         Converts this to a Python email message you can use to
         interact with the python mail APIs.
         """
-        return encoding.to_message(self.Email)
+        return encoding.to_message(self.base)
 
     def walk(self):
         """Recursively walks all attached parts and their children."""
-        for x in self.Email.walk():
+        for x in self.base.walk():
             yield x
 
     def is_bounce(self, threshold=0.3):
@@ -162,12 +165,6 @@ class MailRequest(object):
             return True
         else:
             return False
-
-    @property
-    def base(self):
-        warnings.warn("MailRequest.base is deprecated, use MailRequest.Email instead",
-                category=DeprecationWarning, stacklevel=2)
-        return self.Email
 
     @property
     def original(self):
