@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from email import encoders
 from email.utils import parseaddr
-from itertools import izip
 import mailbox
 import os
 
@@ -91,7 +90,7 @@ def test_MailBase():
     # reset subject header
     m["Subject"] = the_subject
 
-    for key, item in izip(m.keys(), m.items()):
+    for key, item in zip(m.keys(), m.items()):
         assert_equal(key, item[0])
         assert key in m
         del m[key]
