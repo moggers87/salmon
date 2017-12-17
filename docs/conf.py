@@ -45,6 +45,9 @@ extensions = [
     'sphinx.ext.viewcode',
 ]
 
+# autodoc options
+autoclass_content = "both"
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -61,7 +64,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Salmon'
-copyright = u'2015, Matt Molyneaux'
+copyright = u'2015, 2017 Matt Molyneaux'
 author = u'Matt Molyneaux'
 
 # The version info for the project you're documenting, acts as replacement for

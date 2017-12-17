@@ -468,13 +468,13 @@ class route(object):
         matched, the captures are handed to your state handler as keyword
         arguments.
 
-        For example, if you have:
+        For example, if you have::
 
             @route("(list_name)-(action)@(host)",
                 list_name='[a-z]+',
                 action='[a-z]+', host='test\.com')
             def STATE(message, list_name=None, action=None, host=None):
-                ....
+                pass
 
         Then this will be translated so that list_name is replaced with [a-z]+,
         action with [a-z]+, and host with 'test.com' to produce a regex with the
