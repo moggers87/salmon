@@ -35,11 +35,13 @@ def test_mail_request():
     msg["From"] = "somebody@localhost"
     assert_equal(msg["From"], "somebody@localhost")
     assert_equal(msg.keys(), ["To", "From"])
+    assert_equal(msg.items(), [("To", "somedude@localhost"), ("From", "somebody@localhost")])
 
     # appending headers
-    msg.Email.append_header("To", "nobody@example.com")
+    msg.base.append_header("To", "nobody@example.com")
     assert_equal(msg["To"], "somedude@localhost")
     assert_equal(msg.keys(), ["To", "From", "To"])
+    assert_equal(msg.items(), [("To", "somedude@localhost"), ("From", "somebody@localhost"), ("To", "nobody@example.com")])
 
     # validate that upper and lower case work for headers
     assert("FroM" in msg)
@@ -174,7 +176,7 @@ def test_mail_response_mailing_list_headers():
     del msg['Precedence']
 
 
-def test_mail_response_ignore_case_headers():
+def test_mail_response_headers():
     msg = test_mail_response_plain_text()
     # validate that upper and lower case work for headers
     assert("FroM" in msg)
@@ -183,6 +185,8 @@ def test_mail_response_ignore_case_headers():
     assert_equal(msg['From'], msg['fRom'])
     assert_equal(msg['From'], msg['from'])
     assert_equal(msg['from'], msg['fRom'])
+
+    assert_equal(msg.keys(), [i[0] for i in msg.items()])
 
 
 def test_walk():

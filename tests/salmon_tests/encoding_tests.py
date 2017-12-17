@@ -56,13 +56,46 @@ def test_MailBase():
 
     assert_equal(len(m), len(m2))
 
+    assert_equal(m.items(), m2.items())
+
     for k in m:
         assert m[k] == m2[k], "%s: %r != %r" % (k, m[k], m2[k])
 
-    for k in m.keys():
-        assert k in m
-        del m[k]
-        assert k not in m
+    assert("To" in m)
+    assert("Bob" not in m)
+    assert_equal(m["To"], "testing@localhost")
+    m["To"] = "somebody@localhost"
+    assert_equal(m["To"], "somebody@localhost")
+    assert_equal(m.keys(), ['Subject', 'Mime-Version', 'Content-Type', 'To'])
+    assert_equal(m.items(), [
+        ('Subject', the_subject),
+        ('Mime-Version', '1.0'),
+        ('Content-Type', 'text/plain; charset="iso-8859-1"'),
+        ('To', 'somebody@localhost')])
+    assert_equal(m.get_all("Subject"), [the_subject])
+    assert_equal(m.get_all("Bob"), [])
+
+    # appending headers
+    m.append_header("subject", "something else")
+    assert_equal(m["Subject"], the_subject)
+    assert_equal(m.keys(), ['Subject', 'Mime-Version', 'Content-Type', 'To', "Subject"])
+    assert_equal(m.items(), [
+        ('Subject', the_subject),
+        ('Mime-Version', '1.0'),
+        ('Content-Type', 'text/plain; charset="iso-8859-1"'),
+        ('To', 'somebody@localhost'),
+        ('Subject', "something else")])
+    assert_equal(m.get_all("Subject"), [the_subject, "something else"])
+
+    # reset subject header
+    m["Subject"] = the_subject
+
+    for key, item in zip(m.keys(), m.items()):
+        assert_equal(key, item[0])
+        assert key in m
+        del m[key]
+        assert key not in m
+        assert key not in [i[0] for i in m.items()]
 
 
 def test_normalized_headers():

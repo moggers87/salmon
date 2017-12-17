@@ -185,7 +185,7 @@ class MailBase(object):
                     self.mime_part[key] = value
 
     def __getitem__(self, key):
-        header = self.mime_part.get(normalize_header(key))
+        header = self.mime_part.get(key)
         return header_from_mime_encoding(header)
 
     def __len__(self):
@@ -196,21 +196,20 @@ class MailBase(object):
             yield k
 
     def __contains__(self, key):
-        return normalize_header(key) in self.mime_part
+        return key in self.mime_part
 
     def __setitem__(self, key, value):
-        try:
-            del self.mime_part[normalize_header(key)]
-        except KeyError:
-            pass
-
+        del self.mime_part[key]
         self.mime_part[normalize_header(key)] = value
 
     def __delitem__(self, key):
-        del self.mime_part[normalize_header(key)]
+        del self.mime_part[key]
 
     def __nonzero__(self):
         return self.body != None or len(self.mime_part) > 0 or len(self.parts) > 0
+
+    def items(self):
+        return [(normalize_header(key), header_from_mime_encoding(header)) for key, header in self.mime_part.items()]
 
     def keys(self):
         """Returns header keys."""
@@ -219,6 +218,9 @@ class MailBase(object):
     def append_header(self, key, value):
         """Like __set_item__, but won't replace header values"""
         self.mime_part[normalize_header(key)] = value
+
+    def get_all(self, key):
+        return self.mime_part.get_all(key, [])
 
     @property
     def body(self):
