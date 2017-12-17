@@ -268,8 +268,7 @@ class MailResponse(object):
 
     def update(self, message):
         """
-        Used to easily set a bunch of heading from another dict
-        like object.
+        Used to easily set a bunch of headers from another dict like object.
         """
         for k in message.keys():
             self.base[k] = message[k]
@@ -343,6 +342,9 @@ class MailResponse(object):
         or inspecting after calling to_message().
         """
         return self.base.parts
+
+    def items(self):
+        return self.base.items()
 
     def keys(self):
         return self.base.keys()

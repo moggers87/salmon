@@ -35,11 +35,13 @@ def test_mail_request():
     msg["From"] = "somebody@localhost"
     assert_equal(msg["From"], "somebody@localhost")
     assert_equal(msg.keys(), ["To", "From"])
+    assert_equal(msg.items(), [("To", "somedude@localhost"), ("From", "somebody@localhost")])
 
     # appending headers
     msg.base.append_header("To", "nobody@example.com")
     assert_equal(msg["To"], "somedude@localhost")
     assert_equal(msg.keys(), ["To", "From", "To"])
+    assert_equal(msg.items(), [("To", "somedude@localhost"), ("From", "somebody@localhost"), ("To", "nobody@example.com")])
 
     # validate that upper and lower case work for headers
     assert("FroM" in msg)

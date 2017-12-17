@@ -212,6 +212,9 @@ class MailBase(object):
     def __nonzero__(self):
         return self.body != None or len(self.mime_part) > 0 or len(self.parts) > 0
 
+    def items(self):
+        return [(normalize_header(key), header_from_mime_encoding(header)) for key, header in self.mime_part.items()]
+
     def keys(self):
         """Returns header keys."""
         return [normalize_header(key) for key in self.mime_part.keys()]
@@ -219,6 +222,9 @@ class MailBase(object):
     def append_header(self, key, value):
         """Like __set_item__, but won't replace header values"""
         self.mime_part[normalize_header(key)] = value
+
+    def get_all(self, key):
+        return self.mime_part.get_all(key, [])
 
     @property
     def body(self):
