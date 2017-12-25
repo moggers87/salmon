@@ -84,14 +84,13 @@ https://github.com/moggers87/salmon
 Status
 ------
 
-Right now things are in flux as I'm modernising the codebase and preparing for
-porting to Python 3. The source is well documented (though I suspect some of
-the comments are wrong, has nearly full test coverage, and runs on Python 2.7
-only.  Python 3 support was being worked on, but a number of bugs in Python
-itself meant that work stalled.
+Salmon has just had some major changes to modernise the code-base. The main
+APIs should be compatible with releases prior to 3.0.0, but there's no
+guarantee that older applications won't need changes.
 
-Additionally, tests are run against PyPy, but I don't know if it's ever been
-used "in anger" on that platform.
+Python versions supported are: 2.7, 3.5, and 3.6.
+
+See the CHANGELOG for more details on what's changed since version 2.
 
 License
 ----
