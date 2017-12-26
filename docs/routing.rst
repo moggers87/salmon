@@ -28,8 +28,8 @@ handlers should process the message:
 Using Routes
 ------------
 
-The ``route`` decorator takes a regex pattern as its first argument and then
-capture groups as keyword arguments::
+The :class:`~salmon.routing.route` decorator takes a regex pattern as its first
+argument and then capture groups as keyword arguments::
 
     from salmon.routing import route
 
@@ -131,8 +131,9 @@ Stateless Processing
 ^^^^^^^^^^^^^^^^^^^^
 
 If you don't require states for one or more of your handlers, the decorator
-``stateless`` will make sure the state machine is completely bypassed on the
-way in (but you can still return handles to affect the sender's state)::
+:func:`~salmon.routing.stateless` will make sure the state machine is
+completely bypassed on the way in (but you can still return handles to affect
+the sender's state)::
 
     from salmon.routing import stateless, route
 
@@ -147,9 +148,11 @@ way in (but you can still return handles to affect the sender's state)::
 Implementing State Storage
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The default state storage ``MemoryStorage`` is only intended for testing as it
-only stores state in memory - states will be lost. For small installations,
-``ShelveStorage`` will save state to disk and be performant enough. Add the following lines to your ``boot.py`` to use it::
+The default state storage :class:`~salmon.routing.MemoryStorage` is only
+intended for testing as it only stores state in memory - states will be lost.
+For small installations, :class:`~salmon.routing.ShelveStorage` will save state
+to disk and be performant enough. Add the following lines to your ``boot.py``
+to use it::
 
     from myapp.models import ShelveStorage
     Router.STATE_STORAGE = ShelveStorage()

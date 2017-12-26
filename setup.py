@@ -17,7 +17,7 @@ test_requires = [
 
 config = {
     'description': 'A Python mail server forked from Lamson',
-    'long_description': 'Salmon is a modern Pythonic mail server built like a web application server.',
+    'long_description': open("README.rst").read(),
     'url': 'https://github.com/moggers87/salmon',
     'download_url': 'http://pypi.python.org/pypi/salmon-mail',
     'author': 'Zed A. Shaw',

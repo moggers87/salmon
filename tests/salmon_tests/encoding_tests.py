@@ -122,7 +122,7 @@ def test_header_to_mime_encoding():
         assert_equal(NORMALIZED_HEADERS[i], encoding.header_to_mime_encoding(header))
 
 
-def test_dumb_shit():
+def test_mutt_badness():
     # this is a sample of possibly the worst case Mutt can produce
     idiot = '=?iso-8859-1?B?SOlhdnkgTel05WwgVW7uY/hk?=\n\t=?iso-8859-1?Q?=E9?='
     should_be = u'H\xe9avy M\xe9t\xe5l Un\xeec\xf8d\xe9'

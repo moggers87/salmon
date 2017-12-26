@@ -1,6 +1,6 @@
 include *.py
 include LICENSE
-include README.md
+include README.rst
 include CHANGELOG.rst
 recursive-include bin *
 recursive-include doc *
