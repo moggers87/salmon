@@ -8,15 +8,15 @@
 Salmon - A Python Mail Server
 =============================
 
-Salmon is a pure Python mail server designed to create robust and complex mail
-applications in the style of modern web frameworks. Unlike traditional mail
-servers such as Postfix and Sendmail, Salmon has all the features of a web
-application stack (templates, routing, handlers, state machine, Python) without
-the need to configure alias files, arcane command syntax, or juggle a swarm of
-fragile processes. Salmon also plays well with other frameworks and libraries,
-such as Django and SQLAlchemy.
 
-Salmon has been released under the GNU GPLv3, as published by the FSF.
+Salmon is a pure Python mail server designed to create robust and complex mail
+applications in the style of modern web frameworks. Salmon is designed to sit
+behind a traditional mail server in the same way a web application sits behind
+Apache or Nginx. It has all the features of a web application stack (templates,
+routing, handlers, state machine) and plays well with other libraries, such as
+Django and SQLAlchemy.
+
+Salmon has been released uner the GNU GPLv3, as published by the FSF.
 
 
 Contents:
