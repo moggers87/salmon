@@ -98,11 +98,11 @@ def test_mail_response_attachments():
         From="sender@localhost",
         Body="Test from test_mail_response_attachments.",
     )
-    readme_data = open("./README.md").read()
+    readme_data = open("./README.rst").read()
 
     assert_raises(AssertionError, sample.attach, data=readme_data, disposition="inline")
 
-    sample.attach(filename="./README.md", content_type="text/plain", disposition="inline")
+    sample.attach(filename="./README.rst", content_type="text/plain", disposition="inline")
     assert_equal(len(sample.attachments), 1)
     assert sample.multipart
 
@@ -113,7 +113,7 @@ def test_mail_response_attachments():
     assert_equal(len(sample.attachments), 0)
     assert not sample.multipart
 
-    sample.attach(data=readme_data, filename="./README.md", content_type="text/plain")
+    sample.attach(data=readme_data, filename="./README.rst", content_type="text/plain")
 
     msg = sample.to_message()
     assert_equal(len(msg.get_payload()), 2)
@@ -135,7 +135,7 @@ def test_mail_request_attachments():
     msg_parts = msg.all_parts()
     sample_parts = sample.all_parts()
 
-    readme = open("./README.md").read()
+    readme = open("./README.rst").read()
 
     assert msg_parts[0].body == sample_parts[0].body
     assert readme == msg_parts[1].body
