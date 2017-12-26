@@ -22,29 +22,29 @@ technology currently available. Since Salmon is aiming to be a modern mail
 server and Mail processing framework, it has some features you don't find in
 any other Mail server.
 
--  Written in portable Python that should run on almost any Unix server.
--  Handles mail in almost any encoding and format, including attachments, and
+- Written in portable Python that should run on almost any Unix server.
+- Handles mail in almost any encoding and format, including attachments, and
   canonicalizes them for easier processing.
--  Sends nearly pristine clean mail that is easier to process by other
+- Sends nearly pristine clean mail that is easier to process by other
   receiving servers.
--  Properly decodes internationalized mail into Python unicode, and translates
+- Properly decodes internationalized mail into Python unicode, and translates
   Python unicode back into nice clean ascii and/or UTF-8 mail.
--  Supports working with Maildir queues to defer work and distribute it to
+- Supports working with Maildir queues to defer work and distribute it to
   multiple machines.
--  Can run as an non-root user on privileged ports to reduce the risk of
+- Can run as an non-root user on privileged ports to reduce the risk of
   intrusion.
--  Salmon can also run in a completely separate virtualenv for easy deployment.
--  A flexible and easy to use routing system lets you write stateful or state\
+- Salmon can also run in a completely separate virtualenv for easy deployment.
+- A flexible and easy to use routing system lets you write stateful or state\
   *less* handlers of your email.
--  Helpful tools for unit testing your email applications with nose, including
+- Helpful tools for unit testing your email applications with nose, including
   spell checking with PyEnchant.
--  Ability to use Jinja2 or Mako templates to craft emails including the
+- Ability to use Jinja2 or Mako templates to craft emails including the
   headers.
--  Easily configurable to use alternative sending and receiving systems,
+- Easily configurable to use alternative sending and receiving systems,
   database libraries, or any other systems you need to talk to.
--  Yet, you don't *have* to configure everything to get stated. A simple
+- Yet, you don't *have* to configure everything to get stated. A simple
   ``salmon gen`` command lets you get an application up and running quick.
--  Finally, many helpful commands for general mail server debugging and
+- Finally, many helpful commands for general mail server debugging and
   cleaning.
 
 Installing
