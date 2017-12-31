@@ -1,3 +1,12 @@
+.. _three-zero-zero:
+
+3.0.0
+=====
+
+- No changes since :ref:`three-zero-zero-rc1`
+
+.. _three-zero-zero-rc1:
+
 3.0.0rc1
 ========
 
