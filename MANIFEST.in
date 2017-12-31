@@ -1,9 +1,10 @@
-include *.py
 include LICENSE
 include README.rst
 include CHANGELOG.rst
-recursive-include bin *
-recursive-include doc *
-recursive-include salmon *
-recursive-include tests *
-global-exclude *.pyc
+graft docs
+prune docs/_build
+graft salmon
+graft tests
+exclude tests/*.db
+global-exclude *.py[co]
+global-exclude __pycache__
