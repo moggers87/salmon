@@ -1,5 +1,5 @@
-3.0-dev
-=======
+3.0.0rc1
+========
 
 - Removed lots of cruft (#19)
 - Moved from modargs to argparse - command line interface has changed (#28)
@@ -29,7 +29,7 @@
 
 - Python 3 support (#7)
 
-  - You'll now require ``setuptools`` to install (this won't be a problem for
+  - You'll now need ``setuptools`` to install (this won't be a problem for
     those upgrading)
   - No more support for Windows - it never worked for production on that
     platform anyway
@@ -39,6 +39,7 @@
 
 - Bind to port ``0`` during tests as this lets the OS choose a free port for us
   (#51)
+- Wrote some documentation (#33)
 
 Earlier Releases
 ================
