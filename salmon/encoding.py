@@ -71,6 +71,7 @@ from __future__ import print_function, unicode_literals
 
 from email import encoders
 from email.charset import Charset
+from email.header import Header
 from email.message import Message
 from email.mime.base import MIMEBase
 from email.utils import parseaddr
@@ -509,7 +510,7 @@ def header_from_mime_encoding(header):
         return header
     elif isinstance(header, list):
         return [properly_decode_header(h) for h in header]
-    elif isinstance(header, email.header.Header):
+    elif isinstance(header, Header):
         return six.text_type(header)
     else:
         return properly_decode_header(header)
