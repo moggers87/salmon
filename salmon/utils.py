@@ -125,7 +125,8 @@ def start_server(pid, force, chroot, chdir, uid, gid, umask, settings_loader, de
     if uid and gid:
         drop_priv(uid, gid)
     elif uid or gid:
-        logging.warning("You probably meant to give a uid and gid, but you gave: uid=%r, gid=%r.  Will not change to any user.", uid, gid)
+        logging.warning("You probably meant to give a uid and gid, but you gave: uid=%r, gid=%r. "
+                        "Will not change to any user.", uid, gid)
 
     settings.receiver.start()
 

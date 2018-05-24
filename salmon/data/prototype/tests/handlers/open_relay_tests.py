@@ -1,7 +1,6 @@
-from nose.tools import *
-from salmon.testing import *
-import os
-from salmon import server
+from nose.tools import *  # noqa
+from salmon.testing import relay, RouterConversation, queue
+
 
 relay = relay(port=8823)
 client = RouterConversation("somedude@localhost", "requests_tests")
@@ -25,5 +24,6 @@ def test_drops_open_relay_messages():
     """
     client.begin()
     client.say("tester@badplace.notinterwebs", "Relay should not happen")
-    assert queue().count() == 0, "You are configured currently to accept everything.  You should change config/settings.py router_defaults so host is your actual host name that will receive mail."
-
+    assert queue().count() == 0, "You are configured currently to accept everything. " \
+                                 "You should change config/settings.py router_defaults " \
+                                 "so host is your actual host name that will receive mail."

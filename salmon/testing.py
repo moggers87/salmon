@@ -23,11 +23,10 @@ from __future__ import print_function, unicode_literals
 
 import re
 
-import six
+from nose.tools import assert_equal
 
 from salmon import server, routing, mail
 from salmon.queue import Queue
-from nose.tools import assert_equal
 
 TEST_QUEUE = "run/queue"
 

@@ -5,8 +5,7 @@ import mailbox
 import os
 
 from mock import Mock, patch
-from nose.plugins.skip import SkipTest
-from nose.tools import assert_equal, assert_false, assert_true, raises, with_setup
+from nose.tools import assert_equal, raises, with_setup
 import chardet
 
 from salmon import encoding
@@ -20,12 +19,12 @@ BAD_HEADERS = [
     '=?iso-2022-jp?B?Zmlicm91c19mYXZvcmF0ZUB5YWhvby5jby5qcA==?=<fibrous_favorate@yahoo.co.jp>',
 
     '=?windows-1252?Q?Global_Leadership_in_HandCare_-_Consumer,\n\t_Professional_and_Industrial_Products_OTC_:_FLKI?=',
-    '=?windows-1252?q?Global_Leadership_in_Handcare_-_Consumer, _Auto,\n\t_Professional_&_Industrial_Products_-_OTC_:_FLKI?=',
+    '=?windows-1252?q?Global_Leadership_in_Handcare_-_Consumer, _Auto,\n\t_Professional_&_Industrial_Products_-_OTC_:_FLKI?=',  # noqa
     'I am just normal.',
     '=?koi8-r?B?WW91ciBtYW6ScyBzdGFtaW5hIHdpbGwgY29tZSBiYWNrIHRvIHlvdSBs?=\n\t=?koi8-r?B?aWtlIGEgYm9vbWVyYW5nLg==?=',
     '=?koi8-r?B?WW91IGNhbiBiZSBvbiB0b3AgaW4gYmVkcm9vbSBhZ2FpbiCWIGp1c3Qg?=\n\t=?koi8-r?B?YXNrIHVzIGZvciBhZHZpY2Uu?=',
     '"=?koi8-r?B?5MXMz9DSz8na18/E09TXzw==?=" <daniel@specelec.com>',
-    '=?utf-8?b?IumrlOiCsuWckuWNgOermSDihpIg6ZW35bqa6Yar6Zmi56uZIOKGkiDmlofljJbk?=\n =?utf-8?b?uInot6/nq5kiIDx2Z3hkcmp5Y2lAZG5zLmh0Lm5ldC50dz4=?=',
+    '=?utf-8?b?IumrlOiCsuWckuWNgOermSDihpIg6ZW35bqa6Yar6Zmi56uZIOKGkiDmlofljJbk?=\n =?utf-8?b?uInot6/nq5kiIDx2Z3hkcmp5Y2lAZG5zLmh0Lm5ldC50dz4=?=',  # noqa: E501
     '=?iso-8859-1?B?SOlhdnkgTel05WwgVW7uY/hk?=\n\t=?iso-8859-1?Q?=E9?=',
 ]
 
@@ -364,7 +363,7 @@ def test_apply_charset_to_header_with_bad_encoding_char():
 
 def test_odd_roundtrip_bug():
     decoded_addrs = [
-        u'"\u0414\u0435\u043b\u043e\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0441\u0442\u0432\u043e" <daniel@specelec.com>',
+            u'"\u0414\u0435\u043b\u043e\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0441\u0442\u0432\u043e" <daniel@specelec.com>',  # noqa: E501
         u'"\u8003\u53d6\u5206\u4eab" <Ernest.Beard@msa.hinet.net>',
         u'"Exquisite Replica"\n\t<wolfem@barnagreatlakes.com>',
     ]
@@ -372,6 +371,7 @@ def test_odd_roundtrip_bug():
     for decoded in decoded_addrs:
         encoded = encoding.header_to_mime_encoding(decoded)
         assert '<' in encoded and '"' in encoded, "Address wasn't encoded correctly:\n%s" % encoded
+
 
 def test_multiple_headers():
     msg = encoding.MailBase()

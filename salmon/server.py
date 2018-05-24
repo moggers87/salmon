@@ -8,7 +8,6 @@ import asyncore
 import logging
 import smtpd
 import smtplib
-import socket
 import threading
 import time
 import traceback
@@ -143,11 +142,9 @@ class Relay(object):
         logging.debug("Delivering to MX record %r for target %r", mx_host, target_host)
         return mx_host
 
-
     def __repr__(self):
         """Used in logging and debugging to indicate where this relay goes."""
         return "<Relay to (%s:%d)>" % (self.hostname, self.port)
-
 
     def reply(self, original, From, Subject, Body):
         """Calls self.send but with the from and to of the original message reversed."""
@@ -212,15 +209,14 @@ class SMTPReceiver(smtpd.SMTPServer):
         fires off threads and waits until they are done.
         """
         logging.info("SMTPReceiver started on %s:%d.", self.host, self.port)
-        self.poller = threading.Thread(target=asyncore.loop,
-                kwargs={'timeout':0.1, 'use_poll':True})
+        self.poller = threading.Thread(target=asyncore.loop, kwargs={'timeout': 0.1, 'use_poll': True})
         self.poller.start()
 
     def handle_accept(self):
         pair = self.accept()
         if pair is not None:
             conn, addr = pair
-            channel = SMTPChannel(self, conn, addr)
+            SMTPChannel(self, conn, addr)
 
     def process_message(self, Peer, From, To, Data):
         """
@@ -235,7 +231,7 @@ class SMTPReceiver(smtpd.SMTPServer):
             return str(err)
         except Exception:
             logging.exception("Exception while processing message from Peer: %r, From: %r, to To %r.",
-                          Peer, From, To)
+                              Peer, From, To)
             undeliverable_message(Data, "Error in message %r:%r:%r, look in logs." % (Peer, From, To))
 
     def close(self):
@@ -274,8 +270,7 @@ class LMTPReceiver(lmtpd.LMTPServer):
         fires off threads and waits until they are done.
         """
         logging.info("LMTPReceiver started on %s.", self.socket)
-        self.poller = threading.Thread(target=asyncore.loop,
-                kwargs={'timeout':0.1, 'use_poll':True})
+        self.poller = threading.Thread(target=asyncore.loop, kwargs={'timeout': 0.1, 'use_poll': True})
         self.poller.start()
 
     def process_message(self, Peer, From, To, Data):
@@ -292,7 +287,7 @@ class LMTPReceiver(lmtpd.LMTPServer):
             return str(err)
         except Exception:
             logging.exception("Exception while processing message from Peer: %r, From: %r, to To %r.",
-                          Peer, From, To)
+                              Peer, From, To)
             undeliverable_message(Data, "Error in message %r:%r:%r, look in logs." % (Peer, From, To))
 
     def close(self):

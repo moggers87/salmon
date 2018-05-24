@@ -20,6 +20,7 @@ from salmon import mail
 # email we put in a queue
 HASHED_HOSTNAME = hashlib.md5(socket.gethostname().encode("utf-8")).hexdigest()
 
+
 class SafeMaildir(mailbox.Maildir):
     def _create_tmp(self):
         now = time.time()
@@ -86,7 +87,7 @@ class Queue(object):
 
         if oversize_dir:
             if not os.path.exists(oversize_dir):
-                osmb = mailbox.Maildir(oversize_dir)
+                mailbox.Maildir(oversize_dir)
 
             self.oversize_dir = os.path.join(oversize_dir, "new")
 
@@ -110,16 +111,16 @@ class Queue(object):
         It returns a (key, message) tuple for that item.
         """
         for key in self.mbox.iterkeys():
-            over, over_name =  self.oversize(key)
+            over, over_name = self.oversize(key)
 
             if over:
                 if self.oversize_dir:
                     logging.info("Message key %s over size limit %d, moving to %s.",
-                                key, self.pop_limit, self.oversize_dir)
+                                 key, self.pop_limit, self.oversize_dir)
                     os.rename(over_name, os.path.join(self.oversize_dir, key))
                 else:
                     logging.info("Message key %s over size limit %d, DELETING (set oversize_dir).",
-                                key, self.pop_limit)
+                                 key, self.pop_limit)
                     os.unlink(over_name)
             else:
                 try:
@@ -149,7 +150,6 @@ class Queue(object):
         except Exception as exc:
             logging.exception("Failed to decode message: %s; msg_data: %r",   exc, msg_data)
             return None
-
 
     def remove(self, key):
         """Removes the queue, but not returned."""

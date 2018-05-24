@@ -72,9 +72,10 @@ def log_command(parser):
     each message it receives and also stores it to the run/queue
     so that you can make sure it was received in testing.
     """
-    def command(port, host, pid, chdir, chroot=None, uid=False, gid=False, umask=False, force=False, debug=False, daemon=True):
-        loader = lambda: utils.make_fake_settings(host, port)
-        utils.start_server(pid, force, chroot, chdir, uid, gid, umask, loader, debug, daemon)
+    def command(port, host, pid, chdir, chroot=None, uid=False, gid=False, umask=False,
+                force=False, debug=False, daemon=True):
+        utils.start_server(pid, force, chroot, chdir, uid, gid, umask,
+                           lambda: utils.make_fake_settings(host, port), debug, daemon)
 
     parser.set_defaults(func=command)
 
@@ -92,8 +93,10 @@ def log_command(parser):
     uid_group.add_argument("--gid", type=int, default=argparse.SUPPRESS, help="run with this group id")
 
     daemon_group = parser.add_mutually_exclusive_group()
-    daemon_group.add_argument("--no-daemon", default=argparse.SUPPRESS, dest="daemon", action="store_false", help="start server in foreground")
-    daemon_group.add_argument("--daemon", default=argparse.SUPPRESS, dest="daemon", action="store_true", help="start server as daemon (default)")
+    daemon_group.add_argument("--no-daemon", default=argparse.SUPPRESS, dest="daemon", action="store_false",
+                              help="start server in foreground")
+    daemon_group.add_argument("--daemon", default=argparse.SUPPRESS, dest="daemon", action="store_true",
+                              help="start server as daemon (default)")
 
 
 def send_command(parser):
@@ -101,12 +104,14 @@ def send_command(parser):
     Sends an email to someone as a test message.
     See the sendmail command for a sendmail replacement.
     """
-    def command(port, host, username=None, password=None, ssl=None, starttls=None, lmtp=None, sender=None, to=None, subject=None, body=None, attach=None):
+    def command(port, host, username=None, password=None, ssl=None, starttls=None, lmtp=None,
+                sender=None, to=None, subject=None, body=None, attach=None):
         message = mail.MailResponse(From=sender, To=to, Subject=subject, Body=body)
         if attach:
             message.attach(attach)
 
-        relay = server.Relay(host, port=port, username=username, password=password, ssl=ssl, starttls=starttls, lmtp=lmtp, debug=False)
+        relay = server.Relay(host, port=port, username=username, password=password, ssl=ssl,
+                             starttls=starttls, lmtp=lmtp, debug=False)
         relay.deliver(message)
 
     parser.set_defaults(func=command)
@@ -153,8 +158,8 @@ def start_command(parser):
     Runs a salmon server out of the current directory
     """
     def command(pid, force, chdir, boot, chroot=False, uid=False, gid=False, umask=False, debug=False, daemon=True):
-        loader = lambda: utils.import_settings(True, boot_module=boot)
-        utils.start_server(pid, force, chroot, chdir, uid, gid, umask, loader, debug, daemon)
+        utils.start_server(pid, force, chroot, chdir, uid, gid, umask,
+                           lambda: utils.import_settings(True, boot_module=boot), debug, daemon)
 
     parser.set_defaults(func=command)
 
@@ -171,8 +176,10 @@ def start_command(parser):
     uid_group.add_argument("--gid", type=int, default=argparse.SUPPRESS, help="run with this group id")
 
     daemon_group = parser.add_mutually_exclusive_group()
-    daemon_group.add_argument("--no-daemon", default=argparse.SUPPRESS, dest="daemon", action="store_false", help="start server in foreground")
-    daemon_group.add_argument("--daemon", default=argparse.SUPPRESS, dest="daemon", action="store_true", help="start server as daemon (default)")
+    daemon_group.add_argument("--no-daemon", default=argparse.SUPPRESS, dest="daemon", action="store_false",
+                              help="start server in foreground")
+    daemon_group.add_argument("--daemon", default=argparse.SUPPRESS, dest="daemon", action="store_true",
+                              help="start server as daemon (default)")
 
 
 def stop_command(parser):
@@ -212,8 +219,10 @@ def stop_command(parser):
     parser.set_defaults(func=command)
 
     parser.add_argument("--pid", default=DEFAULT_PID_FILE, help="path to pid file")
-    parser.add_argument("-f", "--force", dest="kill", default=DEFAULT_PID_FILE, action="store_true", help="force stop server")
-    parser.add_argument("--all", default=argparse.SUPPRESS, help="stops all servers with .pid files in the specified directory")
+    parser.add_argument("-f", "--force", dest="kill", default=DEFAULT_PID_FILE, action="store_true",
+                        help="force stop server")
+    parser.add_argument("--all", default=argparse.SUPPRESS,
+                        help="stops all servers with .pid files in the specified directory")
 
 
 def status_command(parser):
@@ -261,10 +270,13 @@ def queue_command(parser):
     parser.set_defaults(func=command)
 
     command_group = parser.add_mutually_exclusive_group(required=True)
-    command_group.add_argument("--pop", action="store_true", default=argparse.SUPPRESS, help="pop a message from queue")
+    command_group.add_argument("--pop", action="store_true", default=argparse.SUPPRESS,
+                               help="pop a message from queue")
     command_group.add_argument("--get", metavar="KEY", default=argparse.SUPPRESS, help="get key from queue")
-    command_group.add_argument("--remove", metavar="KEY", default=argparse.SUPPRESS, help="remove chosen key from queue")
-    command_group.add_argument("--count", action="store_true", default=argparse.SUPPRESS, help="count messages in queue")
+    command_group.add_argument("--remove", metavar="KEY", default=argparse.SUPPRESS,
+                               help="remove chosen key from queue")
+    command_group.add_argument("--count", action="store_true", default=argparse.SUPPRESS,
+                               help="count messages in queue")
     command_group.add_argument("--clear", action="store_true", default=argparse.SUPPRESS, help="clear queue")
     command_group.add_argument("--keys", action="store_true", default=argparse.SUPPRESS, help="print queue keys")
 
@@ -309,7 +321,8 @@ def routes_command(parser):
     parser.set_defaults(func=command)
 
     parser.add_argument("--path", default=argparse.SUPPRESS, help="search path for modules")
-    parser.add_argument("modules", metavar="module", nargs="*", default=["config.testing"], help="config modules to process")
+    parser.add_argument("modules", metavar="module", nargs="*", default=["config.testing"],
+                        help="config modules to process")
     parser.add_argument("--test", metavar="EMAIL", default=argparse.SUPPRESS, help="test address")
 
 
@@ -332,7 +345,8 @@ def gen_command(parser):
     parser.set_defaults(func=command)
 
     parser.add_argument("project", help="project name")
-    parser.add_argument("-f", "--force", action="store_true", default=argparse.SUPPRESS, help="overwrite existing directories")
+    parser.add_argument("-f", "--force", action="store_true", default=argparse.SUPPRESS,
+                        help="overwrite existing directories")
 
 
 def cleanse_command(parser):
@@ -400,7 +414,8 @@ def blast_command(parser):
 
 # Bring it all together
 
-_parser = argparse.ArgumentParser(description="Python mail server", epilog=copyright_notice, formatter_class=argparse.RawDescriptionHelpFormatter)
+_parser = argparse.ArgumentParser(description="Python mail server", epilog=copyright_notice,
+                                  formatter_class=argparse.RawDescriptionHelpFormatter)
 
 _parser.add_argument("-v", "--version", action="version", version=version_info)
 _subparsers = _parser.add_subparsers(metavar="<command>")
@@ -408,6 +423,6 @@ _subparsers.required = True
 
 for cmd, help_txt in COMMANDS:
     function = globals()["{0}_command".format(cmd)]
-    cmd_parser = _subparsers.add_parser(cmd, description=function.__doc__,
-            help=help_txt, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    cmd_parser = _subparsers.add_parser(cmd, description=function.__doc__, help=help_txt,
+                                        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     function(cmd_parser)

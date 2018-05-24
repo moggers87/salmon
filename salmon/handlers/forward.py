@@ -12,9 +12,11 @@ are probably better off writing your own version of this that knows a list
 of allowed hosts your machine answers to and only forwards those.
 """
 
+import logging
+
 from salmon.routing import route, stateless
 from salmon.utils import settings
-import logging
+
 
 @route("(to)@(host)", to=".+", host=".+")
 @stateless
@@ -22,4 +24,3 @@ def START(message, to=None, host=None):
     """Forwards every mail it gets to the relay.  BE CAREFUL WITH THIS."""
     logging.debug("MESSAGE to %s@%s forwarded to the relay host.", to, host)
     settings.relay.deliver(message)
-

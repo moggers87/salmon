@@ -23,8 +23,8 @@ def test_most_basic_form():
 def test_respond_cadillac_version():
     person = 'Tester'
 
-    msg = view.respond(locals(), Body='template.txt', Html='template.html',
-        From='test@localhost', To='receiver@localhost', Subject='Test body from "%(person)s".')
+    msg = view.respond(locals(), Body='template.txt', Html='template.html', From='test@localhost',
+                       To='receiver@localhost', Subject='Test body from "%(person)s".')
 
     assert msg.Body
     assert msg.Html
@@ -36,7 +36,8 @@ def test_respond_cadillac_version():
 def test_respond_plain_text():
     person = 'Tester'
 
-    msg = view.respond(locals(), Body='template.txt', From='test@localhost', To='receiver@localhost', Subject='Test body from "%(person)s".')
+    msg = view.respond(locals(), Body='template.txt', From='test@localhost', To='receiver@localhost',
+                       Subject='Test body from "%(person)s".')
 
     assert msg.Body
     assert not msg.Html
@@ -48,7 +49,8 @@ def test_respond_plain_text():
 def test_respond_html_only():
     person = 'Tester'
 
-    msg = view.respond(locals(), Html='template.html', From='test@localhost', To='receiver@localhost', Subject='Test body from "%(person)s".')
+    msg = view.respond(locals(), Html='template.html', From='test@localhost', To='receiver@localhost',
+                       Subject='Test body from "%(person)s".')
 
     assert not msg.Body
     assert msg.Html
@@ -59,9 +61,11 @@ def test_respond_html_only():
 
 def test_respond_attach():
     person = "hello"
-    mail = view.respond(locals(), Body="template.txt", From="test@localhost", To="receiver@localhost", Subject='Test body from someone.')
+    mail = view.respond(locals(), Body="template.txt", From="test@localhost", To="receiver@localhost",
+                        Subject='Test body from someone.')
 
-    view.attach(mail, locals(), 'template.html', content_type="text/html", filename="template.html", disposition='attachment')
+    view.attach(mail, locals(), 'template.html', content_type="text/html", filename="template.html",
+                disposition='attachment')
 
     assert_equal(len(mail.attachments), 1)
 
@@ -81,7 +85,8 @@ def test_respond_attach():
 
 def test_unicode():
     person = u'H\xe9avy M\xe9t\xe5l Un\xeec\xf8d\xe9'
-    mail = view.respond(locals(), Html="unicode.html", From="test@localhost", To="receiver@localhost", Subject='Test body from someone.')
+    mail = view.respond(locals(), Html="unicode.html", From="test@localhost", To="receiver@localhost",
+                        Subject='Test body from someone.')
 
     assert str(mail)
 
