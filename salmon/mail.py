@@ -90,12 +90,6 @@ class MailRequest(object):
 
         self.bounce = None
 
-    def __str__(self):
-        """
-        Return original string usable for storage into a queue or transmission.
-        """
-        return self.Data
-
     def __repr__(self):
         return "From: %r" % [self.Peer, self.From, self.To]
 
