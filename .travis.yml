@@ -13,6 +13,10 @@ matrix:
       env: TOX_ENV=docs
       install: pip install tox
       script: tox -e $TOX_ENV
+    - python: "2.7"
+      env: TOX_ENV=lint
+      install: pip install tox
+      script: tox -e $TOX_ENV
 
 install:
     - travis_retry pip install -e .
