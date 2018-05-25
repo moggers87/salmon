@@ -512,8 +512,6 @@ def header_from_mime_encoding(header):
         return header
     elif isinstance(header, list):
         return [properly_decode_header(h) for h in header]
-    elif isinstance(header, email.header.Header):
-        return six.text_type(header)
     else:
         return properly_decode_header(header)
 
