@@ -54,7 +54,6 @@ from functools import wraps
 import re
 import logging
 import sys
-import email.utils
 import shelve
 import threading
 
@@ -66,7 +65,10 @@ except ImportError:
 
 ROUTE_FIRST_STATE = 'START'
 LOG = logging.getLogger("routing")
-DEFAULT_STATE_KEY = lambda mod, msg: mod
+
+
+def DEFAULT_STATE_KEY(mod, msg):
+    return mod
 
 
 class StateStorage(object):
@@ -178,7 +180,6 @@ class ShelveStorage(MemoryStorage):
             self.states.close()
 
 
-
 class RoutingBase(object):
     """
     The self is a globally accessible class that is actually more like a
@@ -274,7 +275,6 @@ class RoutingBase(object):
         key = self.state_key(module_name, message)
         return self.STATE_STORE.get(key, message.From)
 
-
     def in_state(self, func, message):
         """
         Determines if this function is in the state for the to/from in the
@@ -350,7 +350,8 @@ class RoutingBase(object):
         transition to ERROR state and call your function right away.  It will then
         stay in the ERROR state unless you return a different one.
         """
-        if self.RELOAD: self.reload()
+        if self.RELOAD:
+            self.reload()
 
         called_count = 0
 
@@ -368,7 +369,6 @@ class RoutingBase(object):
         if called_count == 0:
             self._enqueue_undeliverable(message)
 
-
     def call_safely(self, func, message, kwargs):
         """
         Used by self to call a function and log exceptions rather than
@@ -379,7 +379,7 @@ class RoutingBase(object):
         try:
             func(message, **kwargs)
             LOG.debug("Message to %s was handled by %s.%s",
-                          message.To, func.__module__, func.__name__)
+                      message.To, func.__module__, func.__name__)
         except SMTPError:
             raise
         except Exception:
@@ -393,7 +393,6 @@ class RoutingBase(object):
             else:
                 raise
 
-
     def clear_states(self):
         """Clears out the states for unit testing."""
         with self.lock:
@@ -404,7 +403,6 @@ class RoutingBase(object):
         with self.lock:
             self.REGISTERED.clear()
             del self.ORDER[:]
-
 
     def load(self, handlers):
         """
@@ -444,7 +442,9 @@ class RoutingBase(object):
                         else:
                             raise
 
+
 Router = RoutingBase()
+
 
 class route(object):
     """
@@ -496,7 +496,7 @@ class route(object):
         if salmon_setting(func, 'stateless'):
             @wraps(func)
             def routing_wrapper(message, *args, **kw):
-                next_state = func(message, *args, **kw)
+                func(message, *args, **kw)
         else:
             @wraps(func)
             def routing_wrapper(message, *args, **kw):
@@ -535,6 +535,7 @@ def salmon_setting(func, key):
 
 def has_salmon_settings(func):
     return "_salmon_settings" in func.__dict__
+
 
 def assert_salmon_settings(func):
     """Used to make sure that the func has been setup by a routing decorator."""
@@ -579,6 +580,7 @@ def stateless(func):
 
     return func
 
+
 def nolocking(func):
     """
     Normally salmon.routing.Router has a lock around each call to all handlers
@@ -595,6 +597,7 @@ def nolocking(func):
     attach_salmon_settings(func)
     func._salmon_settings['nolocking'] = True
     return func
+
 
 def state_key_generator(func):
     """

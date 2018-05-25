@@ -26,7 +26,7 @@ def test_ShelveStorage():
     store = ShelveStorage("run/states.db")
 
     store.set(test_ShelveStorage.__module__, "tester@localhost", "TESTED")
-    assert_equal( store.get(test_MemoryStorage.__module__, "tester@localhost"), "TESTED")
+    assert_equal(store.get(test_MemoryStorage.__module__, "tester@localhost"), "TESTED")
 
     assert_equal(store.get(test_MemoryStorage.__module__, "tester2@localhost"), "START")
 
@@ -37,7 +37,7 @@ def test_ShelveStorage():
 @with_setup(setup_salmon_dirs, teardown_salmon_dirs)
 def test_RoutingBase():
     # check that Router is in a pristine state
-    assert_equal( len(Router.ORDER), 0)
+    assert_equal(len(Router.ORDER), 0)
     assert_equal(len(Router.REGISTERED), 0)
 
     setup_router(['salmon_tests.handlers.simple_fsm_mod'])

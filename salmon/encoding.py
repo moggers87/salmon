@@ -72,12 +72,10 @@ from __future__ import print_function, unicode_literals
 from email import encoders
 from email.charset import Charset
 from email.message import Message
-from email.mime.base import MIMEBase
 from email.utils import parseaddr
 import email
 import re
 import string
-import sys
 import warnings
 
 import chardet
@@ -94,8 +92,11 @@ ENCODING_REGEX = re.compile(r"\=\?([a-z0-9\-]+?)\?([bq])\?", REGEX_OPTS)
 ENCODING_END_REGEX = re.compile(r"\?=", REGEX_OPTS)
 INDENT_REGEX = re.compile(r"\n\s+")
 
-VALUE_IS_EMAIL_ADDRESS = lambda v: '@' in v
 ADDRESS_HEADERS_WHITELIST = ['From', 'To', 'Delivered-To', 'Cc', 'Bcc']
+
+
+def VALUE_IS_EMAIL_ADDRESS(v):
+    return "@" in v
 
 
 class EncodingError(Exception):
@@ -206,7 +207,7 @@ class MailBase(object):
         del self.mime_part[key]
 
     def __nonzero__(self):
-        return self.body != None or len(self.mime_part) > 0 or len(self.parts) > 0
+        return self.body is not None or len(self.mime_part) > 0 or len(self.parts) > 0
 
     def items(self):
         return [(normalize_header(key), header_from_mime_encoding(header)) for key, header in self.mime_part.items()]
@@ -246,7 +247,6 @@ class MailBase(object):
         ctype, params = self.content_encoding['Content-Type']
         self.mime_part.set_payload(value, params.get("charset", None))
 
-
     def attach_file(self, filename, data, ctype, disposition):
         """
         A file attachment is a raw attachment with a disposition that
@@ -261,7 +261,6 @@ class MailBase(object):
         part.content_encoding['Content-Disposition'] = (disposition,
                                                         {'filename': filename})
         self.parts.append(part)
-
 
     def attach_text(self, data, ctype):
         """
@@ -302,7 +301,7 @@ class MIMEPart(Message):
         # this is text, so encode it in canonical form
         if charset is not None:
             warnings.warn("You are adding text that is neither ASCII nor UTF-8. Please reconsider your choice.",
-                    UnicodeWarning)
+                          UnicodeWarning)
 
         charset = charset or 'ascii'
         try:
@@ -337,8 +336,9 @@ class MIMEPart(Message):
 
     def __repr__(self):
         return "<MIMEPart '%s': %r, %r, multipart=%r>" % (self.mimetype, self['Content-Type'],
-                                              self['Content-Disposition'],
-                                                            self.is_multipart())
+                                                          self['Content-Disposition'],
+                                                          self.is_multipart())
+
 
 def from_message(message, parent=None):
     """
@@ -372,7 +372,8 @@ def to_message(mail):
             ctype = 'text/plain'
     else:
         if mail.parts:
-            assert ctype.startswith("multipart") or ctype.startswith("message"), "Content type should be multipart or message, not %r" % ctype
+            assert ctype.startswith("multipart") or ctype.startswith("message"), \
+                    "Content type should be multipart or message, not %r" % ctype
 
     # adjust the content type according to what it should be now
     mail.content_encoding['Content-Type'] = (ctype, params)
@@ -456,7 +457,8 @@ def parse_parameter_header(message, header):
         params_dict = dict(params)
 
         for key in CONTENT_ENCODING_REMOVED_PARAMS:
-            if key in params_dict: del params_dict[key]
+            if key in params_dict:
+                del params_dict[key]
 
         return value, params_dict
     else:
@@ -495,7 +497,8 @@ def properly_encode_header(value, encoder, not_email):
 
 
 def header_to_mime_encoding(value, not_email=False):
-    if not value: return ""
+    if not value:
+        return ""
 
     encoder = Charset(DEFAULT_ENCODING)
     if isinstance(value, list):

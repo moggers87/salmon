@@ -15,9 +15,11 @@ templates, and possibly write your own storage.
 """
 from __future__ import print_function, unicode_literals
 
-import uuid
-from salmon import queue, view
 from email.utils import parseaddr
+import uuid
+
+from salmon import queue, view
+
 
 class ConfirmationStorage(object):
     """
@@ -81,6 +83,7 @@ class ConfirmationStorage(object):
         self.confirmations[self.key(target, from_address)] = (expected_secret,
                                                               pending_message_id)
 
+
 class ConfirmationEngine(object):
     """
     The confirmation engine is what does the work of sending a confirmation,
@@ -119,7 +122,6 @@ class ConfirmationEngine(object):
         Removes the pending message from the pending queue.
         """
         self.pending.remove(pending_id)
-
 
     def cancel(self, target, from_address, expect_secret):
         """

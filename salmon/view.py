@@ -8,10 +8,9 @@ After that these functions should just work.
 from __future__ import print_function, unicode_literals
 
 from salmon import mail
-import email
-import warnings
 
 LOADER = None
+
 
 def load(template):
     """
@@ -90,4 +89,3 @@ def attach(msg, variables, template, filename=None, content_type=None,
 
     msg.attach(filename=filename, data=data, content_type=content_type,
                disposition=disposition)
-

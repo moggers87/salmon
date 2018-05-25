@@ -22,7 +22,7 @@ from salmon import encoding, bounce
 
 
 # You can change this to 'Delivered-To' on servers that support it like Postfix
-ROUTABLE_TO_HEADER='to'
+ROUTABLE_TO_HEADER = 'to'
 
 
 def _decode_header_randomness(addr):
@@ -90,12 +90,6 @@ class MailRequest(object):
 
         self.bounce = None
 
-    def __str__(self):
-        """
-        Return original string usable for storage into a queue or transmission.
-        """
-        return self.Data
-
     def __repr__(self):
         return "From: %r" % [self.Peer, self.From, self.To]
 
@@ -161,15 +155,12 @@ class MailRequest(object):
         if not self.bounce:
             self.bounce = bounce.detect(self)
 
-        if self.bounce.score > threshold:
-            return True
-        else:
-            return False
+        return self.bounce.score > threshold
 
     @property
     def original(self):
         warnings.warn("MailRequest.original is deprecated, use MailRequest.Data instead",
-                category=DeprecationWarning, stacklevel=2)
+                      category=DeprecationWarning, stacklevel=2)
         return self.Data
 
 
@@ -230,10 +221,13 @@ class MailResponse(object):
 
         assert content_type, "No content type given, and couldn't guess from the filename: %r" % filename
 
-        self.attachments.append({'filename': filename,
-                                 'content_type': content_type,
-                                 'data': data,
-                                 'disposition': disposition,})
+        self.attachments.append({
+            'filename': filename,
+            'content_type': content_type,
+            'data': data,
+            'disposition': disposition,
+        })
+
     def attach_part(self, part):
         """
         Attaches a raw MailBase part from a MailRequest (or anywhere)
@@ -264,7 +258,6 @@ class MailResponse(object):
         del self.attachments[:]
         del self.base.parts[:]
         self.multipart = False
-
 
     def update(self, message):
         """

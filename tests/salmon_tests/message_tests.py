@@ -41,7 +41,8 @@ def test_mail_request():
     msg.base.append_header("To", "nobody@example.com")
     assert_equal(msg["To"], "somedude@localhost")
     assert_equal(msg.keys(), ["To", "From", "To"])
-    assert_equal(msg.items(), [("To", "somedude@localhost"), ("From", "somebody@localhost"), ("To", "nobody@example.com")])
+    assert_equal(msg.items(), [("To", "somedude@localhost"), ("From", "somebody@localhost"),
+                 ("To", "nobody@example.com")])
 
     # validate that upper and lower case work for headers
     assert("FroM" in msg)
@@ -261,11 +262,13 @@ def test_decode_header_randomness():
     assert_equal(mail._decode_header_randomness(None), set())
 
     # with strings
-    assert_equal(mail._decode_header_randomness(["z@localhost", '"Z A" <z@localhost>']), set(["z@localhost", "z@localhost"]))
+    assert_equal(mail._decode_header_randomness(["z@localhost", '"Z A" <z@localhost>']),
+                 set(["z@localhost", "z@localhost"]))
     assert_equal(mail._decode_header_randomness("z@localhost"), set(["z@localhost"]))
 
     # with bytes
-    assert_equal(mail._decode_header_randomness([b"z@localhost", b'"Z A" <z@localhost>']), set(["z@localhost", "z@localhost"]))
+    assert_equal(mail._decode_header_randomness([b"z@localhost", b'"Z A" <z@localhost>']),
+                 set(["z@localhost", "z@localhost"]))
     assert_equal(mail._decode_header_randomness(b"z@localhost"), set(["z@localhost"]))
 
     # with literal nonsense

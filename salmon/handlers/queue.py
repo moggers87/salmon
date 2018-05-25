@@ -5,9 +5,11 @@ can inspect messages the server is receiving using mutt or
 the salmon queue command.
 """
 
+import logging
+
 from salmon.routing import route_like, stateless, nolocking
 from salmon import queue, handlers
-import logging
+
 
 @route_like(handlers.log.START)
 @stateless
@@ -17,6 +19,6 @@ def START(message, to=None, host=None):
     @stateless and routes however handlers.log.START routes (everything).
     Has @nolocking, but that's alright since it's just writing to a Maildir.
     """
+    logging.debug("MESSAGE to %s@%s added to queue.", to, host)
     q = queue.Queue('run/queue')
     q.push(message)
-

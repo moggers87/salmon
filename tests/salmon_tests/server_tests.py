@@ -20,6 +20,7 @@ from .message_tests import (
 )
 from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
 
+
 SMTP_MESSAGE_DEFS = {
     2: {"ok": u"250 Ok\r\n".encode()},
     3: {"ok": u"250 OK\r\n".encode()},
@@ -58,7 +59,8 @@ def test_SMTPChannel(push_mock):
 
     push_mock.reset_mock()
     channel.smtp_RCPT("TO: them@example.com")
-    assert_equal(push_mock.call_args[0][1:], (u"451 Will not accept multiple recipients in one transaction\r\n".encode(),))
+    assert_equal(push_mock.call_args[0][1:],
+                 (u"451 Will not accept multiple recipients in one transaction\r\n".encode(),))
 
 
 def test_SMTPReceiver_process_message():

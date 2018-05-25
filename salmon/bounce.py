@@ -98,6 +98,7 @@ COMBINED_STATUS_CODES = {
     u'77': u'Message integrity failure',
 }
 
+
 def match_bounce_headers(msg):
     """
     Goes through the headers in a potential bounce message recursively
@@ -235,7 +236,6 @@ class BounceAnalyzer(object):
             self.report = self.report.parts
 
         self.notification = self.content_parts.get('notification', None)
-
 
     def is_hard(self):
         """
