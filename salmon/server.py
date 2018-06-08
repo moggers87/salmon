@@ -218,7 +218,7 @@ class SMTPReceiver(smtpd.SMTPServer):
             conn, addr = pair
             SMTPChannel(self, conn, addr)
 
-    def process_message(self, Peer, From, To, Data):
+    def process_message(self, Peer, From, To, Data, **kwargs):
         """
         Called by smtpd.SMTPServer when there's a message received.
         """
@@ -273,7 +273,7 @@ class LMTPReceiver(lmtpd.LMTPServer):
         self.poller = threading.Thread(target=asyncore.loop, kwargs={'timeout': 0.1, 'use_poll': True})
         self.poller.start()
 
-    def process_message(self, Peer, From, To, Data):
+    def process_message(self, Peer, From, To, Data, **kwargs):
         """
         Called by lmtpd.LMTPServer when there's a message received.
         """
