@@ -1,3 +1,11 @@
+.. _three-zero-one:
+
+3.0.1
+=====
+
+- ``SMTPReceiver.process_messsage`` now accepts keyword arguments added in
+  Python 3
+
 .. _three-zero-zero:
 
 3.0.0

@@ -84,6 +84,12 @@ def test_SMTPReceiver_process_message():
         response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
         assert_equal(response, "450 Not found")
 
+    # Python 3's smtpd takes some extra kawrgs, but i we don't care about that at the moment
+    with patch("salmon.server.routing.Router") as router_mock, \
+            patch("salmon.server.undeliverable_message"):
+        response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg), mail_options=[], rcpt_options=[])
+        assert response is None, response
+
 
 @patch("lmtpd.asynchat.async_chat.push")
 def test_LMTPChannel(push_mock):
@@ -127,6 +133,12 @@ def test_LMTPReceiver_process_message():
         router_mock.deliver.side_effect = server.SMTPError(450, "Not found")
         response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
         assert_equal(response, "450 Not found")
+
+    # lmtpd's server is a subclass of smtpd's server, so we should support the same kwargs here
+    with patch("salmon.server.routing.Router") as router_mock, \
+            patch("salmon.server.undeliverable_message"):
+        response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg), mail_options=[], rcpt_options=[])
+        assert response is None, response
 
 
 @patch("salmon.queue.Queue")
