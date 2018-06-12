@@ -1,6 +1,5 @@
 import logging
 import logging.config
-import os
 
 from config import settings
 from salmon import view
@@ -26,8 +25,3 @@ Router.RELOAD = False
 Router.LOG_EXCEPTIONS = False
 
 view.LOADER = jinja2.Environment(loader=jinja2.PackageLoader('salmon_tests', 'templates'))
-
-# if you have pyenchant and enchant installed then the template tests will do
-# spell checking for you, but you need to tell pyenchant where to find itself
-if 'PYENCHANT_LIBRARY_PATH' not in os.environ:
-    os.environ['PYENCHANT_LIBRARY_PATH'] = '/opt/local/lib/libenchant.dylib'
