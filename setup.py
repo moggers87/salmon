@@ -23,7 +23,7 @@ config = {
     'author': 'Zed A. Shaw',
     'maintainer': 'Matt Molyneaux',
     'maintainer_email': 'moggers87+git@moggers87.co.uk',
-    'version': '3.0.0',
+    'version': '3.0.1',
     'install_requires': install_requires,
     'tests_require': test_requires,
     'setup_requires': ['nose'],
