@@ -31,7 +31,7 @@ def _decode_header_randomness(addr):
     """
     if not addr:
         return set()
-    elif isinstance(addr, list):
+    elif isinstance(addr, (list, tuple)):
         addr_set = set()
         for a in addr:
             for returned_addr in _decode_header_randomness(a):
