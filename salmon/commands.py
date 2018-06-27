@@ -33,6 +33,10 @@ COMMANDS = (
     ("sendmail", "send an email from stdin"),
 )
 
+# squash warning about unicode literals. if there are bugs here, then it's
+# quite likely to have afffected us before switching to click.
+click.disable_unicode_literals_warning = True
+
 DEFAULT_PID_FILE = "./run/stmp.pid"
 
 copyright_notice = """
