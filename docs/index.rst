@@ -20,6 +20,7 @@ Contents:
     routing
     relaying
     mail_objects
+    commandline
     Salmon API guide <salmon>
 
 About Salmon

@@ -21,6 +21,7 @@ extras_require = {
     "docs": [
         "sphinx",
         "sphinx_rtd_theme",
+        "sphinx-click",
     ],
 }
 

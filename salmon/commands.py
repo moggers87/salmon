@@ -1,3 +1,7 @@
+"""
+Documentation for this module can be found in :doc:`commandline`
+"""
+
 from __future__ import print_function, unicode_literals
 
 import email
