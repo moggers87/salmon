@@ -156,7 +156,7 @@ character limit it imposes (120 is a good marker IMO).
    :target: https://codecov.io/github/moggers87/salmon
    :alt: Coverage Status
    :scale: 100%
-.. |docs| image:: https://readthedocs.org/projects/docs/badge/?version=latest
+.. |docs| image:: https://readthedocs.org/projects/salmon-mail/badge/?version=latest
    :alt: Documentation Status
    :scale: 100%
-   :target: https://docs.readthedocs.io/en/latest/?badge=latest
+   :target: https://salmon-mail.readthedocs.io/en/latest/?badge=latest
