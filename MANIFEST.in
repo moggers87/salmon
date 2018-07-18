@@ -8,3 +8,5 @@ graft tests
 exclude tests/*.db
 global-exclude *.py[co]
 global-exclude __pycache__
+include versioneer.py
+include salmon/_version.py
