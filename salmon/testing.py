@@ -176,4 +176,4 @@ def assert_in_state(module, To, From, state):
     fake = {'to': To}
     state_key = routing.Router.state_key(module, fake)
     assert routing.Router.STATE_STORE.get(state_key, From) == state, \
-           "%r != %r" % (routing.Router.STATE_STORE.get(state_key, From), state)
+        "%r != %r" % (routing.Router.STATE_STORE.get(state_key, From), state)
