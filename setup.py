@@ -1,5 +1,7 @@
 from setuptools import setup
 
+import versioneer
+
 
 install_requires = [
     'chardet',
@@ -30,7 +32,8 @@ config = {
     'author': 'Zed A. Shaw',
     'maintainer': 'Matt Molyneaux',
     'maintainer_email': 'moggers87+git@moggers87.co.uk',
-    'version': '3.0.1',
+    'version': versioneer.get_version(),
+    'cmdclass': versioneer.get_cmdclass(),
     'install_requires': install_requires,
     'tests_require': tests_require,
     'extras_require': extras_require,
