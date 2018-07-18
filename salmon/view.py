@@ -1,7 +1,8 @@
 """
 These are helper functions that make it easier to work with either Jinja2 or
 Mako templates.  You MUST configure it by setting salmon.view.LOADER to one of
-the template loaders in your boot module.
+the template loaders in your boot module. Remember to install Jinja2 or Mako
+first though!
 
 After that these functions should just work.
 """

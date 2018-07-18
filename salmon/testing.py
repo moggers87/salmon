@@ -23,8 +23,6 @@ from __future__ import print_function, unicode_literals
 
 import re
 
-from nose.tools import assert_equal
-
 from salmon import server, routing, mail
 from salmon.queue import Queue
 
@@ -177,4 +175,5 @@ def assert_in_state(module, To, From, state):
     """
     fake = {'to': To}
     state_key = routing.Router.state_key(module, fake)
-    assert_equal(routing.Router.STATE_STORE.get(state_key, From), state)
+    assert routing.Router.STATE_STORE.get(state_key, From) == state, \
+           "%r != %r" % (routing.Router.STATE_STORE.get(state_key, From), state)

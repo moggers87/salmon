@@ -9,11 +9,18 @@ install_requires = [
     'six',
 ]
 
-test_requires = [
+tests_require = [
     'coverage',
     'jinja2',
     'mock',
 ]
+
+extras_require = {
+    "docs": [
+        "sphinx",
+        "sphinx_rtd_theme",
+    ],
+}
 
 config = {
     'description': 'A Python mail server forked from Lamson',
@@ -25,7 +32,8 @@ config = {
     'maintainer_email': 'moggers87+git@moggers87.co.uk',
     'version': '3.0.1',
     'install_requires': install_requires,
-    'tests_require': test_requires,
+    'tests_require': tests_require,
+    'extras_require': extras_require,
     'setup_requires': ['nose'],
     'test_suite': 'nose.collector',
     'packages': ['salmon', 'salmon.handlers'],
