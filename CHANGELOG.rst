@@ -1,3 +1,8 @@
+Unreleased
+==========
+
+- Fixed a bug where the version string would be a bytes literal under Python 3 (#83)
+
 .. _three-zero-one:
 
 3.0.1
