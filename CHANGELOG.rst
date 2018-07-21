@@ -1,5 +1,7 @@
-Unreleased
-==========
+.. _three-zero-two:
+
+3.0.2
+=====
 
 - Fixed a bug where the version string would be a bytes literal under Python 3 (#83)
 
