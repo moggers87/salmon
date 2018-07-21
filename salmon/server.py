@@ -19,12 +19,13 @@ import six
 from salmon import queue, mail, routing, __version__
 from salmon.bounce import PRIMARY_STATUS_CODES, SECONDARY_STATUS_CODES, COMBINED_STATUS_CODES
 
-# these need to be bytes, otherwise the opening statement looks like this:
-# \xff\xfe\x00\x002\x00\x00\x002\x00\x00\x000\x00\x00\x00.. etc.
-smtpd.__version__ = ("Salmon Mail router SMTPD, version %s" % __version__).encode()
 
-# lmtpd expects __version__ to be a unicode object
 lmtpd.__version__ = "Salmon Mail router LMTPD, version %s" % __version__
+smtpd.__version__ = "Salmon Mail router SMTPD, version %s" % __version__
+
+if six.PY2:
+    # Python 2 commits many crimes against byte encoding, so we've got to manually convert to ASCII
+    smtpd.__version__ = smtpd.__version__.encode()
 
 
 def undeliverable_message(raw_message, failure_type):
