@@ -1,5 +1,3 @@
-import os
-
 from mock import Mock, patch
 from nose.tools import assert_equal, with_setup
 
@@ -10,7 +8,6 @@ from salmon.testing import (
     delivered,
     queue,
     relay,
-    spelling,
 )
 
 from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
@@ -55,13 +52,3 @@ def test_RouterConversation():
     client.begin()
     client.say('testlist@localhost', 'This is a test')
     delivered('testlist@localhost'), "Test message not delivered."
-
-
-def test_spelling():
-    # specific to a mac setup, because macs are lame
-    if 'PYENCHANT_LIBRARY_PATH' not in os.environ:
-        os.environ['PYENCHANT_LIBRARY_PATH'] = '/opt/local/lib/libenchant.dylib'
-
-    template = "tests/salmon_tests/templates/template.txt"
-    contents = open(template).read()
-    assert spelling(template, contents)

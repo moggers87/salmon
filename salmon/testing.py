@@ -1,11 +1,11 @@
 """
-A bag of generally useful things when writing unit tests for your Salmon server.
-The most important things are the spelling function and using the
-TestConversation vs. RouterConversation to talk to your server.
+A bag of generally useful things when writing unit tests for your Salmon
+server.  The most important thing  using the TestConversation vs.
+RouterConversation to talk to your server.
 
 The TestConversation will use the salmon.server.Relay you have configured to
-talk to your actual running Salmon server.  Since by default Salmon reloads each
-file you change it will work to run your tests.
+talk to your actual running Salmon server.  Since by default Salmon reloads
+each file you change it will work to run your tests.
 
 However, this isn't that fast, doesn't give you coverage analysis, and doesn't
 let you test the results.  For that you use RouterConversation to do the exact
@@ -13,11 +13,8 @@ same API (they should be interchangeable) but rather than talk to a running
 server through the relay, it just runs all the messages through the router
 directly.
 
-This is faster and will give you code coverage as well as make sure that all the
-modules (not just your handlers) will get reloaded.
-
-The spelling function will use PyEnchant to spell check a string.  If it finds
-any errors it prints them out, and returns False.
+This is faster and will give you code coverage as well as make sure that all
+the modules (not just your handlers) will get reloaded.
 """
 from __future__ import print_function, unicode_literals
 
@@ -27,38 +24,6 @@ from salmon import server, routing, mail
 from salmon.queue import Queue
 
 TEST_QUEUE = "run/queue"
-
-
-def spelling(file_name, contents, language="en_US"):
-    """
-    You give it a file_name and the contents of that file and it tells you
-    if it's spelled correctly.  The reason you give it contents is that you
-    will typically run a template through the render process, so spelling
-    can't just load a file and check it.
-
-    It assumes you have PyEnchant installed correctly and configured
-    in your test settings module.  Use "salmon spell" to make sure it
-    works right.
-    """
-    try:
-        from enchant.checker import SpellChecker
-        from enchant.tokenize import EmailFilter, URLFilter
-    except ImportError:
-        print("Failed to load PyEnchant.  Make sure it's installed and salmon spell works.")
-        return True
-
-    failures = 0
-    chkr = SpellChecker(language, filters=[EmailFilter, URLFilter])
-    chkr.set_text(contents)
-    for err in chkr:
-        print("%s: %s \t %r" % (file_name, err.word, contents[err.wordpos - 20:err.wordpos + 20]))
-        failures += 1
-
-    if failures:
-        print("You have %d spelling errors in %s.  Run salmon spell.." % (failures, file_name))
-        return False
-    else:
-        return True
 
 
 def relay(hostname="127.0.0.1", port=8824):
