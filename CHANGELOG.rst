@@ -1,5 +1,10 @@
 .. _three-zero-two:
 
+Unreleased
+==========
+
+- Don't install python-daemon 2.2.0, it breaks things (#89)
+
 3.0.2
 =====
 
