@@ -4,6 +4,11 @@ Unreleased
 ==========
 
 - Don't install python-daemon 2.2.0, it breaks things (#89)
+- Remove untested spelling function (#86)
+
+  - The spelling function did very little other than assume it could load
+    PyEnchant and then ``return True`` if it couldn't. If you really miss this
+    function, submit a PR with something that actually works and has tests!
 
 3.0.2
 =====
