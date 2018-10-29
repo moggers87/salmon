@@ -460,7 +460,7 @@ class route(object):
     """
 
     def __init__(self, format, **captures):
-        """
+        r"""
         Sets up the pattern used for the Router configuration.  The format
         parameter is a simple pattern of words, captures, and anything you
         want to ignore.  The captures parameter is a mapping of the words in
