@@ -1,12 +1,10 @@
-from nose.tools import assert_equal, assert_raises, raises, with_setup
 from mock import Mock, patch
-
-from salmon.routing import route, Router, StateStorage, MemoryStorage, ShelveStorage
-from salmon.mail import MailRequest
+from nose.tools import assert_equal, assert_raises, raises, with_setup
 from salmon import routing
+from salmon.mail import MailRequest
+from salmon.routing import MemoryStorage, Router, ShelveStorage, StateStorage, route
 
-from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
-from .setup_env import setup_router
+from .setup_env import setup_router, setup_salmon_dirs, teardown_salmon_dirs
 
 
 def test_MemoryStorage():

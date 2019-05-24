@@ -1,5 +1,4 @@
 from nose.tools import assert_equal, with_setup
-
 from salmon import mail
 from salmon.routing import Router
 

@@ -2,7 +2,6 @@ from setuptools import setup
 
 import versioneer
 
-
 install_requires = [
     'chardet',
     'dnspython',

@@ -3,7 +3,6 @@ import shutil
 
 import config.testing  # noqa
 
-
 dirs = ["run", "logs"]
 
 

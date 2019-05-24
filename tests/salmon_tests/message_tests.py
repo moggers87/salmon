@@ -2,9 +2,7 @@
 from __future__ import print_function
 
 from nose.tools import assert_equal, assert_raises
-
-from salmon import mail, encoding
-
+from salmon import encoding, mail
 
 sample_message = """From: somedude@localhost
 To: somedude@localhost

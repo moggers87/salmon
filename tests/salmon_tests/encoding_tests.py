@@ -4,14 +4,13 @@ from email.utils import parseaddr
 import mailbox
 import os
 
-from mock import Mock, patch
-from nose.tools import assert_equal, raises, with_setup
 import chardet
 
+from mock import Mock, patch
+from nose.tools import assert_equal, raises, with_setup
 from salmon import encoding
 
 from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
-
 
 BAD_HEADERS = [
     '"\u8003\u53d6\u5206\u4eab" <Ernest.Beard@msa.hinet.net>',

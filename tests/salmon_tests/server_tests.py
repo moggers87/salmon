@@ -1,25 +1,19 @@
 # Copyright (C) 2008 Zed A. Shaw.  Licensed under the terms of the GPLv3.
 from __future__ import print_function
 
-import sys
 import socket
+import sys
 
-from mock import Mock, patch
-from nose.tools import assert_equal, assert_raises, with_setup
 import lmtpd
 import six
 
-from salmon import mail, server, queue, routing
+from mock import Mock, patch
+from nose.tools import assert_equal, assert_raises, with_setup
+from salmon import mail, queue, routing, server
 
-from .message_tests import (
-    test_mail_request,
-    test_mail_response_attachments,
-    test_mail_response_html,
-    test_mail_response_html_and_plain_text,
-    test_mail_response_plain_text,
-)
+from .message_tests import (test_mail_request, test_mail_response_attachments, test_mail_response_html,
+                            test_mail_response_html_and_plain_text, test_mail_response_plain_text)
 from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
-
 
 SMTP_MESSAGE_DEFS = {
     2: {"ok": u"250 Ok\r\n".encode()},

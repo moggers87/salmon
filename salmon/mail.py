@@ -18,8 +18,7 @@ import warnings
 
 import six
 
-from salmon import encoding, bounce
-
+from salmon import bounce, encoding
 
 # You can change this to 'Delivered-To' on servers that support it like Postfix
 ROUTABLE_TO_HEADER = 'to'

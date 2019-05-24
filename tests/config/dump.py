@@ -5,7 +5,7 @@ from salmon import queue
 from salmon.routing import Router
 from salmon.server import SMTPReceiver
 
-from config import settings
+from . import settings
 
 logging.config.fileConfig("tests/config/logging.conf")
 

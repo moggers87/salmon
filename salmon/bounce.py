@@ -5,9 +5,8 @@ message, and then determine a probability based on what it finds.
 """
 from __future__ import print_function, unicode_literals
 
-import re
 from functools import wraps
-
+import re
 
 BOUNCE_MATCHERS = {
     'Action': re.compile(r'(failed|delayed|delivered|relayed|expanded)', re.IGNORECASE | re.DOTALL),

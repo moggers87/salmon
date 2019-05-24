@@ -51,10 +51,10 @@ but instead on a simple function, so it shouldn't be combined with the others.
 from __future__ import print_function, unicode_literals
 
 from functools import wraps
-import re
 import logging
-import sys
+import re
 import shelve
+import sys
 import threading
 
 try:

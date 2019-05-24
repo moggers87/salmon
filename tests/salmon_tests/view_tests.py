@@ -1,5 +1,4 @@
 from nose.tools import assert_equal
-
 from salmon import view
 
 
