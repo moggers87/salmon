@@ -9,9 +9,8 @@ import shutil
 import signal
 import sys
 
-from salmon import server, utils, mail, routing, queue, encoding
+from salmon import encoding, mail, queue, routing, server, utils
 import salmon
-
 
 COMMANDS = (
     ("start", "starts a server"),

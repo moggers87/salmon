@@ -4,8 +4,7 @@ import sys
 
 from mock import Mock, patch
 from nose.tools import assert_equal, assert_not_equal, raises, with_setup
-
-from salmon import commands, utils, mail, routing, encoding
+from salmon import commands, encoding, mail, routing, utils
 
 from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
 

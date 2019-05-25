@@ -1,14 +1,12 @@
-import shutil
 import mailbox
 import os
+import shutil
 
 from mock import Mock, patch
 from nose.tools import assert_equal, raises, with_setup
-
-from salmon import queue, mail
+from salmon import mail, queue
 
 from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
-
 
 USE_SAFE = False
 

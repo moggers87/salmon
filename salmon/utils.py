@@ -12,14 +12,10 @@ import logging
 import os
 import sys
 
-try:
-    import daemon  # daemon unavailable on Windows
-    from daemon import pidlockfile
-except ImportError:
-    from lockfile import pidlockfile
+from lockfile import pidlockfile
+import daemon
 
-from salmon import server, routing
-
+from salmon import routing, server
 
 settings = None
 

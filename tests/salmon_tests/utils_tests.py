@@ -1,6 +1,5 @@
 from mock import patch
 from nose.tools import assert_equal, with_setup
-
 from salmon import utils
 
 from .setup_env import setup_salmon_dirs, teardown_salmon_dirs

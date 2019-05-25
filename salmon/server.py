@@ -16,9 +16,8 @@ from dns import resolver
 import lmtpd
 import six
 
-from salmon import queue, mail, routing, __version__
-from salmon.bounce import PRIMARY_STATUS_CODES, SECONDARY_STATUS_CODES, COMBINED_STATUS_CODES
-
+from salmon import __version__, mail, queue, routing
+from salmon.bounce import COMBINED_STATUS_CODES, PRIMARY_STATUS_CODES, SECONDARY_STATUS_CODES
 
 lmtpd.__version__ = "Salmon Mail router LMTPD, version %s" % __version__
 smtpd.__version__ = "Salmon Mail router SMTPD, version %s" % __version__

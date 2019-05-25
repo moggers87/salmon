@@ -20,7 +20,7 @@ from __future__ import print_function, unicode_literals
 
 import re
 
-from salmon import server, routing, mail
+from salmon import mail, routing, server
 from salmon.queue import Queue
 
 TEST_QUEUE = "run/queue"

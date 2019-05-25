@@ -3,12 +3,11 @@ import smtplib
 import subprocess
 import time
 
-from nose.tools import with_setup, assert_equal
+from config import settings as server_settings
+from nose.tools import assert_equal, with_setup
 from salmon import queue
 
 from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
-from config import settings as server_settings
-
 
 _server = None
 

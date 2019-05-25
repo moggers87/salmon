@@ -1,5 +1,5 @@
 from salmon import queue
-from salmon.routing import route, stateless, nolocking
+from salmon.routing import nolocking, route, stateless
 from salmon.utils import settings
 
 

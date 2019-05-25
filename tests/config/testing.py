@@ -1,12 +1,12 @@
 import logging
 import logging.config
 
-from config import settings
 from salmon import view
 from salmon.routing import Router
 from salmon.server import Relay
-
 import jinja2
+
+from . import settings
 
 # configure logging to go to a log file
 logging.config.fileConfig("tests/config/logging.conf")

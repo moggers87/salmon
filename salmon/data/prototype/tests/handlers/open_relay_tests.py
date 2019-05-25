@@ -1,6 +1,5 @@
 from nose.tools import *  # noqa
-from salmon.testing import relay, RouterConversation, queue
-
+from salmon.testing import RouterConversation, queue, relay
 
 relay = relay(port=8823)
 client = RouterConversation("somedude@localhost", "requests_tests")
