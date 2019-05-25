@@ -13,6 +13,13 @@ from .setup_env import setup_salmon_dirs, teardown_salmon_dirs
 USE_SAFE = False
 
 
+BYTES_MESSAGE = u"""From: me@localhost
+To: you@localhost
+Subject: bob!
+
+Blobcat""".encode()
+
+
 def setup():
     if os.path.exists("run/big_queue"):
         shutil.rmtree("run/big_queue")
@@ -155,3 +162,23 @@ def test_SafeMaildir_reraise_weird_errno():
     os.stat.side_effect = raise_OSError
     sq = queue.SafeMaildir('run/queue')
     sq.add('TEST')
+
+
+@with_setup(setup_salmon_dirs, teardown_salmon_dirs)
+def test_bytes():
+    """Test that passing a queue raw data works, i.e. as happens in the
+    undeliverable queue"""
+    q = queue.Queue("run/queue", safe=USE_SAFE)
+    q.clear()
+
+    key = q.push(BYTES_MESSAGE)
+    assert key, "Didn't get a key"
+
+    mail = q.get(key)
+
+    assert mail is not None, "Failed to get email from queue"
+
+    assert_equal(mail['from'], "me@localhost")
+    assert_equal(mail['to'], "you@localhost")
+    assert_equal(mail['subject'], "bob!")
+    assert_equal(mail.body(), "Blobcat")
