@@ -1,4 +1,5 @@
 from mock import Mock, patch
+
 from nose.tools import assert_equal, with_setup
 from salmon.testing import RouterConversation, assert_in_state, clear_queue, delivered, queue, relay
 

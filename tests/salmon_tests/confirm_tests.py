@@ -1,4 +1,5 @@
 from mock import Mock, patch
+
 from nose.tools import assert_equal
 from salmon import mail
 from salmon.confirm import ConfirmationEngine, ConfirmationStorage

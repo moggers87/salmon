@@ -3,6 +3,7 @@ import shutil
 import sys
 
 from mock import Mock, patch
+
 from nose.tools import assert_equal, assert_not_equal, raises, with_setup
 from salmon import commands, encoding, mail, routing, utils
 

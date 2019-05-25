@@ -4,9 +4,9 @@ from email.utils import parseaddr
 import mailbox
 import os
 
+from mock import Mock, patch
 import chardet
 
-from mock import Mock, patch
 from nose.tools import assert_equal, raises, with_setup
 from salmon import encoding
 

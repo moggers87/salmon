@@ -1,4 +1,5 @@
 from mock import patch
+
 from nose.tools import assert_equal, with_setup
 from salmon import utils
 

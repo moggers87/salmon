@@ -4,10 +4,10 @@ from __future__ import print_function
 import socket
 import sys
 
+from mock import Mock, patch
 import lmtpd
 import six
 
-from mock import Mock, patch
 from nose.tools import assert_equal, assert_raises, with_setup
 from salmon import mail, queue, routing, server
 

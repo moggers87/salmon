@@ -1,4 +1,5 @@
 from mock import Mock, patch
+
 from nose.tools import assert_equal, assert_raises, raises, with_setup
 from salmon import routing
 from salmon.mail import MailRequest

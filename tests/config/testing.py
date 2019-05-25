@@ -1,10 +1,11 @@
 import logging
 import logging.config
 
+import jinja2
+
 from salmon import view
 from salmon.routing import Router
 from salmon.server import Relay
-import jinja2
 
 from . import settings
 
