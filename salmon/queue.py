@@ -14,6 +14,8 @@ import os
 import socket
 import time
 
+import six
+
 from salmon import mail
 
 # we calculate this once, since the hostname shouldn't change for every
@@ -101,7 +103,9 @@ class Queue(object):
         Pushes the message onto the queue.  Remember the order is probably
         not maintained.  It returns the key that gets created.
         """
-        return self.mbox.add(str(message))
+        if not isinstance(message, (six.text_type, six.binary_type)):
+            message = str(message)
+        return self.mbox.add(message)
 
     def pop(self):
         """
