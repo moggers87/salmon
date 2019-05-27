@@ -6,10 +6,7 @@ install_requires = [
     'chardet',
     'dnspython',
     'lmtpd>=4',
-    # python-daemon developer insists that docutils should be a setup_requires
-    # dependency and used for some OTT system to produce a changelog or
-    # something. This doesn't seem to affect versions prior to 2.2.0
-    'python-daemon<2.2.0',
+    'python-daemon>2.2.0',
     'six',
 ]
 
