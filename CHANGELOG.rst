@@ -1,3 +1,13 @@
+.. _three-one-one:
+
+3.1.1
+=====
+
+- Require newer versions of python-daemon to properly fix the install issues we
+  had previously (#89)
+- Fixed a bug in ``salmon.queue.Queue`` that mangled mail is it was added as
+  ``bytes`` rather than a message-like object (#97)
+
 .. _three-one-zero:
 
 3.1.0
