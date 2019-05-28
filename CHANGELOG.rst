@@ -3,6 +3,8 @@
 3.1.1
 =====
 
+:release-date: 2019-05-28
+
 - Require newer versions of python-daemon to properly fix the install issues we
   had previously (#89)
 - Fixed a bug in ``salmon.queue.Queue`` that mangled mail is it was added as
@@ -12,6 +14,8 @@
 
 3.1.0
 =====
+
+:release-date: 2019-01-17
 
 - Support for Python 3.7
 - Don't install python-daemon 2.2.0, it breaks things (#89)
@@ -26,12 +30,16 @@
 3.0.2
 =====
 
+:release-date: 2018-07-21
+
 - Fixed a bug where the version string would be a bytes literal under Python 3 (#83)
 
 .. _three-zero-one:
 
 3.0.1
 =====
+
+:release-date: 2018-06-12
 
 - ``SMTPReceiver.process_messsage`` now accepts keyword arguments added in
   Python 3
@@ -41,12 +49,16 @@
 3.0.0
 =====
 
+:release-date: 2017-12-31
+
 - No changes since :ref:`three-zero-zero-rc1`
 
 .. _three-zero-zero-rc1:
 
 3.0.0rc1
 ========
+
+:release-date: 2017-12-31
 
 - Removed lots of cruft (#19)
 - Moved from modargs to argparse - command line interface has changed (#28)
