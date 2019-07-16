@@ -176,19 +176,19 @@ def stop(pid, force=False, all=False):
     click.echo("Stopping processes with the following PID files: %s" % pid_files)
 
     for pid_f in pid_files:
-        pid = open(pid_f).readline()
-
-        click.echo("Attempting to stop salmon at pid %d" % int(pid))
+        with open(pid_f) as pid_file:
+            pid_data = pid_file.readline()
+            click.echo("Attempting to stop salmon at pid %d" % int(pid_data))
 
         try:
             if force:
-                os.kill(int(pid), signal.SIGKILL)
+                os.kill(int(pid_data), signal.SIGKILL)
             else:
-                os.kill(int(pid), signal.SIGHUP)
+                os.kill(int(pid_data), signal.SIGHUP)
 
             os.unlink(pid_f)
         except OSError as exc:
-            click.echo("ERROR stopping Salmon on PID %d: %s" % (int(pid), exc))
+            click.echo("ERROR stopping Salmon on PID %d: %s" % (int(pid_data), exc))
 
 
 @main.command(short_help="displays status of server")
@@ -199,8 +199,9 @@ def status(pid):
     running and where.
     """
     if os.path.exists(pid):
-        pid = open(pid).readline()
-        click.echo("Salmon running with PID %d" % int(pid))
+        with open(pid) as pid_file:
+            pid_data = pid_file.readline()
+            click.echo("Salmon running with PID %d" % int(pid_data))
     else:
         click.echo("Salmon not running.")
 
