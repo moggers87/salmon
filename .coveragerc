@@ -1,3 +1,5 @@
 [run]
 source = salmon
-omit = salmon/data/*
+omit =
+    salmon/data/*
+    salmon/_version.py
