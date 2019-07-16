@@ -2,7 +2,7 @@
 Documentation for this module can be found in :doc:`commandline`
 """
 
-from __future__ import print_function, unicode_literals
+from __future__ import unicode_literals
 
 import email
 import glob
@@ -172,7 +172,6 @@ def stop(pid, force=False, all=False):
         if not os.path.exists(pid):
             click.echo("PID file %s doesn't exist, maybe Salmon isn't running?" % pid)
             sys.exit(1)
-            return  # for unit tests mocking sys.exit
 
     click.echo("Stopping processes with the following PID files: %s" % pid_files)
 
@@ -288,9 +287,8 @@ def gen(project, force=False):
     template = os.path.join(salmon.__path__[0], "data", "prototype")
 
     if os.path.exists(project) and not force:
-        print("Project %s exists, delete it first." % project)
+        click.echo("Project %s exists, delete it first." % project)
         sys.exit(1)
-        return
     elif force:
         shutil.rmtree(project, ignore_errors=True)
 

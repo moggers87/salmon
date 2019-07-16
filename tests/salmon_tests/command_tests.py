@@ -43,9 +43,12 @@ def test_send_command(client_mock):
 
 
 def test_status_command():
+    make_fake_pid_file()
     runner = CliRunner()
-    runner.invoke(commands.main, ("status", "--pid", 'run/log.pid'))
-    runner.invoke(commands.main, ("status", "--pid", 'run/donotexist.pid'))
+    running_result = runner.invoke(commands.main, ("status", "--pid", 'run/fake.pid'))
+    assert_equal(running_result.output, "Salmon running with PID 0\n")
+    not_running_result = runner.invoke(commands.main, ("status", "--pid", 'run/donotexist.pid'))
+    assert_equal(not_running_result.output, "Salmon not running.\n")
 
 
 def test_main():
