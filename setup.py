@@ -4,6 +4,7 @@ import versioneer
 
 install_requires = [
     'chardet',
+    'click',
     'dnspython',
     'lmtpd>=4',
     'python-daemon>2.2.0',
@@ -20,6 +21,7 @@ extras_require = {
     "docs": [
         "sphinx",
         "sphinx_rtd_theme",
+        "sphinx-click",
     ],
 }
 
