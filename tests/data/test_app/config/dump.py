@@ -7,7 +7,7 @@ from salmon.server import SMTPReceiver
 
 from . import settings
 
-logging.config.fileConfig("tests/config/logging.conf")
+logging.config.fileConfig("config/logging.conf")
 
 settings.receiver = SMTPReceiver(**settings.receiver_config)
 

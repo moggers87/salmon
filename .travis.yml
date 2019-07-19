@@ -22,9 +22,9 @@ matrix:
 
 install:
     - travis_retry pip install -e .
-    - travis_retry pip install -q codecov
+    - travis_retry pip install -q codecov coverage
 
-script: python setup.py nosetests
+script: coverage run --branch setup.py test
 
 after_success: codecov
 

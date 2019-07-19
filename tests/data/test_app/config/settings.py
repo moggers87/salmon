@@ -9,7 +9,7 @@ dump_handlers = ["test_handlers.dump"]
 
 router_defaults = {'host': 'localhost'}
 
-template_config = {'dir': 'salmon_tests', 'module': '.'}
+template_config = {'dir': 'tests', 'module': '.'}
 
 # this is for when you run the config.queue boot
 queue_config = {'queue': 'run/deferred', 'sleep': 10}
