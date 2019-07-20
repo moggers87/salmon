@@ -4,7 +4,7 @@ from __future__ import print_function
 import socket
 import sys
 
-from mock import Mock, patch
+from mock import Mock, call, patch
 import lmtpd
 import six
 
@@ -264,17 +264,49 @@ class ServerTestCase(SalmonTestCase):
         with self.assertRaises(socket.error):
             relay.deliver(generate_mail(factory=mail.MailResponse))
 
-    @patch('salmon.routing.Router', new=Mock())
-    def test_queue_receiver(self):
+    @patch('salmon.routing.Router')
+    def test_queue_receiver(self, router_mock):
         receiver = server.QueueReceiver('run/queue')
         run_queue = queue.Queue('run/queue')
         run_queue.push(str(generate_mail(factory=mail.MailResponse)))
         assert run_queue.count() > 0
         receiver.start(one_shot=True)
         self.assertEqual(run_queue.count(), 0)
+        self.assertEqual(run_queue.count(), 0)
+        self.assertEqual(router_mock.deliver.call_count, 1)
 
-        routing.Router.deliver.side_effect = RuntimeError("Raised on purpose")
+        router_mock.deliver.side_effect = RuntimeError("Raised on purpose")
         receiver.process_message(mail.MailRequest('localhost', 'test@localhost', 'test@localhost', 'Fake body.'))
+
+    @patch('salmon.routing.Router')
+    @patch("salmon.server.queue.Queue")
+    def test_queue_receiver_pop_error(self, queue_mock, router_mock):
+        def key_error(*args, **kwargs):
+            queue_mock.return_value.count.return_value = 0
+            raise KeyError
+
+        queue_mock.return_value.pop.side_effect = key_error
+        receiver = server.QueueReceiver('run/queue')
+        receiver.start(one_shot=True)
+        self.assertEqual(queue_mock.return_value.pop.call_count, 1)
+        self.assertEqual(router_mock.deliver.call_count, 0)
+
+    @patch('salmon.routing.Router')
+    @patch("salmon.server.time.sleep")
+    def test_queue_receiver_sleep(self, sleep_mock, router_mock):
+        def sleep_effect(*args, **kwargs):
+            receiver.max_workers = 1
+            return
+
+        sleep_mock.side_effect = sleep_effect
+
+        run_queue = queue.Queue('run/queue')
+        run_queue.push(str(generate_mail(factory=mail.MailResponse)))
+        receiver = server.QueueReceiver('run/queue', sleep=0, max_workers=0)
+        receiver.start(one_shot=True)
+        self.assertEqual(router_mock.deliver.call_count, 1)
+        self.assertEqual(sleep_mock.call_count, 1)
+        self.assertEqual(sleep_mock.call_args, call(receiver.sleep))
 
     @patch('threading.Thread', new=Mock())
     @patch('salmon.routing.Router', new=Mock())

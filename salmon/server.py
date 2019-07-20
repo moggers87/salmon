@@ -306,7 +306,7 @@ class QueueReceiver(object):
     same way otherwise.
     """
 
-    def __init__(self, queue_dir, sleep=10, size_limit=0, oversize_dir=None):
+    def __init__(self, queue_dir, sleep=10, size_limit=0, oversize_dir=None, max_workers=5):
         """
         The router should be fully configured and ready to work, the
         queue_dir can be a fully qualified path or relative.
@@ -315,37 +315,48 @@ class QueueReceiver(object):
                                  oversize_dir=oversize_dir)
         self.queue_dir = queue_dir
         self.sleep = sleep
+        self.max_workers = max_workers
 
     def start(self, one_shot=False):
         """
         Start simply loops indefinitely sleeping and pulling messages
         off for processing when they are available.
 
-        If you give one_shot=True it will run once rather than do a big
-        while loop with a sleep.
+        If you give one_shot=True it will stop once it has exhausted the queue
         """
+        workers = []
 
         logging.info("Queue receiver started on queue dir %s", self.queue_dir)
         logging.debug("Sleeping for %d seconds...", self.sleep)
 
         inq = queue.Queue(self.queue_dir)
 
-        while True:
-            keys = inq.keys()
+        def popMessageInThread(key, msg):
 
-            for key in keys:
-                msg = inq.get(key)
+            logging.debug("Pulled message with key: %r off", key)
+            self.process_message(msg)
 
-                if msg:
-                    logging.debug("Pulled message with key: %r off", key)
-                    self.process_message(msg)
-                    logging.debug("Removed %r key from queue.", key)
-                    inq.remove(key)
+            workers.remove(key)
 
-            if one_shot:
-                return
-            else:
+        # if there are no messages left in the maildir and this a one-shot, the
+        # while loop terminates
+        while not (inq.count() == 0 and one_shot):
+            # if there's nothing in the queue or there are too many running
+            # threads, take a break
+            if inq.count() == 0 or len(workers) >= self.max_workers:
                 time.sleep(self.sleep)
+                continue
+
+            try:
+                # Queue operations are not threadsafe, so fetch the message
+                # here and then process it in a thread
+                key, msg = inq.pop()
+            except KeyError:
+                logging.debug("Could not find message in Queue")
+                continue
+
+            worker = threading.Thread(target=popMessageInThread, args=[key, msg])
+            worker.start()
 
     def process_message(self, msg):
         """
@@ -357,7 +368,6 @@ class QueueReceiver(object):
             logging.debug("Message received from Peer: %r, From: %r, to To %r.", msg.Peer, msg.From, msg.To)
             routing.Router.deliver(msg)
         except SMTPError as err:
-            # looks like they want to return an error, so send it out
             logging.exception("Raising SMTPError when running in a QueueReceiver is unsupported.")
             undeliverable_message(msg.Data, err.message)
         except Exception:
