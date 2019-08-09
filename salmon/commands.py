@@ -19,20 +19,6 @@ from salmon import queue as queue_module
 from salmon import routing, server, utils
 import salmon
 
-COMMANDS = (
-    ("start", "starts a server"),
-    ("stop", "stops a server"),
-    ("status", "displays status of server"),
-    ("gen", "generate new project"),
-    ("log", "start log server"),
-    ("queue", "manipulate a Queue"),
-    ("blast", "blast emails at a server"),
-    ("cleanse", "cleanse your emails"),
-    ("routes", "display routes"),
-    ("send", "send a new email"),
-    ("sendmail", "send an email from stdin"),
-)
-
 # squash warning about unicode literals. if there are bugs here, then it's
 # quite likely to have afffected us before switching to click.
 click.disable_unicode_literals_warning = True
@@ -170,8 +156,7 @@ def stop(pid, force=False, all=False):
         pid_files = [pid]
 
         if not os.path.exists(pid):
-            click.echo("PID file %s doesn't exist, maybe Salmon isn't running?" % pid)
-            sys.exit(1)
+            raise click.FileError("PID file %s doesn't exist, maybe Salmon isn't running?" % pid)
 
     click.echo("Stopping processes with the following PID files: %s" % pid_files)
 
@@ -188,7 +173,7 @@ def stop(pid, force=False, all=False):
 
             os.unlink(pid_f)
         except OSError as exc:
-            click.echo("ERROR stopping Salmon on PID %d: %s" % (int(pid_data), exc))
+            raise click.ClickException("ERROR stopping Salmon on PID %d: %s" % (int(pid_data), exc))
 
 
 @main.command(short_help="displays status of server")
@@ -204,6 +189,9 @@ def status(pid):
             click.echo("Salmon running with PID %d" % int(pid_data))
     else:
         click.echo("Salmon not running.")
+        # don't raise a ClickException because that prepends "ERROR" to the
+        # output and this isn't always an error
+        sys.exit(1)
 
 
 @main.command(short_help="manipulate a Queue")
@@ -287,11 +275,10 @@ def gen(project, force=False):
     """
     template = os.path.join(salmon.__path__[0], "data", "prototype")
 
-    if os.path.exists(project) and not force:
-        click.echo("Project %s exists, delete it first." % project)
-        sys.exit(1)
-    elif force:
+    if force:
         shutil.rmtree(project, ignore_errors=True)
+    elif os.path.exists(project):
+        raise click.FileError("Project %s exists, delete it first." % project)
 
     shutil.copytree(template, project)
 
@@ -325,7 +312,10 @@ def cleanse(inbox, outbox):
     outbox.close()
     inbox.close()
 
-    click.echo("TOTAL ERRORS: %s" % error_count)
+    if error_count > 0:
+        raise click.ClickException("TOTAL ERRORS: %s" % error_count)
+    else:
+        click.echo("Completed without errors")
 
 
 @main.command(short_help="blast emails at a server")
