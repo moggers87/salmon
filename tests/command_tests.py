@@ -1,11 +1,11 @@
+from tempfile import mkdtemp
 import os
-import shutil
 import sys
 
 from click import testing
 from mock import Mock, patch
 
-from salmon import commands, encoding, mail, routing, utils
+from salmon import queue, commands, encoding, mail, routing, utils
 
 from .setup_env import SalmonTestCase
 
@@ -25,22 +25,29 @@ class CommandTestCase(SalmonTestCase):
     @patch("salmon.server.smtplib.SMTP")
     def test_send_command(self, client_mock):
         runner = CliRunner()
-        runner.invoke(commands.main, ("send", "--sender", "test@localhost", "--to", "test@localhost",
-                                      "--body", "Test body", "--subject", "Test subject", "--attach",
-                                      "setup.py", "--port", "8899", "--host", "127.0.0.1"))
+        result = runner.invoke(commands.main, ("send", "--sender", "test@localhost", "--to", "test@localhost",
+                                               "--body", "Test body", "--subject", "Test subject", "--attach",
+                                               "setup.py", "--port", "8899", "--host", "127.0.0.1"))
         self.assertEqual(client_mock.return_value.sendmail.call_count, 1)
+        self.assertEqual(result.exit_code, 0)
 
     def test_status_command(self):
         make_fake_pid_file()
         runner = CliRunner()
         running_result = runner.invoke(commands.main, ("status", "--pid", 'run/fake.pid'))
         self.assertEqual(running_result.output, "Salmon running with PID 0\n")
+        self.assertEqual(running_result.exit_code, 0)
+
+    def test_status_no_pid(self):
+        runner = CliRunner()
         not_running_result = runner.invoke(commands.main, ("status", "--pid", 'run/donotexist.pid'))
         self.assertEqual(not_running_result.output, "Salmon not running.\n")
+        self.assertEqual(not_running_result.exit_code, 1)
 
     def test_main(self):
         runner = CliRunner()
-        runner.invoke(commands.main)
+        result = runner.invoke(commands.main)
+        self.assertEqual(result.exit_code, 0)
 
     @patch('salmon.queue.Queue')
     def test_queue_command(self, MockQueue):
@@ -69,26 +76,6 @@ class CommandTestCase(SalmonTestCase):
 
         runner.invoke(commands.main, ("queue", "--count"))
         self.assertEqual(mq.count.call_count, 1)
-
-    def test_gen_command(self):
-        runner = CliRunner()
-        project = 'tests/testproject'
-        if os.path.exists(project):
-            shutil.rmtree(project)
-
-        result = runner.invoke(commands.main, ("gen", project))
-        assert os.path.exists(project)
-        self.assertEqual(result.exit_code, 0)
-
-        # test that it exits if the project exists
-        result = runner.invoke(commands.main, ("gen", project))
-        self.assertEqual(result.exit_code, 1)
-
-        result = runner.invoke(commands.main, ("gen", project, "--force"))
-        self.assertEqual(result.exit_code, 0)
-
-        # TODO: put this in a tear down
-        shutil.rmtree(project)
 
     def test_routes_command(self):
         runner = CliRunner()
@@ -166,42 +153,103 @@ class CommandTestCase(SalmonTestCase):
         runner.invoke(commands.main, ("start", "--pid", "run/fake.pid", "--no-daemon", "--force"))
         self.assertEqual(utils.daemonize.call_count, daemonize_call_count)  # same count -> not called
 
-    @patch('os.kill', new=Mock())
-    @patch('glob.glob', new=lambda x: ['run/fake.pid'])
-    def test_stop_command(self):
-        runner = CliRunner()
-        # gave a bad pid file
-        result = runner.invoke(commands.main, ("stop", "--pid", "run/dontexit.pid"))
-        self.assertEqual(result.exit_code, 1)
-
-        make_fake_pid_file()
-        runner.invoke(commands.main, ("stop", "--pid", "run/fake.pid"))
-
-        make_fake_pid_file()
-        runner.invoke(commands.main, ("stop", "--all", "run"))
-
-        os_kill_count = os.kill.call_count
-        make_fake_pid_file()
-        runner.invoke(commands.main, ("stop", "--pid", "run/fake.pid", "--force"))
-        self.assertEqual(os.kill.call_count, os_kill_count + 1)  # kill should have been called once more
-        assert not os.path.exists("run/fake.pid")
-
-        make_fake_pid_file()
-        os.kill.side_effect = OSError("Fail")
-        runner.invoke(commands.main, ("stop", "--pid", "run/fake.pid", "--force"))
-
     def test_cleanse_command(self):
         runner = CliRunner()
-        runner.invoke(commands.main, ("cleanse", "run/queue", "run/cleansed"))
+        result = runner.invoke(commands.main, ("cleanse", "run/queue", "run/cleansed"))
+        self.assertEqual(result.exit_code, 0)
         assert os.path.exists('run/cleansed')
 
     @patch('salmon.encoding.from_message')
-    def test_cleans_command_with_encoding_error(self, from_message):
+    def test_cleanse_command_with_encoding_error(self, from_message):
         runner = CliRunner()
         from_message.side_effect = encoding.EncodingError
+        in_queue = "run/queue"
+        q = queue.Queue(in_queue)
+        q.push("hello")
 
-        runner.invoke(commands.main, ("cleanse", "run/queue", "run/cleased"))
+        result = runner.invoke(commands.main, ("cleanse", in_queue, "run/cleased"))
+        self.assertEqual(result.exit_code, 1)
 
     def test_blast_command(self):
         runner = CliRunner()
-        runner.invoke(commands.main, ("blast", "--host", "127.0.0.1", "--port", "8899", "run/queue"))
+        result = runner.invoke(commands.main, ("blast", "--host", "127.0.0.1", "--port", "8899", "run/queue"))
+        self.assertEqual(result.exit_code, 0)
+
+
+class GenCommandTestCase(SalmonTestCase):
+    def setUp(self):
+        super(GenCommandTestCase, self).setUp()
+        tmp_dir = mkdtemp()
+        self.project = os.path.join(tmp_dir, 'testproject')
+
+    def test_gen_command(self):
+        runner = CliRunner()
+
+        result = runner.invoke(commands.main, ("gen", self.project))
+        assert os.path.exists(self.project)
+        self.assertEqual(result.exit_code, 0)
+
+    def test_if_folder_exists(self):
+        runner = CliRunner()
+        os.mkdir(self.project)
+
+        result = runner.invoke(commands.main, ("gen", self.project))
+        self.assertEqual(result.exit_code, 1)
+
+    def test_force(self):
+        runner = CliRunner()
+
+        # folder doesn't exist, but user has used --force anyway
+        result = runner.invoke(commands.main, ("gen", self.project, "--force"))
+        assert os.path.exists(self.project)
+        self.assertEqual(result.exit_code, 0)
+
+        # assert again, this time the folder exists
+        result = runner.invoke(commands.main, ("gen", self.project, "--force"))
+        assert os.path.exists(self.project)
+        self.assertEqual(result.exit_code, 0)
+
+
+class StopCommandTestCase(SalmonTestCase):
+    def setUp(self):
+        super(StopCommandTestCase, self).setUp()
+        patcher = patch("os.kill")
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_stop_command(self):
+        runner = CliRunner()
+        make_fake_pid_file()
+        result = runner.invoke(commands.main, ("stop", "--pid", "run/fake.pid"))
+        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(os.kill.call_count, 1)
+
+    def test_stop_pid_doesnt_exist(self):
+        runner = CliRunner()
+        result = runner.invoke(commands.main, ("stop", "--pid", "run/dontexit.pid"))
+        self.assertEqual(result.exit_code, 1)
+        self.assertEqual(os.kill.call_count, 0)
+
+    @patch('glob.glob', new=lambda x: ['run/fake.pid'])
+    def test_stop_all(self):
+        runner = CliRunner()
+        make_fake_pid_file()
+        result = runner.invoke(commands.main, ("stop", "--all", "run"))
+        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(os.kill.call_count, 1)
+
+    def test_stop_force(self):
+        runner = CliRunner()
+        make_fake_pid_file()
+        result = runner.invoke(commands.main, ("stop", "--pid", "run/fake.pid", "--force"))
+        self.assertEqual(os.kill.call_count, 1)
+        self.assertEqual(result.exit_code, 0)
+        assert not os.path.exists("run/fake.pid")
+
+    def test_stop_force_oserror(self):
+        runner = CliRunner()
+        make_fake_pid_file()
+        os.kill.side_effect = OSError("Fail")
+        result = runner.invoke(commands.main, ("stop", "--pid", "run/fake.pid", "--force"))
+        self.assertEqual(result.exit_code, 1)
+        self.assertEqual(os.kill.call_count, 1)
