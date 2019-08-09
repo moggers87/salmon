@@ -19,20 +19,6 @@ from salmon import queue as queue_module
 from salmon import routing, server, utils
 import salmon
 
-COMMANDS = (
-    ("start", "starts a server"),
-    ("stop", "stops a server"),
-    ("status", "displays status of server"),
-    ("gen", "generate new project"),
-    ("log", "start log server"),
-    ("queue", "manipulate a Queue"),
-    ("blast", "blast emails at a server"),
-    ("cleanse", "cleanse your emails"),
-    ("routes", "display routes"),
-    ("send", "send a new email"),
-    ("sendmail", "send an email from stdin"),
-)
-
 # squash warning about unicode literals. if there are bugs here, then it's
 # quite likely to have afffected us before switching to click.
 click.disable_unicode_literals_warning = True
