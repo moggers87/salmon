@@ -6,7 +6,7 @@ import os
 
 from salmon.routing import Router
 
-dirs = ["run", "logs"]
+dirs = ("run", "logs")
 
 
 def setup_router(handlers):
@@ -17,12 +17,14 @@ def setup_router(handlers):
     Router.reload()
 
 
+def clean_dirs():
+    for path in dirs:
+        rmtree(path, ignore_errors=True)
+
+
 class SalmonTestCase(TestCase):
     def setUp(self):
+        clean_dirs()
         for path in dirs:
-            rmtree(path, ignore_errors=True)
             os.mkdir(path)
-
-    def tearDown(self):
-        for path in dirs:
-            rmtree(path, ignore_errors=True)
+        self.addCleanup(clean_dirs)

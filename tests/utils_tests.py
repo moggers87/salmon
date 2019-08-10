@@ -1,3 +1,7 @@
+from tempfile import mkdtemp
+from unittest import TestCase
+import os
+
 from mock import patch
 
 from salmon import utils
@@ -50,18 +54,77 @@ class UtilsTestCase(SalmonTestCase):
             utils.import_settings(True)
             self.assertEqual(import_mock.call_count, 1)
 
-    @patch('daemon.DaemonContext.open')
-    def test_daemonize_not_fully(self, dc_open):
-        context = utils.daemonize("run/tests.pid", ".", False, False, do_open=False)
-        assert context
-        self.assertEqual(dc_open.call_count, 0)
-        dc_open.reset_mock()
-
-        context = utils.daemonize("run/tests.pid", ".", "/tmp", 0o002, do_open=True)
-        assert context
-        self.assertEqual(dc_open.call_count, 1)
-
     @patch("daemon.daemon.change_process_owner")
     def test_drop_priv(self, cpo):
         utils.drop_priv(100, 100)
         self.assertEqual(cpo.call_count, 1)
+
+
+@patch('daemon.DaemonContext.open')
+class DaemonizeTestCase(TestCase):
+    def setUp(self):
+        self.tmp_dir = mkdtemp()
+
+    def error_maybe(self, check, fn):
+        def maybe(*args, **kwargs):
+            if check(*args, **kwargs):
+                raise AssertionError("function called on {} {}".format(args, kwargs))
+            else:
+                fn(*args, **kwargs)
+
+        return maybe
+
+    def test_working_dir(self, dc_open):
+        context = utils.daemonize("run/tests.pid", self.tmp_dir, False, False, do_open=False)
+        self.assertEqual(dc_open.call_count, 0)
+        self.assertEqual(context.working_directory, self.tmp_dir)
+        self.assertEqual(context.chroot_directory, None)
+        self.assertEqual(context.stdout.name, os.path.join(self.tmp_dir, "logs", "salmon.out"))
+        self.assertEqual(context.stderr.name, os.path.join(self.tmp_dir, "logs", "salmon.err"))
+        self.assertEqual(context.pidfile.path, os.path.join("run", "tests.pid"))
+
+    def test_open_is_called(self, dc_open):
+        utils.daemonize("run/tests.pid", self.tmp_dir, False, False, do_open=True)
+        self.assertEqual(dc_open.call_count, 1)
+
+    def test_chroot(self, dc_open):
+        context = utils.daemonize("run/tests.pid", ".", self.tmp_dir, False, do_open=False)
+        self.assertEqual(dc_open.call_count, 0)
+        self.assertEqual(context.working_directory, ".")
+        self.assertEqual(context.chroot_directory, self.tmp_dir)
+        self.assertEqual(context.stdout.name, os.path.join(self.tmp_dir, ".", "logs", "salmon.out"))
+        self.assertEqual(context.stderr.name, os.path.join(self.tmp_dir, ".", "logs", "salmon.err"))
+        self.assertEqual(context.pidfile.path, os.path.join("run", "tests.pid"))
+
+    def test_pid_dir_already_exists(self, dc_open):
+        os.mkdir(os.path.join(self.tmp_dir, "run"))
+        with patch("os.mkdir", self.error_maybe(lambda p: p.endswith("/run"), os.mkdir)):
+            context = utils.daemonize("run/tests.pid", self.tmp_dir, False, False, do_open=False)
+        self.assertEqual(dc_open.call_count, 0)
+        self.assertEqual(context.working_directory, self.tmp_dir)
+        self.assertEqual(context.stdout.name, os.path.join(self.tmp_dir, "logs", "salmon.out"))
+        self.assertEqual(context.stderr.name, os.path.join(self.tmp_dir, "logs", "salmon.err"))
+        self.assertEqual(context.pidfile.path, os.path.join("run", "tests.pid"))
+
+    def test_logs_dir_already_exists(self, dc_open):
+        os.mkdir(os.path.join(self.tmp_dir, "logs"))
+        with patch("os.mkdir", self.error_maybe(lambda p: p.endswith("/logs"), os.mkdir)):
+            context = utils.daemonize("run/tests.pid", self.tmp_dir, False, False, do_open=False)
+        self.assertEqual(dc_open.call_count, 0)
+        self.assertEqual(context.working_directory, self.tmp_dir)
+        self.assertEqual(context.stdout.name, os.path.join(self.tmp_dir, "logs", "salmon.out"))
+        self.assertEqual(context.stderr.name, os.path.join(self.tmp_dir, "logs", "salmon.err"))
+        self.assertEqual(context.pidfile.path, os.path.join("run", "tests.pid"))
+
+    def test_chdir_does_not_exist(self, dc_open):
+        chdir = os.path.join(self.tmp_dir, "test")
+        with self.assertRaises(OSError):
+            utils.daemonize("run/tests.pid", chdir, False, False, do_open=False)
+        self.assertEqual(dc_open.call_count, 0)
+
+    def test_umask(self, dc_open):
+        context = utils.daemonize("run/tests.pid", self.tmp_dir, False, False, do_open=False)
+        self.assertEqual(context.umask, 0)
+
+        context = utils.daemonize("run/tests.pid", self.tmp_dir, False, 0o002, do_open=False)
+        self.assertEqual(context.umask, 2)

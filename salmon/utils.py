@@ -45,10 +45,20 @@ def daemonize(pid, chdir, chroot, umask, files_preserve=None, do_open=True):
     has, except that chroot probably won't work at all without
     some serious configuration on the system.
     """
+    logs_dir = os.path.join(chdir, "logs")
+    pid_dir = os.path.join(chdir, os.path.dirname(pid) or ".")
+    if chroot:
+        logs_dir = os.path.join(chroot, logs_dir)
+        pid_dir = os.path.join(chroot, pid_dir)
+    if not os.path.exists(logs_dir):
+        os.mkdir(logs_dir)
+    if not os.path.exists(pid_dir):
+        os.mkdir(pid_dir)
+
     context = daemon.DaemonContext()
     context.pidfile = pidlockfile.PIDLockFile(pid)
-    context.stdout = open(os.path.join(chdir, "logs/salmon.out"), "a+")
-    context.stderr = open(os.path.join(chdir, "logs/salmon.err"), "a+")
+    context.stdout = open(os.path.join(logs_dir, "salmon.out"), "a+")
+    context.stderr = open(os.path.join(logs_dir, "salmon.err"), "a+")
     context.files_preserve = files_preserve or []
     context.working_directory = os.path.expanduser(chdir)
 
