@@ -12,7 +12,6 @@ install_requires = [
 ]
 
 tests_require = [
-    'coverage',
     'jinja2',
     'mock',
 ]

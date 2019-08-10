@@ -20,11 +20,9 @@ matrix:
       install: pip install tox
       script: tox -e $TOX_ENV
 
-install:
-    - travis_retry pip install -e .
-    - travis_retry pip install -q codecov coverage
+install: travis_retry pip install -q codecov tox
 
-script: coverage run --branch setup.py test
+script: tox -e py  # run tox for the current version of Python
 
 after_success: codecov
 

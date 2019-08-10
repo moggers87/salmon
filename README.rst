@@ -120,6 +120,18 @@ causes the failure.
 If you contribute new code then your code should have as much coverage as
 possible, with a minimal amount of mocking.
 
+Tests can be run via::
+
+    $ python setup.py test
+
+Alternatively, if you have multiple versions of Python installed locally::
+
+    $ pip install tox
+    $ tox -e py27,py36
+
+Refer to the `tox documentation <https://tox.readthedocs.io/en/latest/>`__ for
+more information.
+
 Security
 --------
 
