@@ -77,18 +77,6 @@ class CommandTestCase(SalmonTestCase):
         runner.invoke(commands.main, ("queue", "--count"))
         self.assertEqual(mq.count.call_count, 1)
 
-    def test_routes_command(self):
-        runner = CliRunner()
-        runner.invoke(commands.main, ("routes", 'salmon.handlers.log', 'salmon.handlers.queue'))
-
-        # test with the --test option
-        runner.invoke(commands.main, ("routes", 'salmon.handlers.log', 'salmon.handlers.queue',
-                                      "--test", "anything@localhost"))
-
-        # test with the -test option but no matches
-        routing.Router.clear_routes()
-        runner.invoke(commands.main, ("routes", "--test", "anything@localhost"))
-
     @patch('salmon.utils.daemonize', new=Mock())
     @patch('salmon.server.SMTPReceiver')
     def test_log_command(self, MockSMTPReceiver):
@@ -253,3 +241,57 @@ class StopCommandTestCase(SalmonTestCase):
         result = runner.invoke(commands.main, ("stop", "--pid", "run/fake.pid", "--force"))
         self.assertEqual(result.exit_code, 1)
         self.assertEqual(os.kill.call_count, 1)
+
+
+class RoutesCommandTestCase(SalmonTestCase):
+    def setUp(self):
+        super(RoutesCommandTestCase, self).setUp()
+        if "salmon.handlers.log" in sys.modules:
+            del sys.modules["salmon.handlers.log"]
+        routing.Router.clear_routes()
+        routing.Router.clear_states()
+        routing.Router.HANDLERS.clear()
+
+    def test_no_args(self):
+        runner = CliRunner()
+        result = runner.invoke(commands.main, ("routes",))
+        self.assertEqual(result.exit_code, 2)
+
+    def test_not_importable(self):
+        runner = CliRunner()
+        result = runner.invoke(commands.main, ("routes", "not_a_module", "--test", "user@example.com"))
+        self.assertEqual(result.exit_code, 1)
+        self.assertEqual(result.output,
+                         ("Error: Module 'not_a_module' could not be imported. "
+                          "Did you forget to use the --path option?\n"))
+
+    def test_match(self):
+        runner = CliRunner()
+        result = runner.invoke(commands.main, ("routes", "salmon.handlers.log", "--test", "user@example.com"))
+        self.assertEqual(result.exit_code, 0)
+        # TODO: use groupdict directly once Python 2.7 support has been dropped
+        match_items = [i for i in
+                       routing.Router.REGISTERED.values()][0][0].match("user@example.com").groupdict().items()
+        self.assertEqual(result.output,
+                         ("Routing ORDER: ['^(?P<to>.+)@(?P<host>.+)$']\n"
+                          "Routing TABLE:\n"
+                          "---\n"
+                          "'^(?P<to>.+)@(?P<host>.+)$': salmon.handlers.log.START \n"
+                          "---\n"
+                          "\n"
+                          "TEST address 'user@example.com' matches:\n"
+                          "  '^(?P<to>.+)@(?P<host>.+)$' salmon.handlers.log.START\n"
+                          "  -  %r\n" % {str(k): str(v) for k, v in match_items}))
+
+    def test_no_match(self):
+        runner = CliRunner()
+        result = runner.invoke(commands.main, ("routes", "salmon.handlers.log", "--test", "userexample.com"))
+        self.assertEqual(result.exit_code, 1)
+        self.assertEqual(result.output,
+                         ("Routing ORDER: ['^(?P<to>.+)@(?P<host>.+)$']\n"
+                          "Routing TABLE:\n"
+                          "---\n"
+                          "'^(?P<to>.+)@(?P<host>.+)$': salmon.handlers.log.START \n"
+                          "---\n"
+                          "\n"
+                          "TEST address 'userexample.com' didn't match anything.\n"))

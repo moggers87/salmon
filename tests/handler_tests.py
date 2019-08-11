@@ -1,3 +1,5 @@
+import sys
+
 from mock import Mock
 
 from salmon import mail, utils
@@ -20,6 +22,8 @@ class HandlerTestCase(SalmonTestCase):
     def tearDown(self):
         Router.clear_routes()
         Router.clear_states()
+        for key in Router.HANDLERS.keys():
+            del sys.modules[key]
         Router.HANDLERS.clear()
         utils.settings = None
 
