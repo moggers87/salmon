@@ -10,7 +10,9 @@ Creating Relay Objects
 
 By default, a :class:`~salmon.server.Relay` object expects to find a mailserver
 on IP ``127.0.0.1``, port ``25``. The ``host`` and ``port`` keyword arguments
-control this::
+control this:
+
+.. code-block:: python
 
     # probably in your boot.py
     from salmon.server import Relay
@@ -20,7 +22,9 @@ You can also specify other options such as username, password, and encryption
 options. See :class:`salmon.server.Relay` for more information.
 
 If you wish to do do all the relaying in Salmon and not delegate to another
-mailserver, simply set ``host`` to ``None``::
+mailserver, simply set ``host`` to ``None``:
+
+.. code-block:: python
 
     resolving_relay = Relay(host=None)
 
@@ -31,7 +35,9 @@ Creating Responses
 ------------------
 
 Creating responses with HTML and plaintext parts is quite common, so Salmon has
-the :func:`~salmon.view.respond` function to render via templates::
+the :func:`~salmon.view.respond` function to render via templates:
+
+.. code-block:: python
 
     from salmon.view import respond
 
@@ -48,13 +54,17 @@ the :func:`~salmon.view.respond` function to render via templates::
 ``plaintext_template.txt`` and ``html_template.html`` should be paths that your
 template engine can find and load. Keyword arguments other than ``Body`` and
 ``Html`` will be passed directly to :class:`~salmon.mail.MailResponse`. Keyword
-arguments will also be formatted with the contents of variables::
+arguments will also be formatted with the contents of variables:
+
+.. code-block:: pycon
 
     >>> message = respond(variables, Subject="Hello %(user)s", ...)
     >>> print(message["Subject"])
     Hello user1
 
-Salmon needs to be configured to use a template engine::
+Salmon needs to be configured to use a template engine:
+
+.. code-block:: python
 
     # in your boot.py
     from salmon import view
@@ -73,7 +83,9 @@ Delivery
 --------
 
 Once you have a :class:`~salmon.mail.MailResponse` object ready to send and a
-:class:`~salmon.server.Relay` object, delivery is quite simple::
+:class:`~salmon.server.Relay` object, delivery is quite simple:
+
+.. code-block:: python
 
     new_message = MailResponse()
     my_relay.deliver(new_message)
@@ -83,6 +95,8 @@ Once you have a :class:`~salmon.mail.MailResponse` object ready to send and a
     catch exceptions and retry.
 
 
-You can also override ``To`` and ``Form`` too::
+You can also override ``To`` and ``Form`` too:
+
+.. code-block:: python
 
     my_relay.deliver(new_message, To="someone@example.com", From="another@example.com")

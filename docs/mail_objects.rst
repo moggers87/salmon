@@ -24,17 +24,23 @@ issued by the sender to Salmon. If you're using
 Headers
 ^^^^^^^
 
-Headers are accessed a dict-like interface::
+Headers are accessed a dict-like interface:
+
+.. code-block:: pycon
 
     >>> print(message["Subject"])
     My Subject
 
-Headers are also case insensitive::
+Headers are also case insensitive:
+
+.. code-block:: pycon
 
     >>> print(message["Subject"] == message["sUbJeCt"])
     True
 
-Methods ``keys`` and ``items`` are also supported::
+Methods ``keys`` and ``items`` are also supported:
+
+.. code-block:: python
 
     message.keys()  # ["To", "From", "Subject"]
     message.items()  # [("To", "me@example.com"), ...]
@@ -45,7 +51,9 @@ Methods ``keys`` and ``items`` are also supported::
     header. Be aware of this when iterating over header names from the ``keys``
     method!
 
-Headers can be set too::
+Headers can be set too:
+
+.. code-block:: pycon
 
     >>> message["New-Header"] = "My Value"
     >>> print(message["New-Header"])
@@ -64,7 +72,9 @@ MIME part of the email. For emails that only have one part or are non-MIME
 emails this is fine, but there's no guarantee what you'll end up with if your
 email is a multipart message.
 
-For MIME emails, call the ``walk`` method to iterate over each part::
+For MIME emails, call the ``walk`` method to iterate over each part:
+
+.. code-block:: pycon
 
     >>> for part in message.walk():
     ...    # each part is an instance of MimeBase
@@ -79,13 +89,17 @@ Detecting Bounce Emails
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 Detecting bounced emails is quite important - especially if you're sending as
-well as receiving::
+well as receiving:
+
+.. code-block:: pycon
 
     >>> if message.is_bounce():
     ...    print("Message is a bounced email!")
 
 ``is_bounce`` also takes a ``threshold`` argument that can be used to fine-tune
-bounce detection::
+bounce detection:
+
+.. code-block:: pycon
 
     >>> if message.is_bounce(0.5):
     ...   print("I'm more certain that this is a bounced email than before!")
@@ -95,7 +109,9 @@ Python Email-like API
 ^^^^^^^^^^^^^^^^^^^^^
 
 If you require an API that is more like Python's :mod:`email` package, then the
-``base`` property holds a reference to the corresponding :ref:`mail-base` object::
+``base`` property holds a reference to the corresponding :ref:`mail-base` object:
+
+.. code-block:: python
 
     mail_base = message.base
 
@@ -105,7 +121,9 @@ MailResponse
 ------------
 
 :class:`~salmon.mail.MailResponse` objects can be created to send responses via
-:class:`salmon.server.Relay`. They can either be created directly::
+:class:`salmon.server.Relay`. They can either be created directly:
+
+.. code-block:: python
 
     from salmon.mail import MailResponse
 
@@ -118,7 +136,9 @@ MailResponse
         From="you@example.com",
         Subject="Test")
 
-Or via :func:`salmon.view.respond`::
+Or via :func:`salmon.view.respond`:
+
+.. code-block:: python
 
     from salmon.view import respond
 
@@ -136,7 +156,9 @@ Headers and accessing a Python Email-like API are the same as they are for
 Attachments
 ^^^^^^^^^^^
 
-Attachments can be added via the ``attach`` method::
+Attachments can be added via the ``attach`` method:
+
+.. code-block:: python
 
     filename = "image.jpg"
     file = open(filename, "r")
@@ -158,14 +180,18 @@ Headers are accessed by the same dict-like interface as :ref:`mail-request` and
 :ref:`mail-response`. It also has some additional methods for dealing with multiple
 headers with the same name.
 
-To fetch all values of a given header name, use the ``get_all`` method::
+To fetch all values of a given header name, use the ``get_all`` method:
+
+.. code-block:: pycon
 
     >>> print(mail_base.get_all("Received"))
     ["from example.com by localhost...", "from localhost by..."]
     >>> print(mail_base.get_all("Not-A-Real-Header"))
     []
 
-To add a multiple headers with the same name, use the ``append_header`` method::
+To add a multiple headers with the same name, use the ``append_header`` method:
+
+.. code-block:: pycon
 
     >>> print(mail_base.keys())
     ["To", "From", "Subject"]
@@ -183,14 +209,18 @@ Content Encoding
 ^^^^^^^^^^^^^^^^
 
 The ``content_encoding`` property contains the parsed contents of various
-content encoding headers::
+content encoding headers:
+
+.. code-block:: pycon
 
     >>> print(mail_base["Content-Type"])
     text/html; charset="us-ascii"
     >>> print(mail_base.content_encoding["Content-Type"])
     ("text/html", {"charset": "us-ascii"})
 
-Content encoding headers can also be set via this property::
+Content encoding headers can also be set via this property:
+
+.. code-block:: pycon
 
     >>> ct = ("text/html", {"charset": "utf-8"}
     >>> mail_base.content_encoding["Content-Type"] = ct
@@ -209,12 +239,16 @@ Accessing Python ``email`` API
 
 As Salmon builds upon Python's :mod:`email` API, the underlying
 :class:`email.message.Message` instance is available via the ``mime_part``
-property::
+property:
+
+.. code-block:: python
 
     email_obj = mail_base.mime_part
 
 Thus, if you don't want to bother with all the nice things Salmon does for you
-in your handlers, you can bypass all that loveliness quite easily::
+in your handlers, you can bypass all that loveliness quite easily:
+
+.. code-block:: python
 
     @route_like(START)
     def PROCESS(message, **kwargs):

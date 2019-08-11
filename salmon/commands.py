@@ -23,7 +23,7 @@ import salmon
 # quite likely to have afffected us before switching to click.
 click.disable_unicode_literals_warning = True
 
-DEFAULT_PID_FILE = "./run/stmp.pid"
+DEFAULT_PID_FILE = "./run/smtp.pid"
 
 copyright_notice = """
 Salmon is Copyright (C) Matt Molyneaux 2014-2015.  Licensed GPLv3.
@@ -43,6 +43,16 @@ to continue operating as a non-root user. If you give one or the other,
 this it will just change to that uid or gid without doing the priv drop
 operation.
 """
+
+
+class SalmonCommandError(click.ClickException):
+    """Like ClickException, but it doesn't prepend messages with "Error"
+
+    Useful if you want to give a non-zero exit code that's not really an error
+    per se
+    """
+    def show(self, file=None):
+        click.echo(self.format_message(), err=True, file=file)
 
 
 @click.group(epilog=copyright_notice)
@@ -156,7 +166,7 @@ def stop(pid, force=False, all=False):
         pid_files = [pid]
 
         if not os.path.exists(pid):
-            raise click.FileError("PID file %s doesn't exist, maybe Salmon isn't running?" % pid)
+            raise click.FileError(pid, "Maybe Salmon isn't running?")
 
     click.echo("Stopping processes with the following PID files: %s" % pid_files)
 
@@ -173,7 +183,7 @@ def stop(pid, force=False, all=False):
 
             os.unlink(pid_f)
         except OSError as exc:
-            raise click.ClickException("ERROR stopping Salmon on PID %d: %s" % (int(pid_data), exc))
+            raise click.ClickException("stopping Salmon on PID %d: %s" % (int(pid_data), exc))
 
 
 @main.command(short_help="displays status of server")
@@ -188,10 +198,7 @@ def status(pid):
             pid_data = pid_file.readline()
             click.echo("Salmon running with PID %d" % int(pid_data))
     else:
-        click.echo("Salmon not running.")
-        # don't raise a ClickException because that prepends "ERROR" to the
-        # output and this isn't always an error
-        sys.exit(1)
+        raise SalmonCommandError("Salmon not running.")
 
 
 @main.command(short_help="manipulate a Queue")
@@ -278,7 +285,7 @@ def gen(project, force=False):
     if force:
         shutil.rmtree(project, ignore_errors=True)
     elif os.path.exists(project):
-        raise click.FileError("Project %s exists, delete it first." % project)
+        raise click.ClickException("Project '%s' exists, delete it first." % project)
 
     shutil.copytree(template, project)
 
@@ -313,7 +320,7 @@ def cleanse(inbox, outbox):
     inbox.close()
 
     if error_count > 0:
-        raise click.ClickException("TOTAL ERRORS: %s" % error_count)
+        raise SalmonCommandError("TOTAL ERRORS: %s" % error_count)
     else:
         click.echo("Completed without errors")
 
