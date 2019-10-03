@@ -1,4 +1,3 @@
-from nose.tools import *  # noqa
 from salmon.testing import RouterConversation, queue, relay
 
 relay = relay(port=8823)

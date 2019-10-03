@@ -36,7 +36,6 @@ any other Mail server.
 - Salmon can also run in a completely separate virtualenv for easy deployment.
 - A flexible and easy to use routing system lets you write stateful or state\
   *less* handlers of your email.
-- Helpful tools for unit testing your email applications with nose.
 - Ability to use Jinja2 or Mako templates to craft emails including the
   headers.
 - Easily configurable to use alternative sending and receiving systems,
