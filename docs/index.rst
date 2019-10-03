@@ -30,6 +30,7 @@ About Salmon
     :maxdepth: 2
 
     changelog
+    security
 
 Indices and tables
 ==================

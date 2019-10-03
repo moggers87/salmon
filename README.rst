@@ -131,19 +131,6 @@ Alternatively, if you have multiple versions of Python installed locally::
 Refer to the `tox documentation <https://tox.readthedocs.io/en/latest/>`__ for
 more information.
 
-Security
---------
-
-Salmon follows the same security reporting model that has worked for other open
-source projects: If you report a security vulnerability, it will be acted on
-immediately and a fix with complete full disclosure will go out to everyone at
-the same time. It's the job of the people using Salmon to keep track of
-security relate problems.
-
-Additionally, Salmon is written in as secure a manner as possible and assumes
-that it is operating in a hostile environment. If you find Salmon doesn't
-behave correctly given that constraint then please voice your concerns.
-
 Development
 ===========
 
