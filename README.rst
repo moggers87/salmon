@@ -158,6 +158,13 @@ character limit it imposes (120 is a good marker IMO).
 
 .. inclusion-marker-do-not-remove-end
 
+Funding
+=======
+
+If you have found Salmon to be useful and would like to see its continued
+development, please consider `buying me a coffee
+<https://ko-fi.com/moggers87>`__.
+
 .. |Build Status| image:: https://travis-ci.org/moggers87/salmon.svg?branch=master
    :alt: Build Status
    :scale: 100%
