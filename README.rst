@@ -103,10 +103,21 @@ Salmon is released under the GNU GPLv3 license, which can be found `here
 Contributing
 ------------
 
-Pull requests and issues are most welcome.
+Pull requests and issues are most welcome. Please read our `code of conduct
+<https://github.com/moggers87/salmon/blob/master/CODE_OF_CONDUCT.md>`__ before
+contributing!
 
 I will not accept code that has been submitted for inclusion in the original
 project due to the terms of its new licence.
+
+Code Of Conduct
+---------------
+
+The Salmon project has adopted the Contributor Covenant Code version 1.4. By
+contributing to this project, you agree to abide by its terms.
+
+The full text of the code of conduct can be found `here
+<https://github.com/moggers87/salmon/blob/master/CODE_OF_CONDUCT.md>`__
 
 Testing
 =======
