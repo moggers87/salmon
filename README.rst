@@ -5,6 +5,10 @@ Salmon - A Python Mail Server
 
 .. inclusion-marker-do-not-remove-start
 
+- Download: https://pypi.org/project/salmon-mail/
+- Source: https://github.com/moggers87/salmon
+- Docs: https://salmon-mail.readthedocs.io/en/latest/
+
 Salmon is a pure Python mail server designed to create robust and complex mail
 applications in the style of modern web frameworks. Salmon is designed to sit
 behind a traditional mail server in the same way a web application sits behind
