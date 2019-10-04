@@ -5,6 +5,10 @@ Salmon - A Python Mail Server
 
 .. inclusion-marker-do-not-remove-start
 
+- Download: https://pypi.org/project/salmon-mail/
+- Source: https://github.com/moggers87/salmon
+- Docs: https://salmon-mail.readthedocs.io/en/latest/
+
 Salmon is a pure Python mail server designed to create robust and complex mail
 applications in the style of modern web frameworks. Salmon is designed to sit
 behind a traditional mail server in the same way a web application sits behind
@@ -142,19 +146,6 @@ Alternatively, if you have multiple versions of Python installed locally::
 Refer to the `tox documentation <https://tox.readthedocs.io/en/latest/>`__ for
 more information.
 
-Security
---------
-
-Salmon follows the same security reporting model that has worked for other open
-source projects: If you report a security vulnerability, it will be acted on
-immediately and a fix with complete full disclosure will go out to everyone at
-the same time. It's the job of the people using Salmon to keep track of
-security relate problems.
-
-Additionally, Salmon is written in as secure a manner as possible and assumes
-that it is operating in a hostile environment. If you find Salmon doesn't
-behave correctly given that constraint then please voice your concerns.
-
 Development
 ===========
 
@@ -168,6 +159,13 @@ PEP-8 should be followed where possible, but feel free to ignore the 80
 character limit it imposes (120 is a good marker IMO).
 
 .. inclusion-marker-do-not-remove-end
+
+Funding
+=======
+
+If you have found Salmon to be useful and would like to see its continued
+development, please consider `buying me a coffee
+<https://ko-fi.com/moggers87>`__.
 
 .. |Build Status| image:: https://travis-ci.org/moggers87/salmon.svg?branch=master
    :alt: Build Status
