@@ -4,6 +4,7 @@ Documentation for this module can be found in :doc:`commandline`
 
 from __future__ import unicode_literals
 
+from importlib import import_module
 import email
 import glob
 import mailbox
@@ -236,41 +237,55 @@ def queue(name, pop=False, get=False, keys=False, remove=False, count=False, cle
 
 @main.command(short_help="display routes")
 @click.option("--path", default=os.getcwd, help="search path for modules")
-@click.option("--test", metavar="EMAIL", help="test address")
-@click.argument("modules", metavar="module", default=["config.testing"])
-def routes(modules, path=None, test=""):
+@click.option("--test", metavar="ADDRESS", help="address to test against routing configuration", required=True)
+@click.argument("modules", metavar="MODULE", nargs=-1, required=True)
+def routes(modules, test, path=None):
     """
     Prints out valuable information about an application's routing configuration
     after everything is loaded and ready to go.  Helps debug problems with
     messages not getting to your handlers.  Path has the search paths you want
     separated by a ':' character, and it's added to the sys.path.
+
+    MODULE should be a configureation module and can be given multiple times.
     """
     sys.path += path.split(':')
     test_case_matches = []
 
     for module in modules:
-        __import__(module, globals(), locals())
+        try:
+            import_module(module)
+        except ImportError:
+            raise click.ClickException("Module '%s' could not be imported. Did you forget to use the --path option?"
+                                       % str(module))
 
-    click.echo("Routing ORDER: %s" % routing.Router.ORDER)
-    click.echo("Routing TABLE: \n---")
+    if not routing.Router.REGISTERED:
+        raise click.ClickException("Modules '%s' imported, but no function registered." % str(modules))
+
+    # TODO: stop casting everything to str once Python 2.7 support has been dropped
+    # we do this to avoid spamming u"blah blah" everywhere
+    click.echo("Routing ORDER: %s" % [str(i) for i in routing.Router.ORDER])
+    click.echo("Routing TABLE:\n---")
     for format in routing.Router.REGISTERED:
-        click.echo("%r: " % format, nl=False)
+        click.echo("%r: " % str(format), nl=False)
         regex, functions = routing.Router.REGISTERED[format]
         for func in functions:
             click.echo("%s.%s " % (func.__module__, func.__name__), nl=False)
             match = regex.match(test)
             if test and match:
-                test_case_matches.append((format, func, match))
+                test_case_matches.append((str(format), func, match))
 
         click.echo("\n---")
 
     if test_case_matches:
-        click.echo("\nTEST address %r matches:" % test)
+        click.echo("\nTEST address %r matches:" % str(test))
         for format, func, match in test_case_matches:
             click.echo("  %r %s.%s" % (format, func.__module__, func.__name__))
-            click.echo("  -  %r" % (match.groupdict()))
+            click.echo("  -  %r" % ({str(k): str(v) for k, v in match.groupdict().items()}))
     elif test:
-        click.echo("\nTEST address %r didn't match anything." % test)
+        click.echo("\nTEST address %r didn't match anything." % str(test))
+        # don't raise a ClickException because that prepends "ERROR" to the
+        # output and this isn't always an error
+        sys.exit(1)
 
 
 @main.command(short_help="generate a new project")
