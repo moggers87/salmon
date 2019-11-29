@@ -432,7 +432,7 @@ class RoutingBase(object):
         """
         with self.lock:
             self.clear_routes()
-            for module in sys.modules.keys():
+            for module in list(sys.modules.keys()):
                 if module in self.HANDLERS:
                     try:
                         reload(sys.modules[module])
