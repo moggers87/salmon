@@ -5,12 +5,12 @@ Documentation for this module can be found in :doc:`commandline`
 from __future__ import unicode_literals
 
 from importlib import import_module
-import email
 import glob
 import mailbox
 import os
 import shutil
 import signal
+import socket
 import sys
 
 import click
@@ -353,13 +353,19 @@ def blast(input, host, port, lmtp=None, debug=False):
     it will be real messages hitting your server, not cleansed ones.
     """
     try:
-        inbox = mailbox.mbox(input)
-    except IOError:
-        inbox = mailbox.Maildir(input, factory=None)
+        inbox = mailbox.mbox(input, create=False)
+    except (mailbox.Error, IOError):
+        try:
+            inbox = mailbox.Maildir(input, factory=None, create=False)
+        except (mailbox.Error, IOError):
+            raise click.ClickException("{} does not exist or is not a valid MBox or Maildir".format(input))
 
     relay = server.Relay(host, port=port, lmtp=lmtp, debug=debug)
 
     for key in inbox.keys():
         msgfile = inbox.get_file(key)
-        msg = email.message_from_file(msgfile)
-        relay.deliver(msg)
+        msg = encoding.from_file(msgfile)
+        try:
+            relay.deliver(msg)
+        except socket.error as exp:
+            raise click.ClickException(str(exp))

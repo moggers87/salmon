@@ -1,5 +1,6 @@
 from tempfile import mkdtemp
 import os
+import shutil
 import sys
 
 from click import testing
@@ -158,11 +159,6 @@ class CommandTestCase(SalmonTestCase):
         result = runner.invoke(commands.main, ("cleanse", in_queue, "run/cleased"))
         self.assertEqual(result.exit_code, 1)
 
-    def test_blast_command(self):
-        runner = CliRunner()
-        result = runner.invoke(commands.main, ("blast", "--host", "127.0.0.1", "--port", "8899", "run/queue"))
-        self.assertEqual(result.exit_code, 0)
-
 
 class GenCommandTestCase(SalmonTestCase):
     def setUp(self):
@@ -295,3 +291,54 @@ class RoutesCommandTestCase(SalmonTestCase):
                           "---\n"
                           "\n"
                           "TEST address 'userexample.com' didn't match anything.\n"))
+
+
+class BlastCommandTestCase(SalmonTestCase):
+    def setUp(self):
+        super(BlastCommandTestCase, self).setUp()
+        queue.Queue("run/queue").clear()
+
+    @patch("salmon.server.smtplib.SMTP")
+    def test_blast_command_empty(self, client_mock):
+        runner = CliRunner()
+        result = runner.invoke(commands.main, ("blast", "--host", "129.0.0.1", "--port", "8899", "run/queue"))
+        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(client_mock.call_count, 0)
+        self.assertEqual(client_mock.return_value.sendmail.call_count, 0)
+
+    @patch("salmon.server.smtplib.SMTP")
+    def test_blast_three_messages(self, client_mock):
+        q = queue.Queue("run/queue")
+        msg_count = 3
+        for i in range(3):
+            msg = mail.MailResponse(To="tests%s@localhost" % i, From="tests%s@localhost" % i,
+                                    Subject="Hello", Body="Test body.")
+            q.push(msg)
+        runner = CliRunner()
+        result = runner.invoke(commands.main, ("blast", "--host", "127.0.0.2", "--port", "8900", "run/queue"))
+        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(client_mock.call_count, 3)
+        self.assertEqual(client_mock.call_args_list, [
+            (("127.0.0.2", 8900), {}),
+            (("127.0.0.2", 8900), {}),
+            (("127.0.0.2", 8900), {}),
+        ])
+        self.assertEqual(client_mock.return_value.sendmail.call_count, 3)
+
+    def test_no_connection(self):
+        q = queue.Queue("run/queue")
+        msg = mail.MailResponse(To="tests@localhost", From="tests@localhost",
+                                Subject="Hello", Body="Test body.")
+        q.push(msg)
+        runner = CliRunner()
+        result = runner.invoke(commands.main, ("blast", "--host", "127.0.1.2", "--port", "8901", "run/queue"))
+        self.assertEqual(result.exit_code, 1)
+        self.assertEqual(result.output, "Error: [Errno 111] Connection refused\n")
+
+    def test_no_queue(self):
+        shutil.rmtree("run/queue")
+
+        runner = CliRunner()
+        result = runner.invoke(commands.main, ("blast", "--host", "127.1.1.2", "--port", "8889", "run/queue"))
+        self.assertEqual(result.exit_code, 1)
+        self.assertEqual(result.output, "Error: run/queue does not exist or is not a valid MBox or Maildir\n")
