@@ -159,9 +159,12 @@ class Queue(object):
         """Removes the queue, but not returned."""
         self.mbox.remove(key)
 
-    def count(self):
+    def __len__(self):
         """Returns the number of messages in the queue."""
         return len(self.mbox)
+
+    # synonym of __len__ for backwards compatibility
+    count = __len__
 
     def clear(self):
         """
@@ -170,7 +173,7 @@ class Queue(object):
         basically pops until the queue is empty.
         """
         # man this is probably a really bad idea
-        while self.count() > 0:
+        while len(self) > 0:
             self.pop()
 
     def keys(self):

@@ -153,3 +153,11 @@ class QueueTestCase(SalmonTestCase):
         self.assertEqual(mail['to'], "you@localhost")
         self.assertEqual(mail['subject'], "bob!")
         self.assertEqual(mail.body(), "Blobcat")
+
+    def test_len(self):
+        q = self.test_push()
+        self.assertEqual(len(q), 1)
+
+    def test_count(self):
+        q = self.test_push()
+        self.assertEqual(q.count(), 1)
