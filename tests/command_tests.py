@@ -1,4 +1,5 @@
 from tempfile import mkdtemp
+import mailbox
 import os
 import sys
 
@@ -141,14 +142,42 @@ class CommandTestCase(SalmonTestCase):
         runner.invoke(commands.main, ("start", "--pid", "run/fake.pid", "--no-daemon", "--force"))
         self.assertEqual(utils.daemonize.call_count, daemonize_call_count)  # same count -> not called
 
+
+class CleanseCommandTestCase(SalmonTestCase):
+    def setUp(self):
+        super(CleanseCommandTestCase, self).setUp()
+        queue.Queue("run/queue").clear()
+
     def test_cleanse_command(self):
+        q = queue.Queue("run/queue")
+        msg_count = 3
+        for i in range(msg_count):
+            msg = mail.MailResponse(To="tests%s@localhost" % i, From="tests%s@localhost" % i,
+                                    Subject="Hello", Body="Test body.")
+            q.push(msg)
+        self.assertEqual(q.count(), msg_count)
         runner = CliRunner()
         result = runner.invoke(commands.main, ("cleanse", "run/queue", "run/cleansed"))
         self.assertEqual(result.exit_code, 0)
-        assert os.path.exists('run/cleansed')
+        self.assertEqual(q.count(), msg_count)
+        outbox = mailbox.Maildir("run/cleansed", create=False)
+        self.assertEqual(len(outbox), msg_count)
+
+    def test_no_inbox(self):
+        runner = CliRunner()
+        result = runner.invoke(commands.main, ("cleanse", "run/not-a-queue", "run/cleansed"))
+        self.assertEqual(result.exit_code, 1)
+        self.assertEqual(result.output, "Error: run/not-a-queue does not exist or is not a valid MBox or Maildir\n")
+        self.assertFalse(os.path.exists('run/cleansed'))
+
+    def test_empty(self):
+        runner = CliRunner()
+        result = runner.invoke(commands.main, ("cleanse", "run/queue", "run/cleansed"))
+        self.assertEqual(result.exit_code, 0)
+        self.assertTrue(os.path.exists('run/cleansed'))
 
     @patch('salmon.encoding.from_message')
-    def test_cleanse_command_with_encoding_error(self, from_message):
+    def test_encoding_error(self, from_message):
         runner = CliRunner()
         from_message.side_effect = encoding.EncodingError
         in_queue = "run/queue"
@@ -157,11 +186,6 @@ class CommandTestCase(SalmonTestCase):
 
         result = runner.invoke(commands.main, ("cleanse", in_queue, "run/cleased"))
         self.assertEqual(result.exit_code, 1)
-
-    def test_blast_command(self):
-        runner = CliRunner()
-        result = runner.invoke(commands.main, ("blast", "--host", "127.0.0.1", "--port", "8899", "run/queue"))
-        self.assertEqual(result.exit_code, 0)
 
 
 class GenCommandTestCase(SalmonTestCase):
@@ -295,3 +319,52 @@ class RoutesCommandTestCase(SalmonTestCase):
                           "---\n"
                           "\n"
                           "TEST address 'userexample.com' didn't match anything.\n"))
+
+
+class BlastCommandTestCase(SalmonTestCase):
+    def setUp(self):
+        super(BlastCommandTestCase, self).setUp()
+        queue.Queue("run/queue").clear()
+
+    @patch("salmon.server.smtplib.SMTP")
+    def test_blast_command_empty(self, client_mock):
+        runner = CliRunner()
+        result = runner.invoke(commands.main, ("blast", "--host", "129.0.0.1", "--port", "8899", "run/queue"))
+        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(client_mock.call_count, 0)
+        self.assertEqual(client_mock.return_value.sendmail.call_count, 0)
+
+    @patch("salmon.server.smtplib.SMTP")
+    def test_blast_three_messages(self, client_mock):
+        q = queue.Queue("run/queue")
+        msg_count = 3
+        for i in range(msg_count):
+            msg = mail.MailResponse(To="tests%s@localhost" % i, From="tests%s@localhost" % i,
+                                    Subject="Hello", Body="Test body.")
+            q.push(msg)
+        runner = CliRunner()
+        result = runner.invoke(commands.main, ("blast", "--host", "127.0.0.2", "--port", "8900", "run/queue"))
+        self.assertEqual(result.exit_code, 0)
+        self.assertEqual(client_mock.call_count, msg_count)
+        self.assertEqual(client_mock.call_args_list, [
+            (("127.0.0.2", 8900), {}),
+            (("127.0.0.2", 8900), {}),
+            (("127.0.0.2", 8900), {}),
+        ])
+        self.assertEqual(client_mock.return_value.sendmail.call_count, msg_count)
+
+    def test_no_connection(self):
+        q = queue.Queue("run/queue")
+        msg = mail.MailResponse(To="tests@localhost", From="tests@localhost",
+                                Subject="Hello", Body="Test body.")
+        q.push(msg)
+        runner = CliRunner()
+        result = runner.invoke(commands.main, ("blast", "--host", "127.0.1.2", "--port", "8901", "run/queue"))
+        self.assertEqual(result.exit_code, 1)
+        self.assertEqual(result.output, "Error: [Errno 111] Connection refused\n")
+
+    def test_no_queue(self):
+        runner = CliRunner()
+        result = runner.invoke(commands.main, ("blast", "--host", "127.1.1.2", "--port", "8889", "run/not-a-queue"))
+        self.assertEqual(result.exit_code, 1)
+        self.assertEqual(result.output, "Error: run/not-a-queue does not exist or is not a valid MBox or Maildir\n")

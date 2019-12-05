@@ -5,12 +5,12 @@ Documentation for this module can be found in :doc:`commandline`
 from __future__ import unicode_literals
 
 from importlib import import_module
-import email
 import glob
 import mailbox
 import os
 import shutil
 import signal
+import socket
 import sys
 
 import click
@@ -317,9 +317,12 @@ def cleanse(inbox, outbox):
     error_count = 0
 
     try:
-        inbox = mailbox.mbox(inbox)
-    except IOError:
-        inbox = mailbox.Maildir(inbox, factory=None)
+        inbox = mailbox.mbox(inbox, create=False)
+    except (mailbox.Error, IOError):
+        try:
+            inbox = mailbox.Maildir(inbox, factory=None, create=False)
+        except (mailbox.Error, IOError):
+            raise click.ClickException("{} does not exist or is not a valid MBox or Maildir".format(inbox))
 
     outbox = mailbox.Maildir(outbox)
 
@@ -341,25 +344,33 @@ def cleanse(inbox, outbox):
 
 
 @main.command(short_help="blast emails at a server")
-@click.argument("input")
+@click.argument("inbox")
 @click.option("--port", default=8823, type=int, help="port to listen on")
 @click.option("--host", default="127.0.0.1", help="address to listen on")
 @click.option("--lmtp", default=False, is_flag=True)
 @click.option("--debug", default=False, is_flag=True, help="debug mode")
-def blast(input, host, port, lmtp=None, debug=False):
+def blast(inbox, host, port, lmtp=None, debug=False):
     """
     Given a Maildir, this command will go through each email
     and blast it at your server.  It does nothing to the message, so
     it will be real messages hitting your server, not cleansed ones.
     """
     try:
-        inbox = mailbox.mbox(input)
-    except IOError:
-        inbox = mailbox.Maildir(input, factory=None)
+        inbox = mailbox.mbox(inbox, create=False)
+    except (mailbox.Error, IOError):
+        try:
+            inbox = mailbox.Maildir(inbox, factory=None, create=False)
+        except (mailbox.Error, IOError):
+            raise click.ClickException("{} does not exist or is not a valid MBox or Maildir".format(inbox))
 
     relay = server.Relay(host, port=port, lmtp=lmtp, debug=debug)
 
     for key in inbox.keys():
         msgfile = inbox.get_file(key)
-        msg = email.message_from_file(msgfile)
-        relay.deliver(msg)
+        msg = encoding.from_file(msgfile)
+        try:
+            relay.deliver(msg)
+        except socket.error as exp:
+            raise click.ClickException(str(exp))
+        finally:
+            msgfile.close()
