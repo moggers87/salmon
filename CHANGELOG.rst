@@ -1,3 +1,25 @@
+.. _three-two-zero-rc1:
+
+3.2.0rc1
+========
+
+:release-date: 2019-12-06
+
+- Switch from argparse to click (#80)
+
+   - Commandline interface is now documented
+   - Salmon now exits with non-zero return codes (#112)
+
+- ``salmon.server.QueueReceiver`` now uses threads (#67)
+
+   - For those using ``@nolocking``, this will mean massive improvements in performance
+
+- ``salmon.queue.Queue`` now implements ``__len__``
+- Remove nosetests and just use Python's builtin unit test modules (#96)
+- Directories required for Salmon startup will now be created if they don't exist (#111)
+- Fix routes, blast, and cleanse commands (#102, #103)
+- Python 3.8 is now supported
+
 .. _three-one-one:
 
 3.1.1
@@ -7,7 +29,7 @@
 
 - Require newer versions of python-daemon to properly fix the install issues we
   had previously (#89)
-- Fixed a bug in ``salmon.queue.Queue`` that mangled mail is it was added as
+- Fixed a bug in ``salmon.queue.Queue`` that mangled mail if it was added as
   ``bytes`` rather than a message-like object (#97)
 
 .. _three-one-zero:
