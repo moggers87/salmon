@@ -33,7 +33,7 @@ def undeliverable_message(raw_message, failure_type):
     Used universally in this file to shove totally screwed messages
     into the routing.Router.UNDELIVERABLE_QUEUE (if it's set).
     """
-    if routing.Router.UNDELIVERABLE_QUEUE:
+    if routing.Router.UNDELIVERABLE_QUEUE is not None:
         key = routing.Router.UNDELIVERABLE_QUEUE.push(raw_message)
 
         logging.error("Failed to deliver message because of %r, put it in "
@@ -334,9 +334,9 @@ class QueueReceiver(object):
 
         # if there are no messages left in the maildir and this a one-shot, the
         # while loop terminates
-        while not (self.queue.count() == 0 and one_shot):
+        while not (len(self.queue) == 0 and one_shot):
             # if there's nothing in the queue, take a break
-            if self.queue.count() == 0:
+            if len(self.queue) == 0:
                 time.sleep(self.sleep)
                 continue
 

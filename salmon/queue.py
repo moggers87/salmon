@@ -159,18 +159,24 @@ class Queue(object):
         """Removes the queue, but not returned."""
         self.mbox.remove(key)
 
-    def count(self):
+    def __len__(self):
         """Returns the number of messages in the queue."""
         return len(self.mbox)
+
+    # synonym of __len__ for backwards compatibility
+    count = __len__
 
     def clear(self):
         """
         Clears out the contents of the entire queue.
-        Warning: This could be horribly inefficient since it
-        basically pops until the queue is empty.
+
+        Warning: This could be horribly inefficient since it pops messages
+        until the queue is empty. It could also cause an infinite loop if
+        another process is writing to messages to the Queue faster than we can
+        pop.
         """
         # man this is probably a really bad idea
-        while self.count() > 0:
+        while len(self) > 0:
             self.pop()
 
     def keys(self):

@@ -56,7 +56,7 @@ class CommandTestCase(SalmonTestCase):
         mq.get.return_value = "A sample message"
         mq.keys.return_value = ["key1", "key2"]
         mq.pop.return_value = ('key1', 'message1')
-        mq.count.return_value = 1
+        mq.__len__.return_value = 1
 
         runner = CliRunner()
 
@@ -76,7 +76,7 @@ class CommandTestCase(SalmonTestCase):
         self.assertEqual(mq.keys.call_count, 1)
 
         runner.invoke(commands.main, ("queue", "--count"))
-        self.assertEqual(mq.count.call_count, 1)
+        self.assertEqual(mq.__len__.call_count, 1)
 
     @patch('salmon.utils.daemonize', new=Mock())
     @patch('salmon.server.SMTPReceiver')

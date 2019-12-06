@@ -282,9 +282,10 @@ class ServerTestCase(SalmonTestCase):
     @patch("salmon.server.queue.Queue")
     def test_queue_receiver_pop_error(self, queue_mock, router_mock):
         def key_error(*args, **kwargs):
-            queue_mock.return_value.count.return_value = 0
+            queue_mock.return_value.__len__.return_value = 0
             raise KeyError
 
+        queue_mock.return_value.__len__.return_value = 1
         queue_mock.return_value.pop.side_effect = key_error
         receiver = server.QueueReceiver('run/queue')
         receiver.start(one_shot=True)

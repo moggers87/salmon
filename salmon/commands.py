@@ -228,7 +228,7 @@ def queue(name, pop=False, get=False, keys=False, remove=False, count=False, cle
     elif remove:
         inq.remove(remove)
     elif count:
-        click.echo("Queue %s contains %d messages" % (name, inq.count()))
+        click.echo("Queue %s contains %d messages" % (name, len(inq)))
     elif clear:
         inq.clear()
     elif keys:

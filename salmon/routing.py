@@ -323,7 +323,7 @@ class RoutingBase(object):
                     yield func, matchkw
 
     def _enqueue_undeliverable(self, message):
-        if self.UNDELIVERABLE_QUEUE:
+        if self.UNDELIVERABLE_QUEUE is not None:
             LOG.debug("Message to %r from %r undeliverable, putting in undeliverable queue (# of recipients: %d).",
                       message.To, message.From, len(message.To))
             self.UNDELIVERABLE_QUEUE.push(message)
@@ -385,7 +385,7 @@ class RoutingBase(object):
         except Exception:
             self.set_state(func.__module__, message, 'ERROR')
 
-            if self.UNDELIVERABLE_QUEUE:
+            if self.UNDELIVERABLE_QUEUE is not None:
                 self.UNDELIVERABLE_QUEUE.push(message)
 
             if self.LOG_EXCEPTIONS:
