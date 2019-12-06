@@ -169,8 +169,11 @@ class Queue(object):
     def clear(self):
         """
         Clears out the contents of the entire queue.
-        Warning: This could be horribly inefficient since it
-        basically pops until the queue is empty.
+
+        Warning: This could be horribly inefficient since it pops messages
+        until the queue is empty. It could also cause an infinite loop if
+        another process is writing to messages to the Queue faster than we can
+        pop.
         """
         # man this is probably a really bad idea
         while len(self) > 0:
