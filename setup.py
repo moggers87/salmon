@@ -6,7 +6,7 @@ install_requires = [
     'chardet',
     'click',
     'dnspython',
-    'lmtpd>=4',
+    'lmtpd>=4,<7.0.0',
     'python-daemon>2.2.0',
     'six',
 ]
