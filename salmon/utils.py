@@ -64,7 +64,7 @@ def daemonize(pid, chdir, chroot, umask, files_preserve=None, do_open=True):
 
     if chroot:
         context.chroot_directory = os.path.expanduser(chroot)
-    if umask is not False:
+    if umask is not None:
         context.umask = umask
 
     if do_open:
