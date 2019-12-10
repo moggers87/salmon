@@ -56,6 +56,30 @@ class SalmonCommandError(click.ClickException):
         click.echo(self.format_message(), err=True, file=file)
 
 
+def daemon_start(command, additional_options=[], *args, **kwargs):
+    """Wrap a command function with common daemon start parameters"""
+    def inner(fn):
+        options = additional_options + [
+            click.option("--chroot", help="path to chroot"),
+            click.option("--chdir", default=".", help="change to this directory when daemonising"),
+            click.option("--umask", type=int, help="set umask on server"),
+            click.option("--pid", default=DEFAULT_PID_FILE, help="path to pid file"),
+            click.option("-f", "--force", default=False, is_flag=True, help="force server to run, ignoring pid file"),
+            click.option("--debug", default=False, is_flag=True, help="debug mode"),
+            click.option("--uid", type=int, help="run with this user id"),
+            click.option("--gid", type=int, help="run with this group id"),
+            click.option("--daemon/--no-daemon", default=True, help="start server as daemon (default)"),
+        ]
+
+        for option in reversed(options):
+            fn = option(fn)
+        kwargs.setdefault("epilog", uid_desc)
+        fn = command(*args, **kwargs)(fn)
+
+        return fn
+    return inner
+
+
 @click.group(epilog=copyright_notice)
 @click.version_option()
 def main():
@@ -63,20 +87,11 @@ def main():
     pass
 
 
-@main.command(short_help="starts log server", epilog=uid_desc)
-@click.option("--port", default=8825, type=int, help="port to listen on")
-@click.option("--host", default="127.0.0.1", help="address to listen on")
-@click.option("--chroot", help="path to chroot")
-@click.option("--chdir", default=".", help="change to this directory when daemonising")
-@click.option("--umask", type=int, help="set umask on server")
-@click.option("--pid", default="./run/log.pid", help="path to pid file")
-@click.option("-f", "--force", default=False, is_flag=True, help="force server to run, ignoring pid file")
-@click.option("--debug", default=False, is_flag=True, help="debug mode")
-@click.option("--uid", type=int, help="run with this user id")
-@click.option("--gid", type=int, help="run with this group id")
-@click.option("--daemon/--no-daemon", default=True, help="start server as daemon (default)")
-def log(port, host, pid, chdir, chroot=None, uid=False, gid=False, umask=False,
-        force=False, debug=False, daemon=True):
+@daemon_start(main.command, additional_options=[
+    click.option("--port", default=8825, type=int, help="port to listen on"),
+    click.option("--host", default="127.0.0.1", help="address to listen on"),
+], short_help="starts log server")
+def log(port, host, pid, chdir, chroot, uid, gid, umask, force, debug, daemon):
     """
     Runs a logging only server on the given hosts and port.  It logs
     each message it receives and also stores it to the run/queue
@@ -99,8 +114,8 @@ def log(port, host, pid, chdir, chroot=None, uid=False, gid=False, umask=False,
 @click.option("--lmtp", default=False)
 @click.option("--ssl", default=False)
 @click.option("--starttls", default=False)
-def send(port, host, username=None, password=None, ssl=None, starttls=None, lmtp=None,
-         sender=None, to=None, subject=None, body=None, attach=None):
+def send(port, host, username, password, ssl, starttls, lmtp, sender, to,
+         subject, body, attach):
     """
     Sends an email to someone as a test message.
     See the sendmail command for a sendmail replacement.
@@ -115,12 +130,12 @@ def send(port, host, username=None, password=None, ssl=None, starttls=None, lmtp
 
 
 @main.command(short_help="send an email from stdin")
-@click.option("--port", default=8825, type=int, help="Port to listen on")
-@click.option("--host", default="127.0.0.1", help="Address to listen on")
+@click.option("--port", default=8825, type=int, help="Port to connect to")
+@click.option("--host", default="127.0.0.1", help="Address to connect to")
 @click.option("--lmtp", default=False, is_flag=True, help="Use LMTP rather than SMTP")
 @click.option("--debug", default=False, is_flag=True, help="Debug mode")
 @click.argument("recipients", nargs=-1, required=True)
-def sendmail(port, host, recipients, debug=False, lmtp=False):
+def sendmail(port, host, recipients, debug, lmtp):
     """
     Used as a testing sendmail replacement for use in programs
     like mutt as an MTA.  It reads the email to send on the stdin
@@ -132,18 +147,10 @@ def sendmail(port, host, recipients, debug=False, lmtp=False):
     relay.deliver(msg)
 
 
-@main.command(short_help="starts a server", epilog=uid_desc)
-@click.option("--boot", default="config.boot", help="module with server definition")
-@click.option("--chroot", help="path to chroot")
-@click.option("--chdir", default=".", help="change to this directory when daemonising")
-@click.option("--umask", type=int, help="set umask on server")
-@click.option("--pid", default=DEFAULT_PID_FILE, help="path to pid file")
-@click.option("-f", "--force", default=False, is_flag=True, help="force server to run, ignoring pid file")
-@click.option("--debug", default=False, is_flag=True, help="debug mode")
-@click.option("--uid", type=int, help="run with this user id")
-@click.option("--gid", type=int, help="run with this group id")
-@click.option("--daemon/--no-daemon", default=True, help="start server as daemon (default)")
-def start(pid, force, chdir, boot, chroot=False, uid=False, gid=False, umask=False, debug=False, daemon=True):
+@daemon_start(main.command, additional_options=[
+    click.option("--boot", default="config.boot", help="module with server definition"),
+], short_help="starts a server")
+def start(pid, force, chdir, boot, chroot, uid, gid, umask, debug, daemon):
     """
     Runs a salmon server out of the current directory
     """
@@ -154,15 +161,15 @@ def start(pid, force, chdir, boot, chroot=False, uid=False, gid=False, umask=Fal
 @main.command(short_help="stops a server")
 @click.option("--pid", default=DEFAULT_PID_FILE, help="path to pid file")
 @click.option("-f", "--force", default=False, is_flag=True, help="force stop server")
-@click.option("--all", default=False, help="stops all servers with .pid files in the specified directory")
-def stop(pid, force=False, all=False):
+@click.option("--all", "all_pids", help="stops all servers with .pid files in the specified directory")
+def stop(pid, force, all_pids):
     """
     Stops a running salmon server
     """
     pid_files = []
 
-    if all:
-        pid_files = glob.glob(all + "/*.pid")
+    if all_pids:
+        pid_files = glob.glob(all_pids + "/*.pid")
     else:
         pid_files = [pid]
 
@@ -210,7 +217,7 @@ def status(pid):
 @click.option("--clear", default=False, is_flag=True, help="clear queue")
 @click.option("--keys", default=False, is_flag=True, help="print queue keys")
 @click.argument("name", default="./run/queue", metavar="queue")
-def queue(name, pop=False, get=False, keys=False, remove=False, count=False, clear=False):
+def queue(name, pop, get, keys, remove, count, clear):
     """
     Lets you do most of the operations available to a queue.
     """
@@ -239,7 +246,7 @@ def queue(name, pop=False, get=False, keys=False, remove=False, count=False, cle
 @click.option("--path", default=os.getcwd, help="search path for modules")
 @click.option("--test", metavar="ADDRESS", help="address to test against routing configuration", required=True)
 @click.argument("modules", metavar="MODULE", nargs=-1, required=True)
-def routes(modules, test, path=None):
+def routes(modules, test, path):
     """
     Prints out valuable information about an application's routing configuration
     after everything is loaded and ready to go.  Helps debug problems with
@@ -291,7 +298,7 @@ def routes(modules, test, path=None):
 @main.command(short_help="generate a new project")
 @click.argument("project")
 @click.option("-f", "--force", is_flag=True, help="overwrite existing directories")
-def gen(project, force=False):
+def gen(project, force):
     """
     Generates various useful things for you to get you started.
     """
@@ -323,7 +330,6 @@ def cleanse(inbox, outbox):
             inbox = mailbox.Maildir(inbox, factory=None, create=False)
         except (mailbox.Error, IOError):
             raise click.ClickException("{} does not exist or is not a valid MBox or Maildir".format(inbox))
-
     outbox = mailbox.Maildir(outbox)
 
     for msg in inbox:
@@ -345,11 +351,11 @@ def cleanse(inbox, outbox):
 
 @main.command(short_help="blast emails at a server")
 @click.argument("inbox")
-@click.option("--port", default=8823, type=int, help="port to listen on")
-@click.option("--host", default="127.0.0.1", help="address to listen on")
+@click.option("--port", default=8823, type=int, help="port to connect to")
+@click.option("--host", default="127.0.0.1", help="address to connect to")
 @click.option("--lmtp", default=False, is_flag=True)
 @click.option("--debug", default=False, is_flag=True, help="debug mode")
-def blast(inbox, host, port, lmtp=None, debug=False):
+def blast(inbox, host, port, lmtp, debug):
     """
     Given a Maildir, this command will go through each email
     and blast it at your server.  It does nothing to the message, so

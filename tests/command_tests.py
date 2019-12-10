@@ -6,7 +6,7 @@ import sys
 from click import testing
 from mock import Mock, patch
 
-from salmon import queue, commands, encoding, mail, routing, utils
+from salmon import queue, commands, encoding, mail, routing
 
 from .setup_env import SalmonTestCase
 
@@ -78,15 +78,15 @@ class CommandTestCase(SalmonTestCase):
         runner.invoke(commands.main, ("queue", "--count"))
         self.assertEqual(mq.__len__.call_count, 1)
 
-    @patch('salmon.utils.daemonize', new=Mock())
+    @patch('salmon.utils.daemonize')
     @patch('salmon.server.SMTPReceiver')
-    def test_log_command(self, MockSMTPReceiver):
+    def test_log_command(self, MockSMTPReceiver, daemon_mock):
         runner = CliRunner()
         ms = MockSMTPReceiver()
         ms.start.function()
 
         result = runner.invoke(commands.main, ("log", "--host", "127.0.0.1", "--port", "8825", "--pid", "run/fake.pid"))
-        self.assertEqual(utils.daemonize.call_count, 1)
+        self.assertEqual(daemon_mock.call_count, 1)
         self.assertEqual(ms.start.call_count, 1)
         self.assertEqual(result.exit_code, 0)
 
@@ -108,39 +108,60 @@ class CommandTestCase(SalmonTestCase):
         runner.invoke(commands.main, ("sendmail", "--host", "127.0.0.1", "--port", "8899", "test@localhost"))
         self.assertEqual(client_mock.return_value.sendmail.call_count, 1)
 
-    @patch('salmon.utils.daemonize', new=Mock())
-    @patch('salmon.utils.import_settings', new=Mock())
-    @patch('salmon.utils.drop_priv', new=Mock())
-    @patch('sys.path', new=Mock())
-    def test_start_command(self):
-        # normal start
+
+class StartCommandTestCase(SalmonTestCase):
+    @patch('salmon.utils.daemonize')
+    @patch('salmon.utils.import_settings')
+    @patch('salmon.utils.drop_priv')
+    def test_start_command(self, priv_mock, settings_mock, daemon_mock):
         runner = CliRunner()
         runner.invoke(commands.main, ("start", "--pid", "smtp.pid"))
-        self.assertEqual(utils.daemonize.call_count, 1)
-        self.assertEqual(utils.import_settings.call_count, 1)
+        self.assertEqual(daemon_mock.call_count, 1)
+        self.assertEqual(daemon_mock.call_args, (("smtp.pid", ".", None, None), {"files_preserve": []}))
+        self.assertEqual(settings_mock.call_count, 1)
+        self.assertEqual(settings_mock.call_args, ((True,), {"boot_module": "config.boot"}))
 
+    @patch('salmon.utils.daemonize')
+    @patch('salmon.utils.import_settings')
+    def test_pid(self, settings_mock, daemon_mock):
+        runner = CliRunner()
         # start with pid file existing already
         make_fake_pid_file()
         result = runner.invoke(commands.main, ("start", "--pid", "run/fake.pid"))
         self.assertEqual(result.exit_code, 1)
+        self.assertEqual(daemon_mock.call_count, 0)
 
         # start with pid file existing and force given
-        assert os.path.exists("run/fake.pid")
+        self.assertTrue(os.path.exists("run/fake.pid"))
         runner.invoke(commands.main, ("start", "--force", "--pid", "run/fake.pid"))
-        assert not os.path.exists("run/fake.pid")
+        self.assertFalse(os.path.exists("run/fake.pid"))
+        self.assertEqual(daemon_mock.call_count, 1)
+        self.assertEqual(daemon_mock.call_args, (("run/fake.pid", ".", None, None), {"files_preserve": []}))
 
+    @patch('salmon.utils.daemonize')
+    @patch('salmon.utils.import_settings')
+    @patch('salmon.utils.drop_priv')
+    def test_set_uid_and_guid(self, priv_mock, settings_mock, daemon_mock):
+        runner = CliRunner()
         # start with a uid but no gid
         runner.invoke(commands.main, ("start", "--uid", "1000", "--pid", "run/fake.pid", "--force"))
-        self.assertEqual(utils.drop_priv.call_count, 0)
+        self.assertEqual(priv_mock.call_count, 0)
+        self.assertEqual(daemon_mock.call_count, 1)
+        self.assertEqual(daemon_mock.call_args, (("run/fake.pid", ".", None, None), {"files_preserve": []}))
 
         # start with a uid/gid given that's valid
         runner.invoke(commands.main, ("start", "--uid", "1000", "--gid", "1000", "--pid", "run/fake.pid", "--force"))
-        self.assertEqual(utils.drop_priv.call_count, 1)
+        self.assertEqual(priv_mock.call_count, 1)
+        self.assertEqual(priv_mock.call_args, ((1000, 1000), {}))
+        self.assertEqual(daemon_mock.call_count, 2)
+        self.assertEqual(daemon_mock.call_args, (("run/fake.pid", ".", None, None), {"files_preserve": []}))
 
-        # non daemon start
-        daemonize_call_count = utils.daemonize.call_count
+    @patch('salmon.utils.daemonize')
+    @patch('salmon.utils.import_settings')
+    def test_non_daemon(self, settings_mock, daemon_mock):
+        runner = CliRunner()
         runner.invoke(commands.main, ("start", "--pid", "run/fake.pid", "--no-daemon", "--force"))
-        self.assertEqual(utils.daemonize.call_count, daemonize_call_count)  # same count -> not called
+        self.assertEqual(daemon_mock.call_count, 0)
 
 
 class CleanseCommandTestCase(SalmonTestCase):
