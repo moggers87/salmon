@@ -258,6 +258,8 @@ def routes(modules, test, path):
     sys.path += path.split(':')
     test_case_matches = []
 
+    utils.import_settings(False)
+
     for module in modules:
         try:
             import_module(module)

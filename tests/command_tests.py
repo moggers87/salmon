@@ -6,7 +6,7 @@ import sys
 from click import testing
 from mock import Mock, patch
 
-from salmon import queue, commands, encoding, mail, routing
+from salmon import queue, commands, encoding, mail, routing, utils
 
 from .setup_env import SalmonTestCase
 
@@ -296,6 +296,7 @@ class RoutesCommandTestCase(SalmonTestCase):
         routing.Router.clear_routes()
         routing.Router.clear_states()
         routing.Router.HANDLERS.clear()
+        utils.settings = None
 
     def test_no_args(self):
         runner = CliRunner()
@@ -306,6 +307,7 @@ class RoutesCommandTestCase(SalmonTestCase):
         runner = CliRunner()
         result = runner.invoke(commands.main, ("routes", "not_a_module", "--test", "user@example.com"))
         self.assertEqual(result.exit_code, 1)
+        self.assertIsNotNone(utils.settings)
         self.assertEqual(result.output,
                          ("Error: Module 'not_a_module' could not be imported. "
                           "Did you forget to use the --path option?\n"))
@@ -314,6 +316,7 @@ class RoutesCommandTestCase(SalmonTestCase):
         runner = CliRunner()
         result = runner.invoke(commands.main, ("routes", "salmon.handlers.log", "--test", "user@example.com"))
         self.assertEqual(result.exit_code, 0)
+        self.assertIsNotNone(utils.settings)
         # TODO: use groupdict directly once Python 2.7 support has been dropped
         match_items = [i for i in
                        routing.Router.REGISTERED.values()][0][0].match("user@example.com").groupdict().items()
@@ -332,6 +335,7 @@ class RoutesCommandTestCase(SalmonTestCase):
         runner = CliRunner()
         result = runner.invoke(commands.main, ("routes", "salmon.handlers.log", "--test", "userexample.com"))
         self.assertEqual(result.exit_code, 1)
+        self.assertIsNotNone(utils.settings)
         self.assertEqual(result.output,
                          ("Routing ORDER: ['^(?P<to>.+)@(?P<host>.+)$']\n"
                           "Routing TABLE:\n"
