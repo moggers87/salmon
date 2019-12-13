@@ -345,6 +345,18 @@ class RoutesCommandTestCase(SalmonTestCase):
                           "\n"
                           "TEST address 'userexample.com' didn't match anything.\n"))
 
+    def test_no_test(self):
+        runner = CliRunner()
+        result = runner.invoke(commands.main, ("routes", "salmon.handlers.log"))
+        self.assertEqual(result.exit_code, 0)
+        self.assertIsNotNone(utils.settings)
+        self.assertEqual(result.output,
+                         ("Routing ORDER: ['^(?P<to>.+)@(?P<host>.+)$']\n"
+                          "Routing TABLE:\n"
+                          "---\n"
+                          "'^(?P<to>.+)@(?P<host>.+)$': salmon.handlers.log.START \n"
+                          "---\n"))
+
 
 class BlastCommandTestCase(SalmonTestCase):
     def setUp(self):
