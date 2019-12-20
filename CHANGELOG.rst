@@ -1,3 +1,14 @@
+.. _three-two-zero-rc2:
+
+3.2.0rc2
+========
+
+:release-date: 2019-12-20
+
+- Fix error in the way default values were handled on ``start`` and ``log`` commands (#126)
+- Minor fixups of commandline help
+- Import settings file on ``routes`` command (#128)
+
 .. _three-two-zero-rc1:
 
 3.2.0rc1
