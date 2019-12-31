@@ -174,7 +174,7 @@ class MailResponse(object):
     passing it as __init__ parameters, or by setting those attributes.
 
     You can initially set the From, To, and Subject, but they are headers so
-    use the dict notation to change them:  msg['From'] = 'joe@test.com'.
+    use the dict notation to change them: ``msg['From'] = 'joe@test.com'``.
 
     The message is not fully crafted until right when you convert it with
     MailResponse.to_message.  This lets you change it and work with it, then

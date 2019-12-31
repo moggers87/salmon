@@ -47,7 +47,7 @@ def respond(variables, Body=None, Html=None, **kwd):
     the remaining keyword arguments to MailResponse of From/To/Subject.
 
     For example, to render a template for the body and a .html for the Html
-    attachment, and to indicate the From/To/Subject do this:
+    attachment, and to indicate the From/To/Subject do this::
 
         msg = view.respond(locals(), Body='template.txt',
                           Html='template.html',
