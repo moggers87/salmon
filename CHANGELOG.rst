@@ -1,3 +1,12 @@
+.. _three-two-zero:
+
+3.2.0
+=====
+
+:release-date: 2019-12-31
+
+- No changes since :ref:`three-two-zero-rc2`
+
 .. _three-two-zero-rc2:
 
 3.2.0rc2
