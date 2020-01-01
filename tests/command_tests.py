@@ -19,7 +19,7 @@ def make_fake_pid_file():
 class CliRunner(testing.CliRunner):
     def invoke(self, *args, **kwargs):
         kwargs.setdefault("catch_exceptions", False)
-        return super(CliRunner, self).invoke(*args, **kwargs)
+        return super().invoke(*args, **kwargs)
 
 
 class CommandTestCase(SalmonTestCase):
@@ -166,7 +166,7 @@ class StartCommandTestCase(SalmonTestCase):
 
 class CleanseCommandTestCase(SalmonTestCase):
     def setUp(self):
-        super(CleanseCommandTestCase, self).setUp()
+        super().setUp()
         queue.Queue("run/queue").clear()
 
     def test_cleanse_command(self):
@@ -211,7 +211,7 @@ class CleanseCommandTestCase(SalmonTestCase):
 
 class GenCommandTestCase(SalmonTestCase):
     def setUp(self):
-        super(GenCommandTestCase, self).setUp()
+        super().setUp()
         tmp_dir = mkdtemp()
         self.project = os.path.join(tmp_dir, 'testproject')
 
@@ -245,7 +245,7 @@ class GenCommandTestCase(SalmonTestCase):
 
 class StopCommandTestCase(SalmonTestCase):
     def setUp(self):
-        super(StopCommandTestCase, self).setUp()
+        super().setUp()
         patcher = patch("os.kill")
         patcher.start()
         self.addCleanup(patcher.stop)
@@ -290,7 +290,7 @@ class StopCommandTestCase(SalmonTestCase):
 
 class RoutesCommandTestCase(SalmonTestCase):
     def setUp(self):
-        super(RoutesCommandTestCase, self).setUp()
+        super().setUp()
         if "salmon.handlers.log" in sys.modules:
             del sys.modules["salmon.handlers.log"]
         routing.Router.clear_routes()
@@ -358,7 +358,7 @@ class RoutesCommandTestCase(SalmonTestCase):
 
 class BlastCommandTestCase(SalmonTestCase):
     def setUp(self):
-        super(BlastCommandTestCase, self).setUp()
+        super().setUp()
         queue.Queue("run/queue").clear()
 
     @patch("salmon.server.smtplib.SMTP")

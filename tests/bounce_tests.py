@@ -7,12 +7,12 @@ from .setup_env import SalmonTestCase
 
 class BounceTestCase(SalmonTestCase):
     def setUp(self):
-        super(BounceTestCase, self).setUp()
+        super().setUp()
         Router.load(["tests.handlers.bounce_filtered_mod"])
         Router.reload()
 
     def tearDown(self):
-        super(BounceTestCase, self).tearDown()
+        super().tearDown()
         Router.HANDLERS.clear()
         Router.reload()
 

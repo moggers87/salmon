@@ -43,7 +43,7 @@ def _decode_header_randomness(addr):
         raise encoding.EncodingError("Address must be a string or a list not: %r", type(addr))
 
 
-class MailRequest(object):
+class MailRequest:
     """
     This is what is given to your message handlers. The information you get out
     of this is *ALWAYS* in Python str and should be usable by any API.
@@ -159,7 +159,7 @@ class MailRequest(object):
         return self.Data
 
 
-class MailResponse(object):
+class MailResponse:
     """
     You are given MailResponse objects from the salmon.view methods, and
     whenever you want to generate an email to send to someone.  It has

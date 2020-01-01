@@ -101,7 +101,7 @@ class EncodingError(Exception):
     pass
 
 
-class ContentEncoding(object):
+class ContentEncoding:
     """
     Wrapper various content encoding headers
 
@@ -163,7 +163,7 @@ class ContentEncoding(object):
         return CONTENT_ENCODING_KEYS
 
 
-class MailBase(object):
+class MailBase:
     """
     MailBase is used as the basis of salmon.mail and contains the basics of
     encoding an email.  You actually can do all your email processing with this
@@ -286,11 +286,9 @@ class MIMEPart(Message):
     encode what you ask it.
     """
     def __init__(self, type_, **params):
-        self.mimetype = type_
+        super().__init__()
 
-        # classes from email.* are all old-style in Python, so don't replace
-        # this with super()
-        Message.__init__(self)
+        self.mimetype = type_
 
         self.add_header('Content-Type', type_, **params)
 

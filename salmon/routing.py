@@ -64,7 +64,7 @@ def DEFAULT_STATE_KEY(mod, msg):
     return mod
 
 
-class StateStorage(object):
+class StateStorage:
     """
     The base storage class you need to implement for a custom storage
     system.
@@ -149,7 +149,7 @@ class ShelveStorage(MemoryStorage):
         """
         with self.lock:
             self.states = shelve.open(self.database_path)
-            value = super(ShelveStorage, self).get(key.encode('ascii'), sender)
+            value = super().get(key.encode('ascii'), sender)
             self.states.close()
             return value
 
@@ -159,7 +159,7 @@ class ShelveStorage(MemoryStorage):
         """
         with self.lock:
             self.states = shelve.open(self.database_path)
-            super(ShelveStorage, self).set(key.encode('ascii'), sender, state)
+            super().set(key.encode('ascii'), sender, state)
             self.states.close()
 
     def clear(self):
@@ -169,11 +169,11 @@ class ShelveStorage(MemoryStorage):
         """
         with self.lock:
             self.states = shelve.open(self.database_path)
-            super(ShelveStorage, self).clear()
+            super().clear()
             self.states.close()
 
 
-class RoutingBase(object):
+class RoutingBase:
     """
     The self is a globally accessible class that is actually more like a
     glorified module.  It is used mostly internally by the salmon.routing
@@ -439,7 +439,7 @@ class RoutingBase(object):
 Router = RoutingBase()
 
 
-class route(object):
+class route:
     """
     The @route decorator is attached to state handlers to configure them in the
     Router so they handle messages for them.  The way this works is, rather than
