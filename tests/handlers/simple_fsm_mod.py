@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from salmon.routing import Router, nolocking, route, route_like, state_key_generator, stateless
 
 

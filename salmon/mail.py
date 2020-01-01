@@ -9,14 +9,10 @@ that you've received, so it doesn't have functions for attaching files and such.
 MailResponse is used when you are going to write an email, so it has the
 APIs for doing attachments and such.
 """
-from __future__ import print_function, unicode_literals
-
 from email.utils import parseaddr
 import mimetypes
 import os
 import warnings
-
-import six
 
 from salmon import bounce, encoding
 
@@ -38,9 +34,9 @@ def _decode_header_randomness(addr):
                 addr_set.add(returned_addr)
 
         return addr_set
-    elif isinstance(addr, six.string_types):
+    elif isinstance(addr, str):
         return set([parseaddr(addr.lower())[1]])
-    elif isinstance(addr, six.binary_type):
+    elif isinstance(addr, bytes):
         addr = addr.decode()
         return set([parseaddr(addr.lower())[1]])
     else:
@@ -50,10 +46,10 @@ def _decode_header_randomness(addr):
 class MailRequest(object):
     """
     This is what is given to your message handlers. The information you get out
-    of this is *ALWAYS* in Python str (unicode in Python 2.7) and should be
-    usable by any API.  Modifying this object will cause other handlers that
-    deal with it to get your modifications, but in general you don't want to do
-    more than maybe tag a few headers.
+    of this is *ALWAYS* in Python str and should be usable by any API.
+    Modifying this object will cause other handlers that deal with it to get
+    your modifications, but in general you don't want to do more than maybe tag
+    a few headers.
     """
     def __init__(self, Peer, From, To, Data):
         """

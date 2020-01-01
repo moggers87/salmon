@@ -317,9 +317,7 @@ class RoutesCommandTestCase(SalmonTestCase):
         result = runner.invoke(commands.main, ("routes", "salmon.handlers.log", "--test", "user@example.com"))
         self.assertEqual(result.exit_code, 0)
         self.assertIsNotNone(utils.settings)
-        # TODO: use groupdict directly once Python 2.7 support has been dropped
-        match_items = [i for i in
-                       routing.Router.REGISTERED.values()][0][0].match("user@example.com").groupdict().items()
+        match_items = list(routing.Router.REGISTERED.values())[0][0].match("user@example.com").groupdict()
         self.assertEqual(result.output,
                          ("Routing ORDER: ['^(?P<to>.+)@(?P<host>.+)$']\n"
                           "Routing TABLE:\n"
@@ -329,7 +327,7 @@ class RoutesCommandTestCase(SalmonTestCase):
                           "\n"
                           "TEST address 'user@example.com' matches:\n"
                           "  '^(?P<to>.+)@(?P<host>.+)$' salmon.handlers.log.START\n"
-                          "  -  %r\n" % {str(k): str(v) for k, v in match_items}))
+                          "  -  %r\n" % match_items))
 
     def test_no_match(self):
         runner = CliRunner()

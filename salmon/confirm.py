@@ -13,8 +13,6 @@ provide the logic for doing the following:
 You then just work this into your project's state flow, write your own
 templates, and possibly write your own storage.
 """
-from __future__ import print_function, unicode_literals
-
 from email.utils import parseaddr
 import uuid
 

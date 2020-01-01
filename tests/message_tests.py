@@ -1,6 +1,4 @@
 # Copyright (C) 2008 Zed A. Shaw.  Licensed under the terms of the GPLv3.
-from __future__ import print_function
-
 from unittest import TestCase
 
 from salmon import encoding, mail

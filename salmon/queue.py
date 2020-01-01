@@ -4,8 +4,6 @@ do get a lot more features from the Python library, so if you need
 to do some serious surgery go use that.  This works as a good
 API for the 90% case of "put mail in, get mail out" queues.
 """
-from __future__ import print_function, unicode_literals
-
 import errno
 import hashlib
 import logging
@@ -13,8 +11,6 @@ import mailbox
 import os
 import socket
 import time
-
-import six
 
 from salmon import mail
 
@@ -103,7 +99,8 @@ class Queue(object):
         Pushes the message onto the queue.  Remember the order is probably
         not maintained.  It returns the key that gets created.
         """
-        if not isinstance(message, (six.text_type, six.binary_type)):
+        if not isinstance(message, (str, bytes)):
+            # bytes is ok, but anything else needs to be turned into str
             message = str(message)
         return self.mbox.add(message)
 

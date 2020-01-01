@@ -8,7 +8,6 @@ install_requires = [
     'dnspython',
     'lmtpd>=4,<7.0.0',
     'python-daemon>2.2.0',
-    'six',
 ]
 
 tests_require = [
@@ -45,8 +44,6 @@ config = {
     'classifiers': [
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Development Status :: 4 - Beta',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
@@ -54,8 +51,11 @@ config = {
         'Programming Language :: Python :: 3.8',
         'Intended Audience :: Developers',
         'Topic :: Communications :: Email',
-        'Topic :: Software Development :: Libraries :: Application Frameworks'
+        'Topic :: Software Development :: Libraries :: Application Frameworks',
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy',
         ],
+    'python_requires': '>=3.5',
     'entry_points': {
         'console_scripts':
             ['salmon = salmon.commands:main'],

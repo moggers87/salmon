@@ -2,8 +2,6 @@
 The majority of the server related things Salmon needs to run, like receivers,
 relays, and queue processors.
 """
-from __future__ import print_function, unicode_literals
-
 from multiprocessing.dummy import Pool
 import asyncore
 import logging
@@ -15,17 +13,12 @@ import traceback
 
 from dns import resolver
 import lmtpd
-import six
 
 from salmon import __version__, mail, queue, routing
 from salmon.bounce import COMBINED_STATUS_CODES, PRIMARY_STATUS_CODES, SECONDARY_STATUS_CODES
 
 lmtpd.__version__ = "Salmon Mail router LMTPD, version %s" % __version__
 smtpd.__version__ = "Salmon Mail router SMTPD, version %s" % __version__
-
-if six.PY2:
-    # Python 2 commits many crimes against byte encoding, so we've got to manually convert to ASCII
-    smtpd.__version__ = smtpd.__version__.encode()
 
 
 def undeliverable_message(raw_message, failure_type):
@@ -237,10 +230,7 @@ class SMTPReceiver(smtpd.SMTPServer):
 
     def close(self):
         """Doesn't do anything except log who called this, since nobody should.  Ever."""
-        if six.PY3:
-            trace = traceback.format_exc(chain=False)
-        else:
-            trace = traceback.format_exc()
+        trace = traceback.format_exc(chain=False)
         logging.error(trace)
 
 
@@ -293,10 +283,7 @@ class LMTPReceiver(lmtpd.LMTPServer):
 
     def close(self):
         """Doesn't do anything except log who called this, since nobody should.  Ever."""
-        if six.PY3:
-            trace = traceback.format_exc(chain=False)
-        else:
-            trace = traceback.format_exc()
+        trace = traceback.format_exc(chain=False)
         logging.error(trace)
 
 

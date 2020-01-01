@@ -14,25 +14,25 @@ some fictional world), but this generally frowned upon.
 To accomplish these tasks, Salmon goes back to basics and assert a few simple
 rules on each email it receives:
 
-1) NO ENCODING IS TRUSTED, NO LANGUAGE IS SACRED, ALL ARE SUSPECT.
-2) Python wants Unicode, it will get Unicode.
-3) Any email that CANNOT become Unicode, CANNOT be processed by Salmon or
+1) No encoding is trusted, no language is sacred, all are suspect.
+2) Python wants Unicode, it will get Unicode. In Python 3, that means ``str``.
+3) Any email that cannot become Unicode, cannot be processed by Salmon or
    Python.
-4) Email addresses are ESSENTIAL to Salmon's routing and security, and therefore
+4) Email addresses are essential to Salmon's routing and security, and therefore
    will be canonicalized and properly encoded.
 5) Salmon will therefore try to "upgrade" all email it receives to Unicode
    internally, and cleaning all email addresses.
-6) It does this by decoding all codecs, and if the codec LIES, then it will
-   attempt to statistically detect the codec using chardet.
+6) It does this by decoding all codecs, and if the codec is wrong, then it will
+   attempt to detect the codec using chardet.
 7) If it can't detect the codec, and the codec lies, then the email is bad.
-8) All text bodies and attachments are then converted to Python unicode/str
-   (for Python 2.7 and 3.x respectively) in the same way as the headers.
+8) All text bodies and attachments are then converted to Python str in the same
+   way as the headers.
 9) All other attachments are converted to raw strings as-is.
 
 Once Salmon has done this, your Python handler can now assume that all
 MailRequest objects are happily Unicode enabled and ready to go. The rule is:
 
-    IF IT CANNOT BE UNICODE, THEN PYTHON CANNOT WORK WITH IT.
+    If it cannot be Unicode, then Python cannot work with it.
 
 On the outgoing end (when you send a MailResponse), Salmon tries to create the
 email it wants to receive by canonicalizing it:
@@ -53,22 +53,20 @@ any obfuscation techniques, hidden characters, bad characters, improper
 formatting, invalid non-characterset headers, or any of the other billions of
 things email clients do to the world. The output rule of Salmon is:
 
-    ALL EMAIL IS ASCII FIRST, THEN ENCODED ASCII-SAFE, AND IF IT CANNOT BE
-    EITHER OF THOSE IT WILL NOT BE SENT.
+    All email is ASCII first, then encoded ASCII-safe, and if it cannot be
+    either of those it will not be sent.
 
 Following these simple rules, this module does the work of converting email to
 the canonical format and sending the canonical format. The code is probably the
 most complex part of Salmon since the job it does is difficult.
 
 Test results show that Salmon can safely canonicalize most email from any
-culture (not just English) to the canonical form, and that if it can't then the
-email is not formatted right and/or spam.
+written language (not just English) to the canonical form, and that if it can't
+then the email is not formatted right and/or spam.
 
 If you find an instance where this is not the case, then submit it to the
 project as a test case.
 """
-from __future__ import print_function, unicode_literals
-
 from email import encoders
 from email.charset import Charset
 from email.message import Message
@@ -79,7 +77,6 @@ import string
 import warnings
 
 import chardet
-import six
 
 DEFAULT_ENCODING = "utf-8"
 DEFAULT_ERROR_HANDLING = "strict"
@@ -485,14 +482,8 @@ def properly_encode_header(value, encoder, not_email):
         if not_email is False and VALUE_IS_EMAIL_ADDRESS(value):
             # this could have an email address, make sure we don't screw it up
             name, address = parseaddr(value)
-            if six.PY2:
-                # python 2 decodes to ascii, python 3 wants no decoding at all!
-                name = name.encode("utf-8")
             return '"%s" <%s>' % (encoder.header_encode(name), address)
 
-        if six.PY2:
-            # python 2 decodes to ascii, python 3 wants no decoding at all!
-            value = value.encode("utf-8")
         return "%s" % encoder.header_encode(value)
 
 
@@ -513,7 +504,7 @@ def header_from_mime_encoding(header):
     elif isinstance(header, list):
         return [properly_decode_header(h) for h in header]
     elif isinstance(header, email.header.Header):
-        return six.text_type(header)
+        return str(header)
     else:
         return properly_decode_header(header)
 
@@ -536,7 +527,7 @@ def attempt_decoding(charset, dec):
     """Attempts to decode bytes into unicode, calls guess_encoding_and_decode
     if the given charset is wrong."""
     try:
-        if isinstance(dec, six.text_type):
+        if isinstance(dec, str):
             # it's already unicode so just return it
             return dec
         else:
@@ -557,13 +548,8 @@ def apply_charset_to_header(charset, encoding, data):
     if encoding.upper() == 'B':
         dec = email.base64mime.decode(data.encode('ascii'))
     elif encoding.upper() == 'Q':
-        if six.PY2:
-            # python 2 decodes to ascii, python 3 wants no decoding at all!
-            data = data.encode('ascii')
         dec = email.quoprimime.header_decode(data)
-        if six.PY3:
-            # and Python 3 gives us some bytes encoded as unicode chars, so encode them to bytes
-            dec = bytes(dec, "raw-unicode-escape")
+        dec = bytes(dec, "raw-unicode-escape")
     else:
         raise EncodingError("Invalid header encoding %r should be 'Q' or 'B'." % encoding)
 
@@ -619,13 +605,13 @@ def _parse_charset_header(data):
     try:
         while True:
             if not oddness:
-                before_match, enc_header, enc_data, continued = six.next(scanner)
+                before_match, enc_header, enc_data, continued = next(scanner)
             else:
                 before_match, enc_header, enc_data, continued = oddness
                 oddness = None
 
             while continued:
-                bm, eh, ed, continued = six.next(scanner)
+                bm, eh, ed, continued = next(scanner)
 
                 if not eh:
                     assert not ed, "Parsing error: %r" % data
