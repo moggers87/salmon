@@ -24,11 +24,11 @@ extras_require = {
 }
 
 config = {
-    'description': 'A Python mail server forked from Lamson',
+    'description': 'A Python Mail Server',
     'long_description': open("README.rst").read(),
     'url': 'https://github.com/moggers87/salmon',
     'download_url': 'http://pypi.python.org/pypi/salmon-mail',
-    'author': 'Zed A. Shaw',
+    'author': 'Salmon project contributors',
     'maintainer': 'Matt Molyneaux',
     'maintainer_email': 'moggers87+git@moggers87.co.uk',
     'version': versioneer.get_version(),
