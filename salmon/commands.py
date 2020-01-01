@@ -1,9 +1,6 @@
 """
 Documentation for this module can be found in :doc:`commandline`
 """
-
-from __future__ import unicode_literals
-
 from importlib import import_module
 import glob
 import mailbox
@@ -270,9 +267,7 @@ def routes(modules, test, path):
     if not routing.Router.REGISTERED:
         raise click.ClickException("Modules '%s' imported, but no function registered." % str(modules))
 
-    # TODO: stop casting everything to str once Python 2.7 support has been dropped
-    # we do this to avoid spamming u"blah blah" everywhere
-    click.echo("Routing ORDER: %s" % [str(i) for i in routing.Router.ORDER])
+    click.echo("Routing ORDER: %s" % routing.Router.ORDER)
     click.echo("Routing TABLE:\n---")
     for format in routing.Router.REGISTERED:
         click.echo("%r: " % str(format), nl=False)

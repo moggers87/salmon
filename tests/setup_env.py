@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from shutil import rmtree
 from unittest import TestCase
 import os

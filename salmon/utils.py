@@ -4,8 +4,6 @@ really belong anywhere else in the modules.  This module
 is kind of a dumping ground, so if you find something that
 can be improved feel free to work up a patch.
 """
-from __future__ import print_function, unicode_literals
-
 import imp
 import importlib
 import logging

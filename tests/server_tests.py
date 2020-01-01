@@ -1,12 +1,9 @@
 # Copyright (C) 2008 Zed A. Shaw.  Licensed under the terms of the GPLv3.
-from __future__ import print_function
-
 import socket
 import sys
 
 from mock import Mock, call, patch
 import lmtpd
-import six
 
 from salmon import mail, queue, routing, server
 
@@ -45,7 +42,7 @@ class ServerTestCase(SalmonTestCase):
         expected_version = u"220 {} {}\r\n".format(socket.getfqdn(), server.smtpd.__version__).encode()
 
         self.assertEqual(push_mock.call_args[0][1:], (expected_version,))
-        self.assertEqual(type(push_mock.call_args[0][1]), six.binary_type)
+        self.assertEqual(type(push_mock.call_args[0][1]), bytes)
 
         push_mock.reset_mock()
         channel.seen_greeting = True
@@ -94,7 +91,7 @@ class ServerTestCase(SalmonTestCase):
         expected_version = u"220 {} {}\r\n".format(socket.getfqdn(), server.lmtpd.__version__).encode()
 
         self.assertEqual(push_mock.call_args[0][1:], (expected_version,))
-        self.assertEqual(type(push_mock.call_args[0][1]), six.binary_type)
+        self.assertEqual(type(push_mock.call_args[0][1]), bytes)
 
         push_mock.reset_mock()
         channel.seen_greeting = True

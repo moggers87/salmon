@@ -3,8 +3,6 @@ Bounce analysis module for Salmon.  It uses an algorithm that tries
 to simply collect the headers that are most likely found in a bounce
 message, and then determine a probability based on what it finds.
 """
-from __future__ import print_function, unicode_literals
-
 from functools import wraps
 import re
 

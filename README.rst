@@ -94,9 +94,9 @@ Salmon has just had some major changes to modernise the code-base. The main
 APIs should be compatible with releases prior to 3.0.0, but there's no
 guarantee that older applications won't need changes.
 
-Python versions supported are: 2.7, 3.5, 3.6, 3.7 and 3.8.
+Python versions supported are: 3.5, 3.6, 3.7 and 3.8.
 
-See the CHANGELOG for more details on what's changed since version 2.
+See the CHANGELOG for more details on what's changed since Salmon version 2.
 
 License
 -------
@@ -141,7 +141,7 @@ Tests can be run via::
 Alternatively, if you have multiple versions of Python installed locally::
 
     $ pip install tox
-    $ tox -e py27,py36
+    $ tox -e py36,py37
 
 Refer to the `tox documentation <https://tox.readthedocs.io/en/latest/>`__ for
 more information.
@@ -149,9 +149,8 @@ more information.
 Development
 ===========
 
-Salmon is written entirely in Python and runs on Python 2.7 with experimental
-support for Python 3. It should hopefully run on any platform that supports
-Python and has Unix semantics.
+Salmon is written entirely in Python and runs on Python 3. It should hopefully
+run on any platform that supports Python and has Unix semantics.
 
 If you find yourself lost in source code, just yell.
 

@@ -48,20 +48,13 @@ after that.
 The @state_key_generator is different since it's not intended to go on a handler
 but instead on a simple function, so it shouldn't be combined with the others.
 """
-from __future__ import print_function, unicode_literals
-
 from functools import wraps
+from importlib import reload
 import logging
 import re
 import shelve
 import sys
 import threading
-
-try:
-    from importlib import reload
-except ImportError:
-    from __builtin__ import reload
-
 
 ROUTE_FIRST_STATE = 'START'
 LOG = logging.getLogger("routing")

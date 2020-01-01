@@ -16,8 +16,6 @@ directly.
 This is faster and will give you code coverage as well as make sure that all
 the modules (not just your handlers) will get reloaded.
 """
-from __future__ import print_function, unicode_literals
-
 import re
 
 from salmon import mail, routing, server

@@ -6,8 +6,6 @@ first though!
 
 After that these functions should just work.
 """
-from __future__ import print_function, unicode_literals
-
 from salmon import mail
 
 LOADER = None
