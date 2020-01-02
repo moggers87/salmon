@@ -59,7 +59,7 @@ class SMTPError(Exception):
         return " ".join([primary, secondary, combined]).strip()
 
 
-class Relay(object):
+class Relay:
     """
     Used to talk to your "relay server" or smart host, this is probably the most
     important class in the handlers next to the salmon.routing.Router.
@@ -287,7 +287,7 @@ class LMTPReceiver(lmtpd.LMTPServer):
         logging.error(trace)
 
 
-class QueueReceiver(object):
+class QueueReceiver:
     """
     Rather than listen on a socket this will watch a queue directory and
     process messages it receives from that.  It works in almost the exact

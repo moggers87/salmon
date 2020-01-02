@@ -103,7 +103,7 @@ class RoutingTestCase(SalmonTestCase):
             s.clear()
 
     def test_route___get___raises(self):
-        class BadRoute(object):
+        class BadRoute:
 
             @route("test")
             def wont_work(message, **kw):

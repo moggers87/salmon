@@ -11,13 +11,13 @@ from .setup_env import SalmonTestCase
 
 class ConfirmationTestCase(SalmonTestCase):
     def setUp(self):
-        super(ConfirmationTestCase, self).setUp()
+        super().setUp()
         self.storage = ConfirmationStorage()
         self.engine = ConfirmationEngine('run/confirm', self.storage)
         view.LOADER = jinja2.Environment(loader=jinja2.FileSystemLoader('tests/data/templates'))
 
     def tearDown(self):
-        super(ConfirmationTestCase, self).tearDown()
+        super().tearDown()
         view.LOADER = None
 
     def test_ConfirmationStorage(self):

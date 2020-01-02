@@ -19,7 +19,7 @@ import uuid
 from salmon import queue, view
 
 
-class ConfirmationStorage(object):
+class ConfirmationStorage:
     """
     This is the basic confirmation storage.  For simple testing purposes
     you can just use the default hash db parameter.  If you do a deployment
@@ -82,7 +82,7 @@ class ConfirmationStorage(object):
                                                               pending_message_id)
 
 
-class ConfirmationEngine(object):
+class ConfirmationEngine:
     """
     The confirmation engine is what does the work of sending a confirmation,
     and verifying that it was confirmed properly.  In order to use it you

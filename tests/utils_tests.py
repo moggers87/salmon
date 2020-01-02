@@ -11,7 +11,7 @@ from .setup_env import SalmonTestCase
 
 class UtilsTestCase(SalmonTestCase):
     def tearDown(self):
-        super(UtilsTestCase, self).tearDown()
+        super().tearDown()
         self.clear_settings()
 
     def clear_settings(self):

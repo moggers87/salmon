@@ -64,7 +64,7 @@ def delivered(pattern, to_queue=None):
     return False
 
 
-class TestConversation(object):
+class TestConversation:
     """
     Used to easily do conversations with an email server such that you
     send a message and then expect certain responses.

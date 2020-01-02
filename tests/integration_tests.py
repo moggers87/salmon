@@ -40,7 +40,7 @@ class IntegrationTestCase(SalmonTestCase):
             rmtree(os.path.join(cls._cwd, path), ignore_errors=True)
 
     def setUp(self):
-        super(IntegrationTestCase, self).setUp()
+        super().setUp()
         # re-create destoryed queues
         queue.Queue(os.path.join(self._cwd, server_settings.UNDELIVERABLE_QUEUE)).clear()
         queue.Queue(os.path.join(self._cwd, server_settings.QUEUE_PATH)).clear()

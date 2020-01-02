@@ -50,7 +50,7 @@ class QueueError(Exception):
         self.data = data
 
 
-class Queue(object):
+class Queue:
     """
     Provides a simplified API for dealing with 'queues' in Salmon.
     It currently just supports Maildir queues since those are the
