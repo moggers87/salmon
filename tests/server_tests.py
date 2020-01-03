@@ -1,8 +1,9 @@
 # Copyright (C) 2008 Zed A. Shaw.  Licensed under the terms of the GPLv3.
+from smtplib import LMTP, SMTP, SMTPDataError
 from unittest.mock import Mock, call, patch
+import os
 import socket
-
-import lmtpd
+import tempfile
 
 from salmon import mail, queue, routing, server
 
@@ -30,126 +31,24 @@ class ServerTestCase(SalmonTestCase):
 
         routing.Router.deliver(msg)
 
-    @patch("asynchat.async_chat.push")
-    def test_SMTPChannel(self, push_mock):
-        channel = server.SMTPChannel(Mock(), Mock(), Mock())
-        expected_version = "220 {} {}\r\n".format(socket.getfqdn(), server.smtpd.__version__).encode()
+    def test_SMTPError(self):
+        err = server.SMTPError(550)
+        self.assertEqual(str(err), '550 Permanent Failure Mail Delivery Protocol Status')
 
-        self.assertEqual(push_mock.call_args[0][1:], (expected_version,))
-        self.assertEqual(type(push_mock.call_args[0][1]), bytes)
+        err = server.SMTPError(400)
+        self.assertEqual(str(err), '400 Persistent Transient Failure Other or Undefined Status')
 
-        push_mock.reset_mock()
-        channel.seen_greeting = True
-        channel.smtp_MAIL("FROM: you@example.com\r\n")
-        self.assertEqual(push_mock.call_args[0][1:], (SMTP_MESSAGES["ok"],))
+        err = server.SMTPError(425)
+        self.assertEqual(str(err), '425 Persistent Transient Failure Mailbox Status')
 
-        push_mock.reset_mock()
-        channel.smtp_RCPT("TO: me@example.com")
-        self.assertEqual(push_mock.call_args[0][1:], (SMTP_MESSAGES["ok"],))
+        err = server.SMTPError(999)
+        self.assertEqual(str(err), "999 ")
 
-        push_mock.reset_mock()
-        channel.smtp_RCPT("TO: them@example.com")
-        self.assertEqual(push_mock.call_args[0][1:],
-                         ("451 Will not accept multiple recipients in one transaction\r\n".encode(),))
+        err = server.SMTPError(999, "Bogus Error Code")
+        self.assertEqual(str(err), "999 Bogus Error Code")
 
-    def test_SMTPReceiver_process_message(self):
-        receiver = server.SMTPReceiver(host="localhost", port=0)
-        msg = generate_mail()
 
-        with patch("salmon.server.routing.Router") as router_mock, \
-                patch("salmon.server.undeliverable_message"):
-            response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
-            assert response is None, response
-
-        with patch("salmon.server.routing.Router") as router_mock, \
-                patch("salmon.server.undeliverable_message"):
-            router_mock.deliver.side_effect = Exception()
-            response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
-            assert response is None, response
-
-        with patch("salmon.server.routing.Router") as router_mock, \
-                patch("salmon.server.undeliverable_message"):
-            router_mock.deliver.side_effect = server.SMTPError(450, "Not found")
-            response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
-            self.assertEqual(response, "450 Not found")
-
-        # Python 3's smtpd takes some extra kawrgs, but i we don't care about that at the moment
-        with patch("salmon.server.routing.Router") as router_mock, \
-                patch("salmon.server.undeliverable_message"):
-            response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg), mail_options=[], rcpt_options=[])
-            assert response is None, response
-
-    @patch("lmtpd.asynchat.async_chat.push")
-    def test_LMTPChannel(self, push_mock):
-        channel = lmtpd.LMTPChannel(Mock(), Mock(), Mock())
-        expected_version = "220 {} {}\r\n".format(socket.getfqdn(), server.lmtpd.__version__).encode()
-
-        self.assertEqual(push_mock.call_args[0][1:], (expected_version,))
-        self.assertEqual(type(push_mock.call_args[0][1]), bytes)
-
-        push_mock.reset_mock()
-        channel.seen_greeting = True
-        channel.lmtp_MAIL(b"FROM: you@example.com\r\n")
-        self.assertEqual(push_mock.call_args[0][1:], ("250 2.1.0 Ok\r\n".encode(),))
-
-        push_mock.reset_mock()
-        channel.lmtp_RCPT(b"TO: me@example.com")
-        self.assertEqual(push_mock.call_args[0][1:], ("250 2.1.0 Ok\r\n".encode(),))
-
-        push_mock.reset_mock()
-        channel.lmtp_RCPT(b"TO: them@example.com")
-        self.assertEqual(push_mock.call_args[0][1:], ("250 2.1.0 Ok\r\n".encode(),))
-
-    def test_LMTPReceiver_process_message(self):
-        receiver = server.LMTPReceiver(host="localhost", port=0)
-        msg = generate_mail()
-
-        with patch("salmon.server.routing.Router") as router_mock, \
-                patch("salmon.server.undeliverable_message"):
-            response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
-            assert response is None, response
-
-        with patch("salmon.server.routing.Router") as router_mock, \
-                patch("salmon.server.undeliverable_message"):
-            router_mock.deliver.side_effect = Exception()
-            response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
-            assert response is None, response
-
-        with patch("salmon.server.routing.Router") as router_mock, \
-                patch("salmon.server.undeliverable_message"):
-            router_mock.deliver.side_effect = server.SMTPError(450, "Not found")
-            response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg))
-            self.assertEqual(response, "450 Not found")
-
-        # lmtpd's server is a subclass of smtpd's server, so we should support the same kwargs here
-        with patch("salmon.server.routing.Router") as router_mock, \
-                patch("salmon.server.undeliverable_message"):
-            response = receiver.process_message(msg.Peer, msg.From, msg.To, str(msg), mail_options=[], rcpt_options=[])
-            assert response is None, response
-
-    @patch("salmon.queue.Queue")
-    def test_QueueReceiver_process_message(self, queue_mock):
-        receiver = server.QueueReceiver("run/queue/thingy")
-        msg = generate_mail()
-
-        with patch("salmon.server.routing.Router") as router_mock, \
-                patch("salmon.server.undeliverable_message"):
-            response = receiver.process_message(msg)
-            assert response is None, response
-
-        with patch("salmon.server.routing.Router") as router_mock, \
-                patch("salmon.server.undeliverable_message"):
-            router_mock.deliver.side_effect = Exception()
-            response = receiver.process_message(msg)
-            assert response is None, response
-
-        with patch("salmon.server.routing.Router") as router_mock, \
-                patch("salmon.server.undeliverable_message"):
-            router_mock.deliver.side_effect = server.SMTPError(450, "Not found")
-            response = receiver.process_message(msg)
-            # queue doesn't actually support SMTPErrors
-            assert response is None, response
-
+class RelayTestCase(SalmonTestCase):
     def test_Relay_asserts_ssl_options(self):
         """Relay raises an TypeError if the ssl option is used in combination with starttls or lmtp"""
         with self.assertRaises(TypeError):
@@ -255,6 +154,31 @@ class ServerTestCase(SalmonTestCase):
         with self.assertRaises(socket.error):
             relay.deliver(generate_mail(factory=mail.MailResponse))
 
+
+class QueueTestCase(SalmonTestCase):
+    @patch("salmon.queue.Queue")
+    def test_QueueReceiver_process_message(self, queue_mock):
+        receiver = server.QueueReceiver("run/queue/thingy")
+        msg = generate_mail()
+
+        with patch("salmon.server.routing.Router") as router_mock, \
+                patch("salmon.server.undeliverable_message"):
+            response = receiver.process_message(msg)
+            assert response is None, response
+
+        with patch("salmon.server.routing.Router") as router_mock, \
+                patch("salmon.server.undeliverable_message"):
+            router_mock.deliver.side_effect = Exception()
+            response = receiver.process_message(msg)
+            assert response is None, response
+
+        with patch("salmon.server.routing.Router") as router_mock, \
+                patch("salmon.server.undeliverable_message"):
+            router_mock.deliver.side_effect = server.SMTPError(450, "Not found")
+            response = receiver.process_message(msg)
+            # queue doesn't actually support SMTPErrors
+            assert response is None, response
+
     @patch('salmon.routing.Router')
     def test_queue_receiver(self, router_mock):
         receiver = server.QueueReceiver('run/queue')
@@ -325,31 +249,266 @@ class ServerTestCase(SalmonTestCase):
         self.assertEqual(len(args), 1)
         self.assertEqual(type(args[0]), mail.MailRequest)
 
-    @patch('threading.Thread', new=Mock())
-    @patch('salmon.routing.Router', new=Mock())
-    def test_SMTPReceiver(self):
-        receiver = server.SMTPReceiver(port=0)
-        receiver.start()
-        receiver.process_message('localhost', 'test@localhost', 'test@localhost',
-                                 'Fake body.')
 
-        routing.Router.deliver.side_effect = RuntimeError("Raised on purpose")
-        receiver.process_message('localhost', 'test@localhost', 'test@localhost', 'Fake body.')
+class SmtpSeverTestCase(SalmonTestCase):
+    def setUp(self):
+        super().setUp()
+        self.server = server.SMTPReceiver(host="127.0.0.1", port=9999)
+        self.server.start()
+        self.addCleanup(self.server.stop)
 
-        receiver.close()
+    @patch('salmon.routing.Router')
+    def test_message_routed(self, router_mock):
+        with SMTP(self.server.host, self.server.port) as client:
+            result = client.sendmail("you@localhost", "me@localhost", "hello")
+            self.assertEqual(result, {})
 
-    def test_SMTPError(self):
-        err = server.SMTPError(550)
-        self.assertEqual(str(err), '550 Permanent Failure Mail Delivery Protocol Status')
+            self.assertEqual(router_mock.deliver.call_count, 1)
+            msg = router_mock.deliver.call_args[0][0]
+            self.assertEqual(msg.Peer, client.sock.getsockname())
+            self.assertEqual(msg.To, "me@localhost")
+            self.assertEqual(msg.From, "you@localhost")
+            self.assertEqual(msg.Data, b"hello")
 
-        err = server.SMTPError(400)
-        self.assertEqual(str(err), '400 Persistent Transient Failure Other or Undefined Status')
+    @patch('salmon.routing.Router')
+    def test_message_routed_error(self, router_mock):
+        router_mock.deliver.side_effect = RuntimeError("Raised on purpose")
+        with SMTP(self.server.host, self.server.port) as client:
+            result = client.sendmail("you@localhost", "me@localhost", "hello")
+            self.assertEqual(result, {})
 
-        err = server.SMTPError(425)
-        self.assertEqual(str(err), '425 Persistent Transient Failure Mailbox Status')
+            self.assertEqual(router_mock.deliver.call_count, 1)
+            msg = router_mock.deliver.call_args[0][0]
+            self.assertEqual(msg.Peer, client.sock.getsockname())
+            self.assertEqual(msg.To, "me@localhost")
+            self.assertEqual(msg.From, "you@localhost")
+            self.assertEqual(msg.Data, b"hello")
 
-        err = server.SMTPError(999)
-        self.assertEqual(str(err), "999 ")
+    @patch('salmon.routing.Router')
+    def test_message_routed_smtperror(self, router_mock):
+        router_mock.deliver.side_effect = server.SMTPError(450, "Raised on purpose")
+        with SMTP(self.server.host, self.server.port) as client:
+            with self.assertRaises(SMTPDataError):
+                client.sendmail("you@localhost", "me@localhost", "hello")
 
-        err = server.SMTPError(999, "Bogus Error Code")
-        self.assertEqual(str(err), "999 Bogus Error Code")
+            self.assertEqual(router_mock.deliver.call_count, 1)
+            msg = router_mock.deliver.call_args[0][0]
+            self.assertEqual(msg.Peer, client.sock.getsockname())
+            self.assertEqual(msg.To, "me@localhost")
+            self.assertEqual(msg.From, "you@localhost")
+            self.assertEqual(msg.Data, b"hello")
+
+    def test_multiple_rcpts(self):
+        with SMTP(self.server.host, self.server.port) as client:
+            code, _ = client.ehlo("localhost")
+            self.assertEqual(code, 250)
+            code, _ = client.mail("me@localhost")
+            self.assertEqual(code, 250)
+            code, _ = client.rcpt("you@localhost")
+            self.assertEqual(code, 250)
+            code, _ = client.rcpt("them@localhost")
+            self.assertEqual(code, 451)
+
+
+class LmtpSeverTestCase(SalmonTestCase):
+    def setUp(self):
+        super().setUp()
+        self.server = server.LMTPReceiver(host="127.0.0.1", port=9999)
+        self.server.start()
+        self.addCleanup(self.server.stop)
+
+    @patch('salmon.routing.Router')
+    def test_message_routed(self, router_mock):
+        with LMTP(self.server.host, self.server.port) as client:
+            result = client.sendmail("you@localhost", "me@localhost", "hello")
+            self.assertEqual(result, {})
+
+            self.assertEqual(router_mock.deliver.call_count, 1)
+            msg = router_mock.deliver.call_args[0][0]
+            self.assertEqual(msg.Peer, client.sock.getsockname())
+            self.assertEqual(msg.To, "me@localhost")
+            self.assertEqual(msg.From, "you@localhost")
+            self.assertEqual(msg.Data, b"hello")
+
+    @patch('salmon.routing.Router')
+    def test_message_routed_error(self, router_mock):
+        router_mock.deliver.side_effect = RuntimeError("Raised on purpose")
+        with LMTP(self.server.host, self.server.port) as client:
+            result = client.sendmail("you@localhost", "me@localhost", "hello")
+            self.assertEqual(result, {})
+
+            self.assertEqual(router_mock.deliver.call_count, 1)
+            msg = router_mock.deliver.call_args[0][0]
+            self.assertEqual(msg.Peer, client.sock.getsockname())
+            self.assertEqual(msg.To, "me@localhost")
+            self.assertEqual(msg.From, "you@localhost")
+            self.assertEqual(msg.Data, b"hello")
+
+    @patch('salmon.routing.Router')
+    def test_message_routed_smtperror(self, router_mock):
+        router_mock.deliver.side_effect = server.SMTPError(450, "Raised on purpose")
+        with LMTP(self.server.host, self.server.port) as client:
+            with self.assertRaises(SMTPDataError):
+                client.sendmail("you@localhost", "me@localhost", "hello")
+
+            self.assertEqual(router_mock.deliver.call_count, 1)
+            msg = router_mock.deliver.call_args[0][0]
+            self.assertEqual(msg.Peer, client.sock.getsockname())
+            self.assertEqual(msg.To, "me@localhost")
+            self.assertEqual(msg.From, "you@localhost")
+            self.assertEqual(msg.Data, b"hello")
+
+    def test_multiple_rcpts(self):
+        with LMTP(self.server.host, self.server.port) as client:
+            code, _ = client.ehlo("localhost")
+            self.assertEqual(code, 250)
+            code, _ = client.mail("me@localhost")
+            self.assertEqual(code, 250)
+            code, _ = client.rcpt("you@localhost")
+            self.assertEqual(code, 250)
+            code, _ = client.rcpt("them@localhost")
+            self.assertEqual(code, 250)
+
+
+class AsyncSmtpServerTestCase(SalmonTestCase):
+    def setUp(self):
+        super().setUp()
+        self.server = server.AsyncSMTPReceiver(hostname="127.0.0.1", port=9999)
+        self.server.start()
+        self.addCleanup(self.server.stop)
+
+    @patch('salmon.routing.Router')
+    def test_message_routed(self, router_mock):
+        with SMTP(self.server.hostname, self.server.port) as client:
+            result = client.sendmail("you@localhost", "me@localhost", "hello")
+            self.assertEqual(result, {})
+
+            self.assertEqual(router_mock.deliver.call_count, 1)
+            msg = router_mock.deliver.call_args[0][0]
+            self.assertEqual(msg.Peer, client.sock.getsockname())
+            self.assertEqual(msg.To, "me@localhost")
+            self.assertEqual(msg.From, "you@localhost")
+            self.assertEqual(msg.Data, b"hello")
+
+    @patch('salmon.routing.Router')
+    def test_message_routed_error(self, router_mock):
+        router_mock.deliver.side_effect = RuntimeError("Raised on purpose")
+        with SMTP(self.server.hostname, self.server.port) as client:
+            result = client.sendmail("you@localhost", "me@localhost", "hello")
+            self.assertEqual(result, {})
+
+            self.assertEqual(router_mock.deliver.call_count, 1)
+            msg = router_mock.deliver.call_args[0][0]
+            self.assertEqual(msg.Peer, client.sock.getsockname())
+            self.assertEqual(msg.To, "me@localhost")
+            self.assertEqual(msg.From, "you@localhost")
+            self.assertEqual(msg.Data, b"hello")
+
+    @patch('salmon.routing.Router')
+    def test_message_routed_smtperror(self, router_mock):
+        router_mock.deliver.side_effect = server.SMTPError(450, "Raised on purpose")
+        with SMTP(self.server.hostname, self.server.port) as client:
+            with self.assertRaises(SMTPDataError):
+                client.sendmail("you@localhost", "me@localhost", "hello")
+
+            self.assertEqual(router_mock.deliver.call_count, 1)
+            msg = router_mock.deliver.call_args[0][0]
+            self.assertEqual(msg.Peer, client.sock.getsockname())
+            self.assertEqual(msg.To, "me@localhost")
+            self.assertEqual(msg.From, "you@localhost")
+            self.assertEqual(msg.Data, b"hello")
+
+    def test_multiple_rcpts(self):
+        with SMTP(self.server.hostname, self.server.port) as client:
+            code, _ = client.ehlo("localhost")
+            self.assertEqual(code, 250)
+            code, _ = client.mail("me@localhost")
+            self.assertEqual(code, 250)
+            code, _ = client.rcpt("you@localhost")
+            self.assertEqual(code, 250)
+            code, _ = client.rcpt("them@localhost")
+            self.assertEqual(code, 451)
+
+
+class AsyncLmtpServerTestCase(SalmonTestCase):
+    def setUp(self):
+        super().setUp()
+        self.server = server.AsyncLMTPReceiver(hostname="127.0.0.1", port=9999)
+        self.server.start()
+        self.addCleanup(self.server.stop)
+
+    @patch('salmon.routing.Router')
+    def test_message_routed(self, router_mock):
+        with LMTP(self.server.hostname, self.server.port) as client:
+            result = client.sendmail("you@localhost", "me@localhost", "hello")
+            self.assertEqual(result, {})
+
+            self.assertEqual(router_mock.deliver.call_count, 1)
+            msg = router_mock.deliver.call_args[0][0]
+            self.assertEqual(msg.Peer, client.sock.getsockname())
+            self.assertEqual(msg.To, "me@localhost")
+            self.assertEqual(msg.From, "you@localhost")
+            self.assertEqual(msg.Data, b"hello")
+
+    @patch('salmon.routing.Router')
+    def test_message_routed_error(self, router_mock):
+        router_mock.deliver.side_effect = RuntimeError("Raised on purpose")
+        with LMTP(self.server.hostname, self.server.port) as client:
+            result = client.sendmail("you@localhost", "me@localhost", "hello")
+            self.assertEqual(result, {})
+
+            self.assertEqual(router_mock.deliver.call_count, 1)
+            msg = router_mock.deliver.call_args[0][0]
+            self.assertEqual(msg.Peer, client.sock.getsockname())
+            self.assertEqual(msg.To, "me@localhost")
+            self.assertEqual(msg.From, "you@localhost")
+            self.assertEqual(msg.Data, b"hello")
+
+    @patch('salmon.routing.Router')
+    def test_message_routed_smtperror(self, router_mock):
+        router_mock.deliver.side_effect = server.SMTPError(450, "Raised on purpose")
+        with LMTP(self.server.hostname, self.server.port) as client:
+            with self.assertRaises(SMTPDataError):
+                client.sendmail("you@localhost", "me@localhost", "hello")
+
+            self.assertEqual(router_mock.deliver.call_count, 1)
+            msg = router_mock.deliver.call_args[0][0]
+            self.assertEqual(msg.Peer, client.sock.getsockname())
+            self.assertEqual(msg.To, "me@localhost")
+            self.assertEqual(msg.From, "you@localhost")
+            self.assertEqual(msg.Data, b"hello")
+
+    def test_multiple_rcpts(self):
+        with LMTP(self.server.hostname, self.server.port) as client:
+            code, _ = client.ehlo("localhost")
+            self.assertEqual(code, 250)
+            code, _ = client.mail("me@localhost")
+            self.assertEqual(code, 250)
+            code, _ = client.rcpt("you@localhost")
+            self.assertEqual(code, 250)
+            code, _ = client.rcpt("them@localhost")
+            self.assertEqual(code, 250)
+
+
+class LmtpSeverUnixSocketTestCase(SalmonTestCase):
+    def test_asyncio(self):
+        tempdir = tempfile.mkdtemp()
+        socket_name = os.path.join(tempdir, "lmtp")
+        _server = server.AsyncLMTPReceiver(socket=socket_name)
+        _server.start()
+        self.addCleanup(_server.stop)
+
+        with LMTP(socket_name) as client:
+            code, _ = client.ehlo("localhost")
+            self.assertEqual(code, 250)
+
+    def test_asyncore(self):
+        tempdir = tempfile.mkdtemp()
+        socket_name = os.path.join(tempdir, "lmtp")
+        _server = server.LMTPReceiver(socket=socket_name)
+        _server.start()
+        self.addCleanup(_server.stop)
+
+        with LMTP(socket_name) as client:
+            code, _ = client.ehlo("localhost")
+            self.assertEqual(code, 250)

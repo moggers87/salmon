@@ -3,6 +3,7 @@ from setuptools import setup
 import versioneer
 
 install_requires = [
+    'aiosmtpd',
     'chardet',
     'click',
     'dnspython',
