@@ -74,7 +74,7 @@ that were of most concern::
     uses this copyrighted work at any time for any reason.
 
 I read that to mean that I could make a contribution but then have said work
-denied to me because the orginal author didn't like the colour of my socks. So
+denied to me because the original author didn't like the colour of my socks. So
 I went and found the latest version that was available under the GNU GPL
 version 3.
 
