@@ -1,10 +1,10 @@
 from tempfile import mkdtemp
+from unittest.mock import Mock, patch
 import mailbox
 import os
 import sys
 
 from click import testing
-from mock import Mock, patch
 
 from salmon import queue, commands, encoding, mail, routing, utils
 

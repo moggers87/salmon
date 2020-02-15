@@ -1,6 +1,5 @@
+from unittest.mock import Mock
 import sys
-
-from mock import Mock
 
 from salmon import mail, utils
 from salmon.routing import Router

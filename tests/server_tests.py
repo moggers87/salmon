@@ -1,8 +1,8 @@
 # Copyright (C) 2008 Zed A. Shaw.  Licensed under the terms of the GPLv3.
+from unittest.mock import Mock, call, patch
 import socket
 import sys
 
-from mock import Mock, call, patch
 import lmtpd
 
 from salmon import mail, queue, routing, server

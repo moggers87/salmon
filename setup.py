@@ -12,7 +12,6 @@ install_requires = [
 
 tests_require = [
     'jinja2<3.0',
-    'mock',
 ]
 
 extras_require = {
