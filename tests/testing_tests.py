@@ -1,4 +1,4 @@
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 from salmon.testing import RouterConversation, assert_in_state, clear_queue, delivered, queue, relay
 

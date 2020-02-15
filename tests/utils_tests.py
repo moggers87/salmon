@@ -1,8 +1,7 @@
 from tempfile import mkdtemp
 from unittest import TestCase
+from unittest.mock import patch
 import os
-
-from mock import patch
 
 from salmon import utils
 

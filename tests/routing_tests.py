@@ -1,4 +1,4 @@
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 from salmon import routing
 from salmon.mail import MailRequest

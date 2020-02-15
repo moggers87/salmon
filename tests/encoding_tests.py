@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from email import encoders
 from email.utils import parseaddr
+from unittest.mock import Mock, patch
 import mailbox
 import os
 
-from mock import Mock, patch
 import chardet
 
 from salmon import encoding
