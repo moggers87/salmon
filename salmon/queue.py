@@ -4,8 +4,6 @@ do get a lot more features from the Python library, so if you need
 to do some serious surgery go use that.  This works as a good
 API for the 90% case of "put mail in, get mail out" queues.
 """
-from __future__ import print_function, unicode_literals
-
 import errno
 import hashlib
 import logging
@@ -52,7 +50,7 @@ class QueueError(Exception):
         self.data = data
 
 
-class Queue(object):
+class Queue:
     """
     Provides a simplified API for dealing with 'queues' in Salmon.
     It currently just supports Maildir queues since those are the
@@ -101,7 +99,10 @@ class Queue(object):
         Pushes the message onto the queue.  Remember the order is probably
         not maintained.  It returns the key that gets created.
         """
-        return self.mbox.add(str(message))
+        if not isinstance(message, (str, bytes)):
+            # bytes is ok, but anything else needs to be turned into str
+            message = str(message)
+        return self.mbox.add(message)
 
     def pop(self):
         """
@@ -155,18 +156,24 @@ class Queue(object):
         """Removes the queue, but not returned."""
         self.mbox.remove(key)
 
-    def count(self):
+    def __len__(self):
         """Returns the number of messages in the queue."""
         return len(self.mbox)
+
+    # synonym of __len__ for backwards compatibility
+    count = __len__
 
     def clear(self):
         """
         Clears out the contents of the entire queue.
-        Warning: This could be horribly inefficient since it
-        basically pops until the queue is empty.
+
+        Warning: This could be horribly inefficient since it pops messages
+        until the queue is empty. It could also cause an infinite loop if
+        another process is writing to messages to the Queue faster than we can
+        pop.
         """
         # man this is probably a really bad idea
-        while self.count() > 0:
+        while len(self) > 0:
             self.pop()
 
     def keys(self):

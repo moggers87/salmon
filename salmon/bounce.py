@@ -3,11 +3,8 @@ Bounce analysis module for Salmon.  It uses an algorithm that tries
 to simply collect the headers that are most likely found in a bounce
 message, and then determine a probability based on what it finds.
 """
-from __future__ import print_function, unicode_literals
-
-import re
 from functools import wraps
-
+import re
 
 BOUNCE_MATCHERS = {
     'Action': re.compile(r'(failed|delayed|delivered|relayed|expanded)', re.IGNORECASE | re.DOTALL),
@@ -160,7 +157,7 @@ def detect(msg):
     return BounceAnalyzer(results, score / BOUNCE_MAX)
 
 
-class BounceAnalyzer(object):
+class BounceAnalyzer:
     """
     BounceAnalyzer collects up the score and the headers and gives more
     meaningful interaction with them.  You can keep it simple and just use
@@ -268,7 +265,7 @@ class BounceAnalyzer(object):
             return "No status codes found in bounce message."
 
 
-class bounce_to(object):
+class bounce_to:
     """
     Used to route bounce messages to a handler for either soft or hard bounces.
     Set the soft/hard parameters to the function that represents the handler.

@@ -2,8 +2,7 @@
 The majority of the server related things Salmon needs to run, like receivers,
 relays, and queue processors.
 """
-from __future__ import print_function, unicode_literals
-
+from multiprocessing.dummy import Pool
 import asyncore
 import logging
 import smtpd
@@ -14,18 +13,12 @@ import traceback
 
 from dns import resolver
 import lmtpd
-import six
 
-from salmon import queue, mail, routing, __version__
-from salmon.bounce import PRIMARY_STATUS_CODES, SECONDARY_STATUS_CODES, COMBINED_STATUS_CODES
-
+from salmon import __version__, mail, queue, routing
+from salmon.bounce import COMBINED_STATUS_CODES, PRIMARY_STATUS_CODES, SECONDARY_STATUS_CODES
 
 lmtpd.__version__ = "Salmon Mail router LMTPD, version %s" % __version__
 smtpd.__version__ = "Salmon Mail router SMTPD, version %s" % __version__
-
-if six.PY2:
-    # Python 2 commits many crimes against byte encoding, so we've got to manually convert to ASCII
-    smtpd.__version__ = smtpd.__version__.encode()
 
 
 def undeliverable_message(raw_message, failure_type):
@@ -33,7 +26,7 @@ def undeliverable_message(raw_message, failure_type):
     Used universally in this file to shove totally screwed messages
     into the routing.Router.UNDELIVERABLE_QUEUE (if it's set).
     """
-    if routing.Router.UNDELIVERABLE_QUEUE:
+    if routing.Router.UNDELIVERABLE_QUEUE is not None:
         key = routing.Router.UNDELIVERABLE_QUEUE.push(raw_message)
 
         logging.error("Failed to deliver message because of %r, put it in "
@@ -66,7 +59,7 @@ class SMTPError(Exception):
         return " ".join([primary, secondary, combined]).strip()
 
 
-class Relay(object):
+class Relay:
     """
     Used to talk to your "relay server" or smart host, this is probably the most
     important class in the handlers next to the salmon.routing.Router.
@@ -237,10 +230,7 @@ class SMTPReceiver(smtpd.SMTPServer):
 
     def close(self):
         """Doesn't do anything except log who called this, since nobody should.  Ever."""
-        if six.PY3:
-            trace = traceback.format_exc(chain=False)
-        else:
-            trace = traceback.format_exc()
+        trace = traceback.format_exc(chain=False)
         logging.error(trace)
 
 
@@ -293,60 +283,61 @@ class LMTPReceiver(lmtpd.LMTPServer):
 
     def close(self):
         """Doesn't do anything except log who called this, since nobody should.  Ever."""
-        if six.PY3:
-            trace = traceback.format_exc(chain=False)
-        else:
-            trace = traceback.format_exc()
+        trace = traceback.format_exc(chain=False)
         logging.error(trace)
 
 
-class QueueReceiver(object):
+class QueueReceiver:
     """
     Rather than listen on a socket this will watch a queue directory and
     process messages it receives from that.  It works in almost the exact
     same way otherwise.
     """
 
-    def __init__(self, queue_dir, sleep=10, size_limit=0, oversize_dir=None):
+    def __init__(self, queue_dir, sleep=10, size_limit=0, oversize_dir=None, workers=10):
         """
-        The router should be fully configured and ready to work, the
-        queue_dir can be a fully qualified path or relative.
+        The router should be fully configured and ready to work, the queue_dir
+        can be a fully qualified path or relative. The option workers dictates
+        how many threads are started to process messages. Consider adding
+        ``@nolocking`` to your handlers if you are able to.
         """
         self.queue = queue.Queue(queue_dir, pop_limit=size_limit,
                                  oversize_dir=oversize_dir)
-        self.queue_dir = queue_dir
         self.sleep = sleep
+
+        # Pool is from multiprocess.dummy which uses threads rather than processes
+        self.workers = Pool(workers)
 
     def start(self, one_shot=False):
         """
         Start simply loops indefinitely sleeping and pulling messages
         off for processing when they are available.
 
-        If you give one_shot=True it will run once rather than do a big
-        while loop with a sleep.
+        If you give one_shot=True it will stop once it has exhausted the queue
         """
 
-        logging.info("Queue receiver started on queue dir %s", self.queue_dir)
+        logging.info("Queue receiver started on queue dir %s", self.queue.dir)
         logging.debug("Sleeping for %d seconds...", self.sleep)
 
-        inq = queue.Queue(self.queue_dir)
-
-        while True:
-            keys = inq.keys()
-
-            for key in keys:
-                msg = inq.get(key)
-
-                if msg:
-                    logging.debug("Pulled message with key: %r off", key)
-                    self.process_message(msg)
-                    logging.debug("Removed %r key from queue.", key)
-                    inq.remove(key)
-
-            if one_shot:
-                return
-            else:
+        # if there are no messages left in the maildir and this a one-shot, the
+        # while loop terminates
+        while not (len(self.queue) == 0 and one_shot):
+            # if there's nothing in the queue, take a break
+            if len(self.queue) == 0:
                 time.sleep(self.sleep)
+                continue
+
+            try:
+                key, msg = self.queue.pop()
+            except KeyError:
+                logging.debug("Could not find message in Queue")
+                continue
+
+            logging.debug("Pulled message with key: %r off", key)
+            self.workers.apply_async(self.process_message, args=(msg,))
+
+        self.workers.close()
+        self.workers.join()
 
     def process_message(self, msg):
         """
@@ -358,7 +349,6 @@ class QueueReceiver(object):
             logging.debug("Message received from Peer: %r, From: %r, to To %r.", msg.Peer, msg.From, msg.To)
             routing.Router.deliver(msg)
         except SMTPError as err:
-            # looks like they want to return an error, so send it out
             logging.exception("Raising SMTPError when running in a QueueReceiver is unsupported.")
             undeliverable_message(msg.Data, err.message)
         except Exception:

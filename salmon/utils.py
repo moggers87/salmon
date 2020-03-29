@@ -4,22 +4,16 @@ really belong anywhere else in the modules.  This module
 is kind of a dumping ground, so if you find something that
 can be improved feel free to work up a patch.
 """
-from __future__ import print_function, unicode_literals
-
 import imp
 import importlib
 import logging
 import os
 import sys
 
-try:
-    import daemon  # daemon unavailable on Windows
-    from daemon import pidlockfile
-except ImportError:
-    from lockfile import pidlockfile
+from lockfile import pidlockfile
+import daemon
 
-from salmon import server, routing
-
+from salmon import routing, server
 
 settings = None
 
@@ -49,16 +43,26 @@ def daemonize(pid, chdir, chroot, umask, files_preserve=None, do_open=True):
     has, except that chroot probably won't work at all without
     some serious configuration on the system.
     """
+    logs_dir = os.path.join(chdir, "logs")
+    pid_dir = os.path.join(chdir, os.path.dirname(pid) or ".")
+    if chroot:
+        logs_dir = os.path.join(chroot, logs_dir)
+        pid_dir = os.path.join(chroot, pid_dir)
+    if not os.path.exists(logs_dir):
+        os.mkdir(logs_dir)
+    if not os.path.exists(pid_dir):
+        os.mkdir(pid_dir)
+
     context = daemon.DaemonContext()
     context.pidfile = pidlockfile.PIDLockFile(pid)
-    context.stdout = open(os.path.join(chdir, "logs/salmon.out"), "a+")
-    context.stderr = open(os.path.join(chdir, "logs/salmon.err"), "a+")
+    context.stdout = open(os.path.join(logs_dir, "salmon.out"), "a+")
+    context.stderr = open(os.path.join(logs_dir, "salmon.err"), "a+")
     context.files_preserve = files_preserve or []
     context.working_directory = os.path.expanduser(chdir)
 
     if chroot:
         context.chroot_directory = os.path.expanduser(chroot)
-    if umask is not False:
+    if umask is not None:
         context.umask = umask
 
     if do_open:

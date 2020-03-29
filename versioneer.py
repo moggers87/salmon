@@ -276,11 +276,7 @@ https://creativecommons.org/publicdomain/zero/1.0/ .
 
 """
 
-from __future__ import print_function
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
+import configparser
 import errno
 import json
 import os
@@ -418,7 +414,7 @@ def run_command(commands, args, cwd=None, verbose=False, hide_stderr=False,
     return stdout, p.returncode
 
 
-LONG_VERSION_PY['git'] = '''
+LONG_VERSION_PY['git'] = r'''
 # This file helps to compute a version number in source trees obtained from
 # git-archive tarball (such as those provided by githubs download-from-tag
 # feature). Distribution tarballs (built by setup.py sdist) and build
@@ -1592,10 +1588,7 @@ def get_cmdclass():
         del cmds["build_py"]
 
     if 'py2exe' in sys.modules:  # py2exe enabled?
-        try:
-            from py2exe.distutils_buildexe import py2exe as _py2exe  # py3
-        except ImportError:
-            from py2exe.build_exe import py2exe as _py2exe  # py2
+        from py2exe.distutils_buildexe import py2exe as _py2exe  # py3
 
         class cmd_py2exe(_py2exe):
             def run(self):

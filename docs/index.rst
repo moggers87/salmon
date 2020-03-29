@@ -20,6 +20,7 @@ Contents:
     routing
     relaying
     mail_objects
+    commandline
     Salmon API guide <salmon>
 
 About Salmon
@@ -29,6 +30,7 @@ About Salmon
     :maxdepth: 2
 
     changelog
+    security
 
 Indices and tables
 ==================

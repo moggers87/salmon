@@ -3,8 +3,7 @@ import logging.config
 from salmon.routing import Router
 from salmon.server import Relay
 
-from config import settings
-
+from . import settings
 
 logging.config.fileConfig("config/test_logging.conf")
 

@@ -7,8 +7,8 @@ the salmon queue command.
 
 import logging
 
-from salmon.routing import route_like, stateless, nolocking
-from salmon import queue, handlers
+from salmon import handlers, queue
+from salmon.routing import nolocking, route_like, stateless
 
 
 @route_like(handlers.log.START)

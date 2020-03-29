@@ -1,11 +1,10 @@
 import logging.config
 
-from salmon.routing import Router
-from salmon.server import Relay, LMTPReceiver
 from salmon import queue
+from salmon.routing import Router
+from salmon.server import LMTPReceiver, Relay
 
-from config import settings
-
+from . import settings
 
 logging.config.fileConfig("config/logging.conf")
 

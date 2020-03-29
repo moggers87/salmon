@@ -29,7 +29,9 @@ Using Routes
 ------------
 
 The :class:`~salmon.routing.route` decorator takes a regex pattern as its first
-argument and then capture groups as keyword arguments::
+argument and then capture groups as keyword arguments:
+
+.. code-block:: python
 
     from salmon.routing import route
 
@@ -46,7 +48,9 @@ was our only handler.
 
 It's quite usual to multiple handlers decorated with the same ``route`` - we'll
 cover why in the next section. To save typing, you can have your handler routed
-exactly like another::
+exactly like another:
+
+.. code-block:: python
 
     from salmon.routing import route_like
 
@@ -71,7 +75,9 @@ how that is done, let's look at how to control the finite state machine.
 
 First of all, let's flesh out the examples from the previous section. These
 examples will call some functions defined in ``myapp`` which we won't define as
-how they work is not important.::
+how they work is not important.:
+
+.. code-block:: python
 
     from salmon.routing import route, route_like
     from myapp.utils import (
@@ -118,7 +124,9 @@ another handler. The next time a message from this sender is received, the
 State storage in Salmon is controlled by encoding the current module and sender
 to a string, then using that string as a key for a ``dict``-like object that
 stores the state as the value for that key. For example, the state storage for
-our application might look like this::
+our application might look like this:
+
+.. code-block:: pycon
 
     >>> from salmon.routing import Router
     >>> print(Router.STATE_STORE.states)
@@ -133,7 +141,9 @@ Stateless Processing
 If you don't require states for one or more of your handlers, the decorator
 :func:`~salmon.routing.stateless` will make sure the state machine is
 completely bypassed on the way in (but you can still return handles to affect
-the sender's state)::
+the sender's state):
+
+.. code-block:: python
 
     from salmon.routing import stateless, route
 
@@ -152,14 +162,18 @@ The default state storage :class:`~salmon.routing.MemoryStorage` is only
 intended for testing as it only stores state in memory - states will be lost.
 For small installations, :class:`~salmon.routing.ShelveStorage` will save state
 to disk and be performant enough. Add the following lines to your ``boot.py``
-to use it::
+to use it:
+
+.. code-block:: python
 
     from myapp.models import ShelveStorage
     Router.STATE_STORAGE = ShelveStorage()
 
 Larger installations will be required to write their own state storage. Any
 popular database that can provide some sort of atomic get and set should be
-capable. For example, Django's ORM could be used::
+capable. For example, Django's ORM could be used:
+
+.. code-block:: python
 
     # in your models.py
     from django.db import models
@@ -195,6 +209,6 @@ capable. For example, Django's ORM could be used::
     Router.STATE_STORAGE = DjangoStateStorage()
 
 
-.. note:
+.. note::
 
     This example is incomplete, it's only there to give an idea of how to implement a state storage class.

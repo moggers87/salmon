@@ -48,20 +48,13 @@ after that.
 The @state_key_generator is different since it's not intended to go on a handler
 but instead on a simple function, so it shouldn't be combined with the others.
 """
-from __future__ import print_function, unicode_literals
-
 from functools import wraps
-import re
+from importlib import reload
 import logging
-import sys
+import re
 import shelve
+import sys
 import threading
-
-try:
-    from importlib import reload
-except ImportError:
-    from __builtin__ import reload
-
 
 ROUTE_FIRST_STATE = 'START'
 LOG = logging.getLogger("routing")
@@ -71,7 +64,7 @@ def DEFAULT_STATE_KEY(mod, msg):
     return mod
 
 
-class StateStorage(object):
+class StateStorage:
     """
     The base storage class you need to implement for a custom storage
     system.
@@ -156,7 +149,7 @@ class ShelveStorage(MemoryStorage):
         """
         with self.lock:
             self.states = shelve.open(self.database_path)
-            value = super(ShelveStorage, self).get(key.encode('ascii'), sender)
+            value = super().get(key.encode('ascii'), sender)
             self.states.close()
             return value
 
@@ -166,7 +159,7 @@ class ShelveStorage(MemoryStorage):
         """
         with self.lock:
             self.states = shelve.open(self.database_path)
-            super(ShelveStorage, self).set(key.encode('ascii'), sender, state)
+            super().set(key.encode('ascii'), sender, state)
             self.states.close()
 
     def clear(self):
@@ -176,11 +169,11 @@ class ShelveStorage(MemoryStorage):
         """
         with self.lock:
             self.states = shelve.open(self.database_path)
-            super(ShelveStorage, self).clear()
+            super().clear()
             self.states.close()
 
 
-class RoutingBase(object):
+class RoutingBase:
     """
     The self is a globally accessible class that is actually more like a
     glorified module.  It is used mostly internally by the salmon.routing
@@ -323,7 +316,7 @@ class RoutingBase(object):
                     yield func, matchkw
 
     def _enqueue_undeliverable(self, message):
-        if self.UNDELIVERABLE_QUEUE:
+        if self.UNDELIVERABLE_QUEUE is not None:
             LOG.debug("Message to %r from %r undeliverable, putting in undeliverable queue (# of recipients: %d).",
                       message.To, message.From, len(message.To))
             self.UNDELIVERABLE_QUEUE.push(message)
@@ -385,7 +378,7 @@ class RoutingBase(object):
         except Exception:
             self.set_state(func.__module__, message, 'ERROR')
 
-            if self.UNDELIVERABLE_QUEUE:
+            if self.UNDELIVERABLE_QUEUE is not None:
                 self.UNDELIVERABLE_QUEUE.push(message)
 
             if self.LOG_EXCEPTIONS:
@@ -432,7 +425,7 @@ class RoutingBase(object):
         """
         with self.lock:
             self.clear_routes()
-            for module in sys.modules.keys():
+            for module in list(sys.modules.keys()):
                 if module in self.HANDLERS:
                     try:
                         reload(sys.modules[module])
@@ -446,7 +439,7 @@ class RoutingBase(object):
 Router = RoutingBase()
 
 
-class route(object):
+class route:
     """
     The @route decorator is attached to state handlers to configure them in the
     Router so they handle messages for them.  The way this works is, rather than
@@ -460,7 +453,7 @@ class route(object):
     """
 
     def __init__(self, format, **captures):
-        """
+        r"""
         Sets up the pattern used for the Router configuration.  The format
         parameter is a simple pattern of words, captures, and anything you
         want to ignore.  The captures parameter is a mapping of the words in

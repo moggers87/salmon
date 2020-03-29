@@ -13,15 +13,13 @@ provide the logic for doing the following:
 You then just work this into your project's state flow, write your own
 templates, and possibly write your own storage.
 """
-from __future__ import print_function, unicode_literals
-
 from email.utils import parseaddr
 import uuid
 
 from salmon import queue, view
 
 
-class ConfirmationStorage(object):
+class ConfirmationStorage:
     """
     This is the basic confirmation storage.  For simple testing purposes
     you can just use the default hash db parameter.  If you do a deployment
@@ -84,7 +82,7 @@ class ConfirmationStorage(object):
                                                               pending_message_id)
 
 
-class ConfirmationEngine(object):
+class ConfirmationEngine:
     """
     The confirmation engine is what does the work of sending a confirmation,
     and verifying that it was confirmed properly.  In order to use it you

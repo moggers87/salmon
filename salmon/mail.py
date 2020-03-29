@@ -9,17 +9,12 @@ that you've received, so it doesn't have functions for attaching files and such.
 MailResponse is used when you are going to write an email, so it has the
 APIs for doing attachments and such.
 """
-from __future__ import print_function, unicode_literals
-
 from email.utils import parseaddr
 import mimetypes
 import os
 import warnings
 
-import six
-
-from salmon import encoding, bounce
-
+from salmon import bounce, encoding
 
 # You can change this to 'Delivered-To' on servers that support it like Postfix
 ROUTABLE_TO_HEADER = 'to'
@@ -32,29 +27,29 @@ def _decode_header_randomness(addr):
     """
     if not addr:
         return set()
-    elif isinstance(addr, list):
+    elif isinstance(addr, (list, tuple)):
         addr_set = set()
         for a in addr:
             for returned_addr in _decode_header_randomness(a):
                 addr_set.add(returned_addr)
 
         return addr_set
-    elif isinstance(addr, six.string_types):
+    elif isinstance(addr, str):
         return set([parseaddr(addr.lower())[1]])
-    elif isinstance(addr, six.binary_type):
+    elif isinstance(addr, bytes):
         addr = addr.decode()
         return set([parseaddr(addr.lower())[1]])
     else:
         raise encoding.EncodingError("Address must be a string or a list not: %r", type(addr))
 
 
-class MailRequest(object):
+class MailRequest:
     """
     This is what is given to your message handlers. The information you get out
-    of this is *ALWAYS* in Python str (unicode in Python 2.7) and should be
-    usable by any API.  Modifying this object will cause other handlers that
-    deal with it to get your modifications, but in general you don't want to do
-    more than maybe tag a few headers.
+    of this is *ALWAYS* in Python str and should be usable by any API.
+    Modifying this object will cause other handlers that deal with it to get
+    your modifications, but in general you don't want to do more than maybe tag
+    a few headers.
     """
     def __init__(self, Peer, From, To, Data):
         """
@@ -164,7 +159,7 @@ class MailRequest(object):
         return self.Data
 
 
-class MailResponse(object):
+class MailResponse:
     """
     You are given MailResponse objects from the salmon.view methods, and
     whenever you want to generate an email to send to someone.  It has
@@ -175,7 +170,7 @@ class MailResponse(object):
     passing it as __init__ parameters, or by setting those attributes.
 
     You can initially set the From, To, and Subject, but they are headers so
-    use the dict notation to change them:  msg['From'] = 'joe@test.com'.
+    use the dict notation to change them: ``msg['From'] = 'joe@test.com'``.
 
     The message is not fully crafted until right when you convert it with
     MailResponse.to_message.  This lets you change it and work with it, then
