@@ -23,18 +23,18 @@ class BounceTestCase(SalmonTestCase):
         assert bm.bounce
         self.assertEqual(bm.bounce.score, 1.0)
         assert bm.bounce.probable()
-        self.assertEqual(bm.bounce.primary_status, (5, u'Permanent Failure'))
-        self.assertEqual(bm.bounce.secondary_status, (1, u'Addressing Status'))
-        self.assertEqual(bm.bounce.combined_status, (11, u'Bad destination mailbox address'))
+        self.assertEqual(bm.bounce.primary_status, (5, 'Permanent Failure'))
+        self.assertEqual(bm.bounce.secondary_status, (1, 'Addressing Status'))
+        self.assertEqual(bm.bounce.combined_status, (11, 'Bad destination mailbox address'))
 
         assert bm.bounce.is_hard()
         self.assertEqual(bm.bounce.is_hard(), not bm.bounce.is_soft())
 
-        self.assertEqual(bm.bounce.remote_mta, u'gmail-smtp-in.l.google.com')
-        self.assertEqual(bm.bounce.reporting_mta, u'mail.zedshaw.com')
+        self.assertEqual(bm.bounce.remote_mta, 'gmail-smtp-in.l.google.com')
+        self.assertEqual(bm.bounce.reporting_mta, 'mail.zedshaw.com')
         self.assertEqual(bm.bounce.final_recipient,
-                         u'asdfasdfasdfasdfasdfasdfewrqertrtyrthsfgdfgadfqeadvxzvz@gmail.com')
-        self.assertEqual(bm.bounce.diagnostic_codes[0], u'550-5.1.1')
+                         'asdfasdfasdfasdfasdfasdfewrqertrtyrthsfgdfgadfqeadvxzvz@gmail.com')
+        self.assertEqual(bm.bounce.diagnostic_codes[0], '550-5.1.1')
         self.assertEqual(bm.bounce.action, 'failed')
         assert 'Content-Description-Parts' in bm.bounce.headers
 
@@ -68,7 +68,7 @@ class BounceTestCase(SalmonTestCase):
         assert Router.in_state(bounce_filtered_mod.START, msg)
         assert bounce_filtered_mod.HARD_RAN, "Hard bounce state didn't actually run: %r" % msg.To
 
-        msg.bounce.primary_status = (4, u'Persistent Transient Failure')
+        msg.bounce.primary_status = (4, 'Persistent Transient Failure')
         Router.clear_states()
         Router.deliver(msg)
         assert Router.in_state(bounce_filtered_mod.START, msg)

@@ -85,7 +85,7 @@ class ViewsTestCase(TestCase):
         assert str(msg)
 
     def test_unicode(self):
-        person = u'H\xe9avy M\xe9t\xe5l Un\xeec\xf8d\xe9'
+        Person = 'H\xe9avy M\xe9t\xe5l Un\xeec\xf8d\xe9'
         mail = view.respond(locals(), Html="unicode.html", From="test@localhost", To="receiver@localhost",
                             Subject='Test body from someone.')
 

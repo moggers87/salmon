@@ -1,7 +1,6 @@
 # Copyright (C) 2008 Zed A. Shaw.  Licensed under the terms of the GPLv3.
 from unittest.mock import Mock, call, patch
 import socket
-import sys
 
 import lmtpd
 
@@ -9,12 +8,7 @@ from salmon import mail, queue, routing, server
 
 from .setup_env import SalmonTestCase
 
-SMTP_MESSAGE_DEFS = {
-    2: {"ok": u"250 Ok\r\n".encode()},
-    3: {"ok": u"250 OK\r\n".encode()},
-}
-
-SMTP_MESSAGES = SMTP_MESSAGE_DEFS[sys.version_info[0]]
+SMTP_MESSAGES = {"ok": "250 OK\r\n".encode()}
 
 
 def generate_mail(factory=mail.MailRequest, peer="localhost", From="from@localhost", To="to@localhost",
@@ -39,7 +33,7 @@ class ServerTestCase(SalmonTestCase):
     @patch("asynchat.async_chat.push")
     def test_SMTPChannel(self, push_mock):
         channel = server.SMTPChannel(Mock(), Mock(), Mock())
-        expected_version = u"220 {} {}\r\n".format(socket.getfqdn(), server.smtpd.__version__).encode()
+        expected_version = "220 {} {}\r\n".format(socket.getfqdn(), server.smtpd.__version__).encode()
 
         self.assertEqual(push_mock.call_args[0][1:], (expected_version,))
         self.assertEqual(type(push_mock.call_args[0][1]), bytes)
@@ -56,7 +50,7 @@ class ServerTestCase(SalmonTestCase):
         push_mock.reset_mock()
         channel.smtp_RCPT("TO: them@example.com")
         self.assertEqual(push_mock.call_args[0][1:],
-                         (u"451 Will not accept multiple recipients in one transaction\r\n".encode(),))
+                         ("451 Will not accept multiple recipients in one transaction\r\n".encode(),))
 
     def test_SMTPReceiver_process_message(self):
         receiver = server.SMTPReceiver(host="localhost", port=0)
@@ -88,7 +82,7 @@ class ServerTestCase(SalmonTestCase):
     @patch("lmtpd.asynchat.async_chat.push")
     def test_LMTPChannel(self, push_mock):
         channel = lmtpd.LMTPChannel(Mock(), Mock(), Mock())
-        expected_version = u"220 {} {}\r\n".format(socket.getfqdn(), server.lmtpd.__version__).encode()
+        expected_version = "220 {} {}\r\n".format(socket.getfqdn(), server.lmtpd.__version__).encode()
 
         self.assertEqual(push_mock.call_args[0][1:], (expected_version,))
         self.assertEqual(type(push_mock.call_args[0][1]), bytes)
@@ -96,15 +90,15 @@ class ServerTestCase(SalmonTestCase):
         push_mock.reset_mock()
         channel.seen_greeting = True
         channel.lmtp_MAIL(b"FROM: you@example.com\r\n")
-        self.assertEqual(push_mock.call_args[0][1:], (u"250 2.1.0 Ok\r\n".encode(),))
+        self.assertEqual(push_mock.call_args[0][1:], ("250 2.1.0 Ok\r\n".encode(),))
 
         push_mock.reset_mock()
         channel.lmtp_RCPT(b"TO: me@example.com")
-        self.assertEqual(push_mock.call_args[0][1:], (u"250 2.1.0 Ok\r\n".encode(),))
+        self.assertEqual(push_mock.call_args[0][1:], ("250 2.1.0 Ok\r\n".encode(),))
 
         push_mock.reset_mock()
         channel.lmtp_RCPT(b"TO: them@example.com")
-        self.assertEqual(push_mock.call_args[0][1:], (u"250 2.1.0 Ok\r\n".encode(),))
+        self.assertEqual(push_mock.call_args[0][1:], ("250 2.1.0 Ok\r\n".encode(),))
 
     def test_LMTPReceiver_process_message(self):
         receiver = server.LMTPReceiver(host="localhost", port=0)

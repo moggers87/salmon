@@ -10,10 +10,6 @@ install_requires = [
     'python-daemon>2.2.0',
 ]
 
-tests_require = [
-    'jinja2<3.0',
-]
-
 extras_require = {
     "docs": [
         "sphinx",
@@ -33,7 +29,6 @@ config = {
     'version': versioneer.get_version(),
     'cmdclass': versioneer.get_cmdclass(),
     'install_requires': install_requires,
-    'tests_require': tests_require,
     'extras_require': extras_require,
     'test_suite': 'tests',
     'packages': ['salmon', 'salmon.handlers'],

@@ -33,7 +33,7 @@ NORMALIZED_HEADERS = [encoding.header_to_mime_encoding(x) for x in DECODED_HEADE
 
 class EncodingTestCase(SalmonTestCase):
     def test_MailBase(self):
-        the_subject = u'p\xf6stal'
+        the_subject = 'p\xf6stal'
         m = encoding.MailBase()
 
         m['To'] = "testing@localhost"
@@ -120,7 +120,7 @@ class EncodingTestCase(SalmonTestCase):
     def test_mutt_badness(self):
         # this is a sample of possibly the worst case Mutt can produce
         idiot = '=?iso-8859-1?B?SOlhdnkgTel05WwgVW7uY/hk?=\n\t=?iso-8859-1?Q?=E9?='
-        should_be = u'H\xe9avy M\xe9t\xe5l Un\xeec\xf8d\xe9'
+        should_be = 'H\xe9avy M\xe9t\xe5l Un\xeec\xf8d\xe9'
         self.assertEqual(encoding.header_from_mime_encoding(idiot), should_be)
 
     def test_header_from_mime_encoding(self):
@@ -148,8 +148,8 @@ class EncodingTestCase(SalmonTestCase):
                 else:
                     assert m[k].strip() == m2[k].strip(), "%s: %r != %r" % (k, m[k], m2[k])
 
-                assert not m[k].startswith(u"=?")
-                assert not m2[k].startswith(u"=?")
+                assert not m[k].startswith("=?")
+                assert not m2[k].startswith("=?")
 
             # salmon adds stuff to content headers that's missing from example messages
             for k in encoding.CONTENT_ENCODING_KEYS:
@@ -305,7 +305,7 @@ class EncodingTestCase(SalmonTestCase):
 
     def test_odd_content_type_with_charset(self):
         mail = encoding.MailBase()
-        mail.body = u"p\xf6stal".encode('utf-8')
+        mail.body = "p\xf6stal".encode('utf-8')
         mail.content_encoding['Content-Type'] = ('application/plain', {'charset': 'utf-8'})
 
         msg = encoding.to_string(mail)
@@ -326,7 +326,7 @@ class EncodingTestCase(SalmonTestCase):
 
     @patch('salmon.encoding.chardet.detect')
     def test_guess_encoding_and_decode_unicode_error(self, detect_mock):
-        data = u"testß".encode("latin-1")
+        data = "testß".encode("latin-1")
         detect_mock.return_value = {"confidence": 0.99, "encoding": "utf-8"}
         with self.assertRaises(encoding.EncodingError):
             encoding.guess_encoding_and_decode("ascii", data)
@@ -340,9 +340,9 @@ class EncodingTestCase(SalmonTestCase):
 
     def test_odd_roundtrip_bug(self):
         decoded_addrs = [
-                u'"\u0414\u0435\u043b\u043e\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0441\u0442\u0432\u043e" <daniel@specelec.com>',  # noqa: E501
-            u'"\u8003\u53d6\u5206\u4eab" <Ernest.Beard@msa.hinet.net>',
-            u'"Exquisite Replica"\n\t<wolfem@barnagreatlakes.com>',
+            '"\u0414\u0435\u043b\u043e\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0441\u0442\u0432\u043e" <daniel@specelec.com>',  # noqa: E501
+            '"\u8003\u53d6\u5206\u4eab" <Ernest.Beard@msa.hinet.net>',
+            '"Exquisite Replica"\n\t<wolfem@barnagreatlakes.com>',
         ]
 
         for decoded in decoded_addrs:
