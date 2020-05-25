@@ -1,4 +1,5 @@
 from salmon import mail
+from salmon.bounce import bounce_to
 from salmon.routing import Router
 
 from .handlers import bounce_filtered_mod
@@ -103,3 +104,12 @@ class BounceTestCase(SalmonTestCase):
         msg = mail.MailRequest(None, None, None, "Nothing")
         msg.is_bounce()
         self.assertEqual(msg.bounce.error_for_humans(), 'No status codes found in bounce message.')
+
+    def test_callables(self):
+        bounce_to(lambda x: x, lambda x: x)
+
+        with self.assertRaises(TypeError):
+            bounce_to(lambda x: x, None)
+
+        with self.assertRaises(TypeError):
+            bounce_to(None, lambda x: x)

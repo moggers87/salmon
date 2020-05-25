@@ -17,7 +17,8 @@ def load(template):
     It assumes that your loader works like Jinja2 or Mako in that
     it has a LOADER.get_template() method that returns the template.
     """
-    assert LOADER, "You haven't set salmon.view.LOADER to a loader yet."
+    if LOADER is None:
+        raise TypeError("You haven't set salmon.view.LOADER to a loader yet.")
     return LOADER.get_template(template)
 
 
@@ -61,7 +62,8 @@ def respond(variables, Body=None, Html=None, **kwd):
     in variables to modify those when needed (as in the %(person)s in Subject).
     """
 
-    assert Body or Html, "You need to give either the Body or Html template of the mail."
+    if Body is None and Html is None:
+        raise TypeError("You need to give either the Body or Html template of the mail.")
 
     for key in kwd:
         kwd[key] = kwd[key] % variables

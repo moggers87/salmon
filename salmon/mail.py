@@ -206,15 +206,19 @@ class MailResponse:
         give data and filename then it will assume you've filled data with what
         the file's contents are and filename is just the name to use.
         """
-        assert filename or data, "You must give a filename or some data to attach."
-        assert data or os.path.exists(filename), "File doesn't exist, and no data given."
+        if data is None:
+            if filename is None:
+                raise TypeError("You must give a filename or some data to attach.")
+            elif not os.path.exists(filename):
+                raise TypeError("File doesn't exist, and no data given.")
 
         self.multipart = True
 
         if filename and not content_type:
             content_type, encoding = mimetypes.guess_type(filename)
 
-        assert content_type, "No content type given, and couldn't guess from the filename: %r" % filename
+        if not content_type:
+            raise ValueError("No content type given, and couldn't guess from the filename: %r" % filename)
 
         self.attachments.append({
             'filename': filename,
@@ -313,11 +317,9 @@ class MailResponse:
 
             for args in self.attachments:
                 self._encode_attachment(**args)
-
         elif self.Body:
             self.base.body = self.Body
             self.base.content_encoding['Content-Type'] = ('text/plain', {})
-
         elif self.Html:
             self.base.body = self.Html
             self.base.content_encoding['Content-Type'] = ('text/html', {})

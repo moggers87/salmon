@@ -178,6 +178,14 @@ class EncodingTestCase(SalmonTestCase):
                 assert part.body == m2.parts[i].body, \
                     "Part %d isn't the same: %r \nvs\n. %r" % (i, part.body, m2.parts[i].body)
 
+    def test_to_message_raises_encoding_error(self):
+        base = encoding.MailBase()
+        base.attach_text("hello", ctype="text/plain")
+        base["Content-Type"] = "text/plain"  # this is just broken
+
+        with self.assertRaises(encoding.EncodingError):
+            encoding.to_message(base)
+
     def test_to_file_from_file(self):
         mb = mailbox.mbox("tests/data/spam")
         msg = encoding.from_message(mb[0])
@@ -271,6 +279,11 @@ class EncodingTestCase(SalmonTestCase):
         self.assertEqual(len(msg.get_payload()), 2)
         assert encoding.to_string(mail)
 
+    def test_attach_text_bad_content_type(self):
+        mail = encoding.MailBase()
+        with self.assertRaises(encoding.EncodingError):
+            mail.attach_text("This is some text.", 'text/pLAIn')
+
     def test_attach_file(self):
         mail = encoding.MailBase()
         with open("tests/data/salmon.png", "rb") as file_obj:
@@ -281,6 +294,11 @@ class EncodingTestCase(SalmonTestCase):
         payload = msg.get_payload(0)
         self.assertEqual(payload.get_payload(decode=True), png)
         self.assertEqual(payload.get_filename(), "salmon.png")
+
+    def test_attach_file_bad_content_type(self):
+        mail = encoding.MailBase()
+        with self.assertRaises(encoding.EncodingError):
+            mail.attach_file("salmon.png", "1234", "IMAGe/png", "attachment")
 
     def test_content_encoding_headers_are_maintained(self):
         with open("tests/data/signed.msg", "rb") as file_obj:

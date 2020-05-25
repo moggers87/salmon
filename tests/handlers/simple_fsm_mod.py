@@ -58,7 +58,17 @@ try:
     @route("badstateless@(host)")
     def BAD_STATELESS(message, *args, **kw):
         print("BAD_STATELESS", args, kw)
-except AssertionError:
+except TypeError:
     pass
 else:
-    raise Exception("No assertion error raised on misordered decorators")
+    raise AssertionError("No TypeError raised on misordered decorators")
+
+try:
+    # `@route_like should reference another function that has had `route_like` or `route`
+    @route_like(simple_key_gen)
+    def BAD_ROUTLIKE(message, *args, **kwargs):
+        pass
+except TypeError:
+    pass
+else:
+    raise AssertionError("No TypeError raised when route_like was used on a non-routed function")

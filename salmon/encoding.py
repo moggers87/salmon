@@ -249,8 +249,8 @@ class MailBase:
         A file attachment is a raw attachment with a disposition that
         indicates the file name.
         """
-        assert filename, "You can't attach a file without a filename."
-        assert ctype.lower() == ctype, "Hey, don't be an ass.  Use a lowercase content type."
+        if not ctype.islower():
+            raise EncodingError("ctype must be lowercase, was '{}'".format(ctype))
 
         part = MailBase(parent=self)
         part.body = data
@@ -264,7 +264,8 @@ class MailBase:
         This attaches a simpler text encoded part, which doesn't have a
         filename.
         """
-        assert ctype.lower() == ctype, "Hey, don't be an ass.  Use a lowercase content type."
+        if not ctype.islower():
+            raise EncodingError("ctype must be lowercase, was '{}'".format(ctype))
 
         part = MailBase(parent=self)
         part.body = data
@@ -317,8 +318,6 @@ class MIMEPart(Message):
         ctype, ctype_params = mail.content_encoding['Content-Type']
         cdisp, cdisp_params = mail.content_encoding['Content-Disposition']
 
-        assert ctype, "Extract payload requires that mail.content_encoding have a valid Content-Type."
-
         if ctype.startswith("text/"):
             self.add_text(mail.body, charset=ctype_params.get('charset'))
         else:
@@ -365,10 +364,8 @@ def to_message(mail):
             ctype = 'multipart/mixed'
         else:
             ctype = 'text/plain'
-    else:
-        if mail.parts:
-            assert ctype.startswith("multipart") or ctype.startswith("message"), \
-                    "Content type should be multipart or message, not %r" % ctype
+    if mail.parts and not (ctype.startswith("multipart") or ctype.startswith("message")):
+        raise EncodingError("Content type should be multipart or message, not %r" % ctype)
 
     # adjust the content type according to what it should be now
     mail.content_encoding['Content-Type'] = (ctype, params)
@@ -413,7 +410,6 @@ def to_string(mail, envelope_header=False):
     """Returns a canonicalized email string you can use to send or store
     somewhere."""
     msg = to_message(mail).as_string(envelope_header)
-    assert "From nobody" not in msg
     return msg
 
 
@@ -612,7 +608,8 @@ def _parse_charset_header(data):
                 bm, eh, ed, continued = next(scanner)
 
                 if not eh:
-                    assert not ed, "Parsing error: %r" % data
+                    if ed:
+                        raise ValueError("Parsing error: %r" % data)
                     oddness = (" " + bm.lstrip(), eh, ed, continued)
                 elif eh[0] == enc_header[0] and eh[1] == enc_header[1]:
                     enc_data += ed

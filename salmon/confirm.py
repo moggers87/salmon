@@ -129,7 +129,7 @@ class ConfirmationEngine:
 
         secret, pending_id = self.storage.get(target, addr)
 
-        if secret == expect_secret:
+        if expect_secret and secret == expect_secret:
             self.storage.delete(target, addr)
             self.delete_pending(pending_id)
 
@@ -165,16 +165,13 @@ class ConfirmationEngine:
         The message is *not* deleted from the pending queue.  You can do
         that yourself with delete_pending.
         """
-        assert expect_secret, "Must give an expected ID number."
         name, addr = parseaddr(from_address)
 
         secret, pending_id = self.storage.get(target, addr)
 
-        if secret == expect_secret:
+        if expect_secret and secret == expect_secret:
             self.storage.delete(target, addr)
             return self.get_pending(pending_id)
-        else:
-            return None
 
     def send(self, relay, target, message, template, vars):
         """
