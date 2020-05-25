@@ -595,7 +595,7 @@ def _parse_charset_header(data):
 
         >>> data = '=?utf-8?q?=C5=81ukasz?= the =?utf-16?b?//492B/c?='
         >>> print(list(_parse_charset_header(data)))
-        [u'\u0141ukasz', u' the ', u'\U0001f41f']
+        ['\u0141ukasz', ' the ', '\U0001f41f']
     """
     scanner = _scan(data)
     oddness = None
@@ -636,4 +636,4 @@ def _parse_charset_header(data):
 
 def properly_decode_header(header):
     """Decodes headers from their ASCII-safe representation"""
-    return u"".join(_parse_charset_header(header))
+    return "".join(_parse_charset_header(header))

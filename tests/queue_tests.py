@@ -7,7 +7,7 @@ from salmon import mail, queue
 
 from .setup_env import SalmonTestCase
 
-BYTES_MESSAGE = u"""From: me@localhost
+BYTES_MESSAGE = """From: me@localhost
 To: you@localhost
 Subject: bob!
 

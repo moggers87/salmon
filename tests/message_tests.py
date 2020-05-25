@@ -238,19 +238,19 @@ class MessageTestCase(TestCase):
             assert part.get_payload(), "outmsg parts don't have payload."
 
     def test_to_from_works(self):
-        msg = mail.MailRequest("fakepeer", "from@localhost", [u"<to1@localhost>", u"to2@localhost"], "")
+        msg = mail.MailRequest("fakepeer", "from@localhost", ["<to1@localhost>", "to2@localhost"], "")
         assert '<' not in msg.To, msg.To
 
-        msg = mail.MailRequest("fakepeer", "from@localhost", [u"to1@localhost", u"to2@localhost"], "")
+        msg = mail.MailRequest("fakepeer", "from@localhost", ["to1@localhost", "to2@localhost"], "")
         assert '<' not in msg.To, msg.To
 
-        msg = mail.MailRequest("fakepeer", "from@localhost", [u"to1@localhost", u"<to2@localhost>"], "")
+        msg = mail.MailRequest("fakepeer", "from@localhost", ["to1@localhost", "<to2@localhost>"], "")
         assert '<' not in msg.To, msg.To
 
-        msg = mail.MailRequest("fakepeer", "from@localhost", [u"to1@localhost"], "")
+        msg = mail.MailRequest("fakepeer", "from@localhost", ["to1@localhost"], "")
         assert '<' not in msg.To, msg.To
 
-        msg = mail.MailRequest("fakepeer", "from@localhost", [u"<to1@localhost>"], "")
+        msg = mail.MailRequest("fakepeer", "from@localhost", ["<to1@localhost>"], "")
         assert '<' not in msg.To, msg.To
 
     def test_decode_header_randomness(self):
