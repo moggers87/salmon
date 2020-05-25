@@ -86,7 +86,7 @@ class MailRequest:
         self.bounce = None
 
     def __repr__(self):
-        return "From: %r" % [self.Peer, self.From, self.To]
+        return "From: {}".format([self.Peer, self.From, self.To])
 
     def all_parts(self):
         """Returns all multipart mime parts.  This could be an empty list."""

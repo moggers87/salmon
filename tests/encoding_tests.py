@@ -340,9 +340,9 @@ class EncodingTestCase(SalmonTestCase):
 
     def test_odd_roundtrip_bug(self):
         decoded_addrs = [
-                u'"\u0414\u0435\u043b\u043e\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0441\u0442\u0432\u043e" <daniel@specelec.com>',  # noqa: E501
-            u'"\u8003\u53d6\u5206\u4eab" <Ernest.Beard@msa.hinet.net>',
-            u'"Exquisite Replica"\n\t<wolfem@barnagreatlakes.com>',
+            '"\u0414\u0435\u043b\u043e\u043f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0441\u0442\u0432\u043e" <daniel@specelec.com>',  # noqa: E501
+            '"\u8003\u53d6\u5206\u4eab" <Ernest.Beard@msa.hinet.net>',
+            '"Exquisite Replica"\n\t<wolfem@barnagreatlakes.com>',
         ]
 
         for decoded in decoded_addrs:
