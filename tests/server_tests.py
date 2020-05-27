@@ -151,14 +151,14 @@ class ServerTestCase(SalmonTestCase):
             assert response is None, response
 
     def test_Relay_asserts_ssl_options(self):
-        """Relay raises an AssertionError if the ssl option is used in combination with starttls or lmtp"""
-        with self.assertRaises(AssertionError):
+        """Relay raises an TypeError if the ssl option is used in combination with starttls or lmtp"""
+        with self.assertRaises(TypeError):
             server.Relay("localhost", ssl=True, starttls=True)
 
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             server.Relay("localhost", ssl=True, lmtp=True)
 
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(TypeError):
             server.Relay("localhost", ssl=True, starttls=True, lmtp=True)
 
         # no error

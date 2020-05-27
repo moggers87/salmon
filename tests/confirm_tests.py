@@ -86,5 +86,15 @@ class ConfirmationTestCase(SalmonTestCase):
 
         self.engine.cancel(target, confirm['To'], expect_secret)
 
-        found = self.engine.verify(target, confirm['To'], expect_secret)
-        assert not found
+        self.assertNotIn(b"testing:somedude@localhost", self.engine.storage.confirmations.keys())
+
+    def test_ConfirmationEngine_cancel_bad_secret(self):
+        confirm = self.test_ConfirmationEngine_send()
+        confirm = mail.MailRequest(None, None, None, confirm)
+
+        target = confirm['Reply-To'].split('-')[0]
+        expect_secret = "bad"
+
+        self.engine.cancel(target, confirm['To'], expect_secret)
+
+        self.assertIn(b"testing:somedude@localhost", self.engine.storage.confirmations.keys())

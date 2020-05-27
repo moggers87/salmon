@@ -84,8 +84,10 @@ class Relay:
         self.starttls = starttls
         self.lmtp = lmtp
 
-        assert not (ssl and lmtp), "LMTP over SSL not supported. Use STARTTLS instead."
-        assert not (ssl and starttls), "SSL and STARTTLS make no sense together"
+        if ssl and lmtp:
+            raise TypeError("LMTP over SSL not supported. Use STARTTLS instead.")
+        if ssl and starttls:
+            raise TypeError("SSL and STARTTLS make no sense together")
 
     def configure_relay(self, hostname):
         if self.ssl:
@@ -102,7 +104,6 @@ class Relay:
         if self.username and self.password:
             relay_host.login(self.username, self.password)
 
-        assert relay_host, 'Code error, file a bug.'
         return relay_host
 
     def deliver(self, message, To=None, From=None):

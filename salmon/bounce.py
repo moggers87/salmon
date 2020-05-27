@@ -281,11 +281,14 @@ class bounce_to:
     If you don't go back to start immediately then you will mess with the state
     for this address, which can be bad.
     """
-    def __init__(self, soft=None, hard=None):
+    def __init__(self, soft, hard):
+        if not callable(soft):
+            raise TypeError("'soft' must be a callable")
         self.soft = soft
-        self.hard = hard
 
-        assert self.soft and self.hard, "You must give at least soft and/or hard"
+        if not callable(hard):
+            raise TypeError("'hard' must be a callable")
+        self.hard = hard
 
     def __call__(self, func):
         @wraps(func)

@@ -548,7 +548,8 @@ class route_like(route):
     modules.
     """
     def __init__(self, func):
-        assert_salmon_settings(func)
+        if not has_salmon_settings(func):
+            raise TypeError("{} is missing a @route".format(func))
         self.format = func._salmon_settings['format']
         self.captures = func._salmon_settings['captures']
 
@@ -565,8 +566,8 @@ def stateless(func):
 
     Stateless handlers are NOT guaranteed to run before the handler with state.
     """
-    if has_salmon_settings(func):
-        assert not salmon_setting(func, 'format'), "You must use @stateless AFTER @route or @route_like."
+    if has_salmon_settings(func) and salmon_setting(func, 'format'):
+        raise TypeError("You must use @stateless after @route or @route_like")
 
     attach_salmon_settings(func)
     func._salmon_settings['stateless'] = True
