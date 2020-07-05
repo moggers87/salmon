@@ -94,7 +94,7 @@ Salmon has just had some major changes to modernise the code-base. The main
 APIs should be compatible with releases prior to 3.0.0, but there's no
 guarantee that older applications won't need changes.
 
-Python versions supported are: 3.5, 3.6, 3.7 and 3.8.
+Python versions supported are: 3.6, 3.7 and 3.8.
 
 See the CHANGELOG for more details on what's changed since Salmon version 2.
 
