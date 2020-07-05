@@ -175,8 +175,6 @@ def _deliver(receiver, Peer, From, To, Data, **kwargs):
 
 
 class SMTPChannel(smtpd.SMTPChannel):
-    """Replaces the standard SMTPChannel with one that rejects more than one recipient"""
-
     def smtp_RCPT(self, arg):
         if self.__rcpttos:
             # We can't properly handle multiple RCPT TOs in SMTPReceiver
@@ -202,7 +200,11 @@ class SMTPChannel(smtpd.SMTPChannel):
 
 
 class SMTPReceiver(smtpd.SMTPServer):
-    """Receives emails and hands it to the Router for further processing."""
+    """Receives emails and hands it to the Router for further processing.
+
+
+    This Receiver is based on Python's asyncore module. Consider using AsyncSMTPReceiver.
+    """
 
     def __init__(self, host='127.0.0.1', port=8825):
         """
@@ -245,7 +247,10 @@ class SMTPReceiver(smtpd.SMTPServer):
 
 
 class LMTPReceiver(lmtpd.LMTPServer):
-    """Receives emails and hands it to the Router for further processing."""
+    """Receives emails and hands it to the Router for further processing.
+
+    This Receiver is based on Python's asyncore module. Consider using AsyncLMTPReceiver.
+    """
 
     def __init__(self, host='127.0.0.1', port=8824, socket=None):
         """

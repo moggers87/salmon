@@ -2,7 +2,7 @@ import logging.config
 
 from salmon import queue
 from salmon.routing import Router
-from salmon.server import LMTPReceiver, Relay
+from salmon.server import AsyncLMTPReceiver, Relay
 
 from . import settings
 
@@ -13,8 +13,8 @@ settings.relay = Relay(host=settings.relay_config['host'],
                        port=settings.relay_config['port'], debug=1)
 
 # where to listen for incoming messages
-settings.receiver = LMTPReceiver(settings.receiver_config['host'],
-                                 settings.receiver_config['port'])
+settings.receiver = AsyncLMTPReceiver(hostname=settings.receiver_config['host'],
+                                      port=settings.receiver_config['port'])
 
 Router.defaults(**settings.router_defaults)
 Router.load(settings.handlers)
