@@ -21,7 +21,6 @@ class UtilsTestCase(SalmonTestCase):
         assert settings
         assert settings.receiver
         assert settings.relay is None
-        settings.receiver.close()
 
     def test_import_settings(self):
         assert utils.settings is None

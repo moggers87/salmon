@@ -23,6 +23,7 @@ from salmon.bounce import COMBINED_STATUS_CODES, PRIMARY_STATUS_CODES, SECONDARY
 
 ROUTER_VERSION_STRING = "Salmon Mail router, version %s" % __version__
 SMTP_MULTIPLE_RCPTS_ERROR = "451 Will not accept multiple recipients in one transaction"
+IN_QUEUE = "run/in_queue"
 
 lmtpd.__version__ = ROUTER_VERSION_STRING
 smtpd.__version__ = ROUTER_VERSION_STRING
@@ -292,40 +293,47 @@ class LMTPReceiver(lmtpd.LMTPServer):
         return _deliver(self, Peer, From, To, Data, **kwargs)
 
 
-class SMTPOnlyOneRcpt(SMTP):
-    async def smtp_RCPT(self, arg):
-        if self.envelope.rcpt_tos:
-            await self.push(SMTP_MULTIPLE_RCPTS_ERROR)
-        else:
-            await super().smtp_RCPT(arg)
-
-
 class SMTPHandler:
-    def __init__(self, executor=None):
+    def __init__(self, executor=None, *, in_queue):
         self.executor = executor
+        self.in_queue = in_queue
 
     async def handle_DATA(self, server, session, envelope):
-        status = await server.loop.run_in_executor(self.executor, partial(
-            _deliver,
-            self,
-            session.peer,
-            envelope.mail_from,
-            envelope.rcpt_tos[0],
-            envelope.content,
-        ))
-        return status or "250 Ok"
+        try:
+            status = await server.loop.run_in_executor(self.executor, partial(
+                self.in_queue.queue.push,
+                envelope.content,
+                session.peer,
+                envelope.mail_from,
+                envelope.rcpt_tos,
+            ))
+            status = "250 Ok"
+        except Exception:
+            logging.exception("Raised exception while trying to push to Queue: %r, Peer: %r, From: %r, To: %r")
+            status = "550 Server error"
+        return status
 
 
 class AsyncSMTPReceiver(Controller):
     """Receives emails and hands it to the Router for further processing."""
-    def __init__(self, handler=None, **kwargs):
+    def __init__(self, handler=None, in_queue=None, **kwargs):
+        if in_queue is None:
+            in_queue = QueueReceiver(queue.QueueWithMetadata(IN_QUEUE))
+        self.in_queue = in_queue
         if handler is None:
-            handler = SMTPHandler()
+            handler = SMTPHandler(in_queue=self.in_queue)
         super().__init__(handler, **kwargs)
 
     def factory(self):
-        # TODO implement a queue
-        return SMTPOnlyOneRcpt(self.handler, enable_SMTPUTF8=self.enable_SMTPUTF8, ident=ROUTER_VERSION_STRING)
+        return SMTP(self.handler, enable_SMTPUTF8=self.enable_SMTPUTF8, ident=ROUTER_VERSION_STRING)
+
+    def start(self):
+        super().start()
+        self.in_queue.start()
+
+    def stop(self):
+        super().stop()
+        self.in_queue.stop()
 
 
 class LMTPHandler:
@@ -340,7 +348,8 @@ class LMTPHandler:
                 self,
                 session.peer,
                 envelope.mail_from,
-                rcpt, envelope.content,
+                rcpt,
+                envelope.content,
             ))
             statuses.append(status or "250 Ok")
         return "\r\n".join(statuses)
@@ -389,19 +398,24 @@ class QueueReceiver:
     same way otherwise.
     """
 
-    def __init__(self, queue_dir, sleep=10, size_limit=0, oversize_dir=None, workers=10):
+    def __init__(self, in_queue, sleep=10, size_limit=0, oversize_dir=None, workers=10):
         """
         The router should be fully configured and ready to work, the queue_dir
         can be a fully qualified path or relative. The option workers dictates
         how many threads are started to process messages. Consider adding
         ``@nolocking`` to your handlers if you are able to.
         """
-        self.queue = queue.Queue(queue_dir, pop_limit=size_limit,
-                                 oversize_dir=oversize_dir)
+        if isinstance(in_queue, str):
+            self.queue = queue.Queue(in_queue, pop_limit=size_limit,
+                                     oversize_dir=oversize_dir)
+        else:
+            self.queue = in_queue
         self.sleep = sleep
 
         # Pool is from multiprocess.dummy which uses threads rather than processes
         self.workers = Pool(workers)
+
+        self._running = True
 
     def start(self, one_shot=False):
         """
@@ -412,25 +426,35 @@ class QueueReceiver:
         """
 
         logging.info("Queue receiver started on queue dir %s", self.queue.dir)
-        logging.debug("Sleeping for %d seconds...", self.sleep)
 
-        # if there are no messages left in the maildir and this a one-shot, the
-        # while loop terminates
-        while not (len(self.queue) == 0 and one_shot):
-            # if there's nothing in the queue, take a break
-            if len(self.queue) == 0:
-                time.sleep(self.sleep)
-                continue
+        def _run():
+            while self._running:
+                # if there's nothing in the queue, take a break
+                if len(self.queue) == 0:
+                    if one_shot:
+                        self._running = False
+                    else:
+                        logging.debug("Sleeping for %d seconds...", self.sleep)
+                        time.sleep(self.sleep)
+                    continue
 
-            try:
-                key, msg = self.queue.pop()
-            except KeyError:
-                logging.debug("Could not find message in Queue")
-                continue
+                try:
+                    key, msg = self.queue.pop()
+                except KeyError:
+                    logging.debug("Could not find message in Queue")
+                    continue
 
-            logging.debug("Pulled message with key: %r off", key)
-            self.workers.apply_async(self.process_message, args=(msg,))
+                logging.debug("Pulled message with key: %r off", key)
+                self.workers.apply_async(self.process_message, args=(msg,))
+        self.main_thread = threading.Thread(target=_run)
+        self.main_thread.start()
 
+        if one_shot:
+            self.main_thread.join()
+
+    def stop(self):
+        self._running = False
+        self.main_thread.join()
         self.workers.close()
         self.workers.join()
 
@@ -441,12 +465,13 @@ class QueueReceiver:
         """
 
         try:
-            logging.debug("Message received from Peer: %r, From: %r, to To %r.", msg.Peer, msg.From, msg.To)
+            logging.debug("Message received from Queue: %r, Peer: %r, From: %r, to To %r.",
+                          self.queue, msg.Peer, msg.From, msg.To)
             routing.Router.deliver(msg)
         except SMTPError as err:
             logging.exception("Raising SMTPError when running in a QueueReceiver is unsupported.")
             undeliverable_message(msg.Data, err.message)
         except Exception:
-            logging.exception("Exception while processing message from Peer: "
-                              "%r, From: %r, to To %r.", msg.Peer, msg.From, msg.To)
+            logging.exception("Exception while processing message from Queue: %r, Peer: "
+                              "%r, From: %r, to To %r.", self.queue, msg.Peer, msg.From, msg.To)
             undeliverable_message(msg.Data, "Router failed to catch exception.")

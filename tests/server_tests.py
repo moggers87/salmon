@@ -222,6 +222,7 @@ class QueueTestCase(SalmonTestCase):
         receiver = server.QueueReceiver('run/queue', sleep=10, workers=1)
         with self.assertRaises(SleepCalled):
             receiver.start()
+            receiver.main_thread.join()
 
         self.assertEqual(receiver.workers.apply_async.call_count, 0)
         self.assertEqual(sleep_mock.call_count, 2)
@@ -427,7 +428,7 @@ class AsyncSmtpServerTestCase(SalmonTestCase):
             code, _ = client.rcpt("you@localhost")
             self.assertEqual(code, 250)
             code, _ = client.rcpt("them@localhost")
-            self.assertEqual(code, 451)
+            self.assertEqual(code, 250)
 
 
 class AsyncLmtpServerTestCase(SalmonTestCase):

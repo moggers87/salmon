@@ -4,13 +4,16 @@ do get a lot more features from the Python library, so if you need
 to do some serious surgery go use that.  This works as a good
 API for the 90% case of "put mail in, get mail out" queues.
 """
+import contextlib
 import errno
+import fcntl
 import hashlib
 import logging
 import mailbox
 import os
 import socket
 import time
+import json
 
 from salmon import mail
 
@@ -40,14 +43,6 @@ class SafeMaildir(mailbox.Maildir):
 
         # Fall through to here if stat succeeded or open raised EEXIST.
         raise mailbox.ExternalClashError('Name clash prevented file creation: %s' % path)
-
-
-class QueueError(Exception):
-
-    def __init__(self, msg, data):
-        Exception.__init__(self, msg)
-        self._message = msg
-        self.data = data
 
 
 class Queue:
@@ -89,8 +84,10 @@ class Queue:
 
             self.oversize_dir = os.path.join(oversize_dir, "new")
 
-            if not os.path.exists(self.oversize_dir):
+            try:
                 os.mkdir(self.oversize_dir)
+            except FileExistsError:
+                pass
         else:
             self.oversize_dir = None
 
@@ -104,6 +101,16 @@ class Queue:
             message = str(message)
         return self.mbox.add(message)
 
+    def _move_oversize(self, key, name):
+        if self.oversize_dir:
+            logging.info("Message key %s over size limit %d, moving to %s.",
+                         key, self.pop_limit, self.oversize_dir)
+            os.rename(name, os.path.join(self.oversize_dir, key))
+        else:
+            logging.info("Message key %s over size limit %d, DELETING (set oversize_dir).",
+                         key, self.pop_limit)
+            os.unlink(name)
+
     def pop(self):
         """
         Pops a message off the queue, order is not really maintained
@@ -115,21 +122,10 @@ class Queue:
             over, over_name = self.oversize(key)
 
             if over:
-                if self.oversize_dir:
-                    logging.info("Message key %s over size limit %d, moving to %s.",
-                                 key, self.pop_limit, self.oversize_dir)
-                    os.rename(over_name, os.path.join(self.oversize_dir, key))
-                else:
-                    logging.info("Message key %s over size limit %d, DELETING (set oversize_dir).",
-                                 key, self.pop_limit)
-                    os.unlink(over_name)
+                self._move_oversize(key, over_name)
             else:
-                try:
-                    msg = self.get(key)
-                except QueueError as exc:
-                    raise exc
-                finally:
-                    self.remove(key)
+                msg = self.get(key)
+                self.remove(key)
                 return key, msg
 
         return None, None
@@ -149,11 +145,11 @@ class Queue:
         try:
             return mail.MailRequest(self.dir, None, None, msg_data)
         except Exception as exc:
-            logging.exception("Failed to decode message: %s; msg_data: %r",   exc, msg_data)
+            logging.exception("Failed to decode message: %s; msg_data: %r", exc, msg_data)
             return None
 
     def remove(self, key):
-        """Removes the queue, but not returned."""
+        """Removes key the queue."""
         self.mbox.remove(key)
 
     def __len__(self):
@@ -166,15 +162,8 @@ class Queue:
     def clear(self):
         """
         Clears out the contents of the entire queue.
-
-        Warning: This could be horribly inefficient since it pops messages
-        until the queue is empty. It could also cause an infinite loop if
-        another process is writing to messages to the Queue faster than we can
-        pop.
         """
-        # man this is probably a really bad idea
-        while len(self) > 0:
-            self.pop()
+        self.mbox.clear()
 
     def keys(self):
         """
@@ -188,3 +177,88 @@ class Queue:
             return os.path.getsize(file_name) > self.pop_limit, file_name
         else:
             return False, None
+
+
+class Metadata:
+    def __init__(self, path):
+        self.path = os.path.join(path, "metadata")
+        self.meta_file = None
+        try:
+            os.mkdir(self.path)
+        except FileExistsError:
+            pass
+
+    def get(self):
+        return json.load(self.meta_file)
+
+    def set(self, key, data):
+        json.dump(self.meta_file, data)
+
+    def remove(self):
+        os.unlink(self.meta_file)
+
+    def clear(self):
+        raise NotImplementedError
+
+    @contextlib.contextmanager
+    def lock(self, key, mode="r"):
+        i = 0
+        try:
+            self.meta_file = open(os.path.join(self.path, key), mode)
+        except FileNotFoundError:
+            pass
+        else:
+            while True:
+                # try for a lock using exponential backoff
+                try:
+                    fcntl.flock(self.meta_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                except BlockingIOError:
+                    if i > 5:
+                        # 2**5 is 30 seconds which is far too long
+                        raise
+                    time.sleep(2**i)
+                    i += 1
+                else:
+                    break
+
+        try:
+            yield self
+        finally:
+            if self.meta_file is not None:
+                fcntl.flock(self.meta_file, fcntl.LOCK_UN)
+                self.meta_file.close()
+                self.meta_file = None
+
+
+class QueueWithMetadata(Queue):
+    """Just like Queue, except it stores envelope data"""
+    def push(self, message, Peer, From, To):
+        if not isinstance(To, list):
+            To = [To]
+        key = super().push(message)
+        with Metadata(self.dir).lock(key, "w") as metadata:
+            metadata.set(key, {"Peer": Peer, "From": From, "To": To})
+        return key
+
+    def get(self, key):
+        with Metadata(self.dir).lock(key) as metadata:
+            msg = super().get(key)
+            data = metadata.get(key)
+            # move data from metadata to msg obj
+            for k, v in data.items():
+                setattr(msg, k, v)
+            data["To"].remove(msg.To)
+            metadata.set(data)
+        return msg
+
+    def remove(self, key):
+        with Metadata(self.dir).lock(key) as metadata:
+            data = metadata.get(key)
+            # if there's still a To to be processed, leave the message on disk
+            if not data.get("To"):
+                super().remove(key)
+                metadata.remove()
+
+    def clear(self):
+        Metadata(self.dir).clear()
+        super().clear()

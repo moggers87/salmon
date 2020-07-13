@@ -79,7 +79,7 @@ class CommandTestCase(SalmonTestCase):
         self.assertEqual(mq.__len__.call_count, 1)
 
     @patch('salmon.utils.daemonize')
-    @patch('salmon.server.SMTPReceiver')
+    @patch('salmon.server.AsyncSMTPReceiver')
     def test_log_command(self, MockSMTPReceiver, daemon_mock):
         runner = CliRunner()
         ms = MockSMTPReceiver()
