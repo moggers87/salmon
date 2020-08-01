@@ -94,7 +94,7 @@ def make_fake_settings(host, port):
         logging.basicConfig(filename="logs/logger.log", level=logging.DEBUG)
         routing.Router.load(['salmon.handlers.log', 'salmon.handlers.queue'])
         settings = imp.new_module('settings')
-        settings.receiver = server.SMTPReceiver(host, port)
+        settings.receiver = server.AsyncSMTPReceiver(hostname=host, port=port)
         settings.relay = None
         logging.info("Logging mode enabled, will not send email to anyone, just log.")
 

@@ -102,7 +102,7 @@ By deafult, all configuration happens in ``config/``
 ^^^^^^^^^^^
 
 This file is used by Salmon during start-up to configure the daemon with
-various things, such as starting the ``LMTPReceiver``. It's a bit like the
+various things, such as starting the ``AsyncLMTPReceiver``. It's a bit like the
 ``wsgi.py`` file that Python web apps have. If you want to use a different boot
 module, you can specify it with the ``--boot`` argument. E.g. to use
 ``myapp/othermodule.py``, do:
@@ -144,18 +144,18 @@ much in the same way as you host a WSGI application behind Apache or Nginx.
 
 As seen above, a new Salmon project will start a LMTP server that listens on
 ``localhost:8823``. You can go into ``config/settings.py`` and change the host
-and port Salmon uses. You can also switch out ``LMTPReceiver`` for
-``SMTPReceiver`` if you require Salmon to use SMTP instead.
+and port Salmon uses. You can also switch out ``AsyncLMTPReceiver`` for
+``AsyncSMTPReceiver`` if you require Salmon to use SMTP instead.
 
 .. warning::
 
     Due to the way Salmon has been implemented it is better suited as a LMTP
-    server than a SMTP server. ``SMTPReceiver`` is unable to handle multiple
+    server than a SMTP server. ``AsyncSMTPReceiver`` is unable to handle multiple
     recipients in one transaction as it doesn't implement the nessessary
     features to properly implement this part of the SMTP protocol. This is a
-    compromise ``SMTPReceiver`` makes in order to allow users more freedom in
+    compromise ``AsyncSMTPReceiver`` makes in order to allow users more freedom in
     what they do in their handlers.
 
 
-    ``LMTPReceiver`` is unaffected by this issue and implements the LMTP
+    ``AsyncLMTPReceiver`` is unaffected by this issue and implements the LMTP
     protocol fully.

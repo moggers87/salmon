@@ -22,6 +22,7 @@ def clean_dirs():
 
 class SalmonTestCase(TestCase):
     def setUp(self):
+        super().setUp()
         clean_dirs()
         for path in dirs:
             os.mkdir(path)
