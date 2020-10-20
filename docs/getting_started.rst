@@ -96,7 +96,7 @@ Once you're done, stop the server:
 Configuration
 -------------
 
-By deafult, all configuration happens in ``config/``
+By default, all configuration happens in ``config/``
 
 ``boot.py``
 ^^^^^^^^^^^
