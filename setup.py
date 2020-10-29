@@ -30,7 +30,6 @@ config = {
     'cmdclass': versioneer.get_cmdclass(),
     'install_requires': install_requires,
     'extras_require': extras_require,
-    'test_suite': 'tests',
     'packages': ['salmon', 'salmon.handlers'],
     'include_package_data': True,
     'name': 'salmon-mail',

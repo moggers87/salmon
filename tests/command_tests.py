@@ -396,7 +396,9 @@ class BlastCommandTestCase(SalmonTestCase):
         runner = CliRunner()
         result = runner.invoke(commands.main, ("blast", "--host", "127.0.1.2", "--port", "8901", "run/queue"))
         self.assertEqual(result.exit_code, 1)
-        self.assertEqual(result.output, "Error: [Errno 111] Connection refused\n")
+        # Mac and Linux give different errors, but they're basically the same
+        self.assertIn(result.output, ["Error: [Errno 111] Connection refused\n",
+                                      "Error: [Errno 60] Operation timed out\n"])
 
     def test_no_queue(self):
         runner = CliRunner()
