@@ -130,54 +130,6 @@ class EncodingTestCase(SalmonTestCase):
         for i, header in enumerate(BAD_HEADERS):
             self.assertEqual(DECODED_HEADERS[i], encoding.header_from_mime_encoding(header))
 
-    def test_to_message_from_message_with_spam(self):
-        mb = mailbox.mbox("tests/data/spam")
-
-        for msg in mb:
-            m = encoding.from_message(msg)
-            out = encoding.to_message(m)
-            assert repr(out)
-
-            m2 = encoding.from_message(out)
-
-            for k in m:
-                if '@' in m[k]:
-                    self.assertEqual(parseaddr(m[k]), parseaddr(m2[k]))
-                elif k.lower() in [key.lower() for key in encoding.CONTENT_ENCODING_KEYS]:
-                    pass  # skip!
-                else:
-                    assert m[k].strip() == m2[k].strip(), "%s: %r != %r" % (k, m[k], m2[k])
-
-                assert not m[k].startswith("=?")
-                assert not m2[k].startswith("=?")
-
-            # salmon adds stuff to content headers that's missing from example messages
-            for k in encoding.CONTENT_ENCODING_KEYS:
-                if k == "Content-Transfer-Encoding" \
-                        and m.content_encoding[k][0] is None \
-                        and m2.content_encoding[k][0] == "7bit":
-                    continue  # salmon fixing bad email
-                elif k == "Mime-Version" \
-                        and m.content_encoding[k][0] is None \
-                        and m2.content_encoding[k][0] == "1.0":
-                    continue  # again, salmon fixing bad email
-
-                assert m.content_encoding[k][0] == m2.content_encoding[k][0], \
-                    "%s: %r != %r" % (k, m.content_encoding[k], m2.content_encoding[k])
-
-                for p in m.content_encoding[k][1]:
-                    if p in m2.content_encoding[k][1]:
-                        assert m.content_encoding[k][1][p].lower() == m2.content_encoding[k][1][p].lower(), \
-                            "%s: %r != %r" % (p, m.content_encoding[k][1][p], m2.content_encoding[k][1][p])
-
-            assert m.body == m2.body, "Bodies don't match"
-
-            self.assertEqual(len(m.parts), len(m2.parts), "Not the same number of parts.")
-
-            for i, part in enumerate(m.parts):
-                assert part.body == m2.parts[i].body, \
-                    "Part %d isn't the same: %r \nvs\n. %r" % (i, part.body, m2.parts[i].body)
-
     def test_to_message_raises_encoding_error(self):
         base = encoding.MailBase()
         base.attach_text("hello", ctype="text/plain")
@@ -381,3 +333,68 @@ class EncodingTestCase(SalmonTestCase):
         msg.append_header("To", "nobody@example.com")
         self.assertEqual(msg["To"], "somedude@localhost")
         self.assertEqual(msg.keys(), ["To", "From", "To"])
+
+
+class SpamMessageEncodingTestCase(SalmonTestCase):
+    def setUp(self):
+        self.mailbox = mailbox.mbox("tests/data/spam")
+
+    def test_to_message_from_message_headers(self):
+        for msg in self.mailbox:
+            m = encoding.from_message(msg)
+            out = encoding.to_message(m)
+            assert repr(out)
+
+            m2 = encoding.from_message(out)
+
+            for k in m:
+                if '@' in m[k]:
+                    self.assertEqual(parseaddr(m[k]), parseaddr(m2[k]))
+                elif k in encoding.CONTENT_ENCODING_KEYS:
+                    pass  # skip!
+                else:
+                    assert m[k].strip() == m2[k].strip(), "%s: %r != %r" % (k, m[k], m2[k])
+
+                assert not m[k].startswith("=?")
+                assert not m2[k].startswith("=?")
+
+    def test_to_message_from_message_content_encoding_keys(self):
+        for msg in self.mailbox:
+            m = encoding.from_message(msg)
+            out = encoding.to_message(m)
+            assert repr(out)
+
+            m2 = encoding.from_message(out)
+            # salmon adds stuff to content headers that's missing from example messages
+            for k in encoding.CONTENT_ENCODING_KEYS:
+                if k == "Content-Transfer-Encoding" \
+                        and m.content_encoding[k][0] is None \
+                        and m2.content_encoding[k][0] == "7bit":
+                    continue  # salmon fixing bad email
+                elif k == "Mime-Version" \
+                        and m.content_encoding[k][0] is None \
+                        and m2.content_encoding[k][0] == "1.0":
+                    continue  # again, salmon fixing bad email
+
+                assert m.content_encoding[k][0] == m2.content_encoding[k][0], \
+                    "%s: %r != %r" % (k, m.content_encoding[k], m2.content_encoding[k])
+
+                for p in m.content_encoding[k][1]:
+                    if p in m2.content_encoding[k][1]:
+                        assert m.content_encoding[k][1][p].lower() == m2.content_encoding[k][1][p].lower(), \
+                            "%s: %r != %r" % (p, m.content_encoding[k][1][p], m2.content_encoding[k][1][p])
+
+    def test_to_message_from_message_bodies(self):
+        for msg in self.mailbox:
+            m = encoding.from_message(msg)
+            out = encoding.to_message(m)
+            assert repr(out)
+
+            m2 = encoding.from_message(out)
+            assert m.body == m2.body, "Bodies don't match"
+
+            self.assertEqual(len(m.parts), len(m2.parts), "Not the same number of parts.")
+
+            for i, part in enumerate(m.parts):
+                assert part.body == m2.parts[i].body, \
+                    "Part %d isn't the same: %r \nvs\n. %r" % (i, part.body, m2.parts[i].body)

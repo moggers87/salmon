@@ -351,13 +351,7 @@ def from_message(message, parent=None):
     return mail
 
 
-def to_message(mail):
-    """
-    Given a MailBase message, this will construct a MIMEPart
-    that is canonicalized for use with the Python email API.
-
-    N.B. this changes the original email.message.Message
-    """
+def _get_ctype(mail):
     ctype, params = mail.content_encoding['Content-Type']
     if not ctype:
         if mail.parts:
@@ -366,6 +360,18 @@ def to_message(mail):
             ctype = 'text/plain'
     if mail.parts and not (ctype.startswith("multipart") or ctype.startswith("message")):
         raise EncodingError("Content type should be multipart or message, not %r" % ctype)
+
+    return (ctype, params)
+
+
+def to_message(mail):
+    """
+    Given a MailBase message, this will construct a MIMEPart
+    that is canonicalized for use with the Python email API.
+
+    N.B. this changes the original email.message.Message
+    """
+    ctype, params = _get_ctype(mail)
 
     # adjust the content type according to what it should be now
     mail.content_encoding['Content-Type'] = (ctype, params)
@@ -382,7 +388,7 @@ def to_message(mail):
         else:
             value = header_to_mime_encoding(mail[k], not_email=True)
 
-        if k.lower() in [key.lower() for key in CONTENT_ENCODING_KEYS]:
+        if k in CONTENT_ENCODING_KEYS:
             del out[k]
             out[k] = value
         else:
@@ -584,7 +590,7 @@ def _scan(data):
         yield before_match, enc_header, enc_data, continued
 
 
-def _parse_charset_header(data):
+def _parse_charset_header(data):  # noqa: C901
     """Decodes header, yielding decoded and plain text sections separately
 
     For example:
@@ -593,6 +599,8 @@ def _parse_charset_header(data):
         >>> print(list(_parse_charset_header(data)))
         ['\u0141ukasz', ' the ', '\U0001f41f']
     """
+    # TODO fix this mess
+    # e.g. what the heck is "oddness"?
     scanner = _scan(data)
     oddness = None
 
