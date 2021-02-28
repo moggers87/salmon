@@ -239,6 +239,22 @@ def queue(name, pop, get, keys, remove, count, clear):
         click.echo("\n".join(inq.keys()))
 
 
+def _import_router_modules(modules, path):
+    sys.path += path.split(':')
+
+    utils.import_settings(False)
+
+    for module in modules:
+        try:
+            import_module(module)
+        except ImportError:
+            raise click.ClickException("Module '%s' could not be imported. Did you forget to use the --path option?"
+                                       % str(module))
+
+    if not routing.Router.REGISTERED:
+        raise click.ClickException("Modules '%s' imported, but no function registered." % str(modules))
+
+
 @main.command(short_help="display routes")
 @click.option("--path", metavar="PATH", default=os.getcwd, help="search path for modules")
 @click.option("--test", metavar="EMAIL", help="address to test against routing configuration")
@@ -252,20 +268,8 @@ def routes(modules, test, path):
 
     MODULE should be a configureation module and can be given multiple times.
     """
-    sys.path += path.split(':')
+    _import_router_modules(modules, path)
     test_case_matches = []
-
-    utils.import_settings(False)
-
-    for module in modules:
-        try:
-            import_module(module)
-        except ImportError:
-            raise click.ClickException("Module '%s' could not be imported. Did you forget to use the --path option?"
-                                       % str(module))
-
-    if not routing.Router.REGISTERED:
-        raise click.ClickException("Modules '%s' imported, but no function registered." % str(modules))
 
     click.echo("Routing ORDER: %s" % routing.Router.ORDER)
     click.echo("Routing TABLE:\n---")
