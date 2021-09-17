@@ -299,8 +299,7 @@ class QueueReceiver:
         """
         The router should be fully configured and ready to work, the queue_dir
         can be a fully qualified path or relative. The option workers dictates
-        how many threads are started to process messages. Consider adding
-        ``@nolocking`` to your handlers if you are able to.
+        how many threads are started to process messages.
         """
         self.queue = queue.Queue(queue_dir, pop_limit=size_limit,
                                  oversize_dir=oversize_dir)

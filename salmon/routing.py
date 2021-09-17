@@ -36,8 +36,7 @@ functions.
 * @route_like -- Says that this function routes like another one.
 * @stateless -- Indicates this function always runs on each route encountered, and
   no state is maintained.
-* @nolocking -- Use this if you want this handler to run parallel without any
-  locking around Salmon internals.  SUPER DANGEROUS, add @stateless as well.
+* @locking -- Use this if you want this handler to be run one call at a time.
 * @state_key_generator -- Used on a function that knows how to make your state
   keys for the module, for example if module_name + message.To is needed to maintain
   state.
@@ -55,9 +54,12 @@ import re
 import shelve
 import sys
 import threading
+import warnings
 
 ROUTE_FIRST_STATE = 'START'
 LOG = logging.getLogger("routing")
+SALMON_SETTINGS_VARIABLE_NAME = "_salmon_settings"
+_DEFAULT_VALUE = object()
 
 
 def DEFAULT_STATE_KEY(mod, msg):
@@ -97,10 +99,11 @@ class MemoryStorage(StateStorage):
     """
     The default simplified storage for the Router to hold the states.  This
     should only be used in testing, as you'll lose all your contacts and their
-    states if your server shuts down.  It is also horribly NOT thread safe.
+    states if your server shuts down.
     """
     def __init__(self):
         self.states = {}
+        self.lock = threading.RLock()
 
     def get(self, key, sender):
         key = self.key(key, sender)
@@ -110,14 +113,15 @@ class MemoryStorage(StateStorage):
             return ROUTE_FIRST_STATE
 
     def set(self, key, sender, state):
-        key = self.key(key, sender)
-        if state == ROUTE_FIRST_STATE:
-            try:
-                del self.states[key]
-            except KeyError:
-                pass
-        else:
-            self.states[key] = state
+        with self.lock:
+            key = self.key(key, sender)
+            if state == ROUTE_FIRST_STATE:
+                try:
+                    del self.states[key]
+                except KeyError:
+                    pass
+            else:
+                self.states[key] = state
 
     def key(self, key, sender):
         return repr([key, sender])
@@ -138,8 +142,8 @@ class ShelveStorage(MemoryStorage):
     """
     def __init__(self, database_path):
         """Database path depends on the backing library use by Python's shelve."""
+        super().__init__()
         self.database_path = database_path
-        self.lock = threading.RLock()
 
     def get(self, key, sender):
         """
@@ -190,22 +194,11 @@ class RoutingBase:
 
     in your settings module.
 
-    RoutingBase does locking on every write to its internal data (which usually
-    only happens during booting and reloading while debugging), and when each
-    handler's state function is called.  ALL threads will go through this lock,
-    but only as each state is run, so you won't have a situation where the chain
-    of state functions will block all the others.  This means that while your
-    handler runs nothing will be running, but you have not guarantees about
-    the order of each state function.
-
-    However, this can kill the performance of some kinds of state functions,
-    so if you find the need to not have locking, then use the @nolocking
-    decorator and the Router will NOT lock when that function is called.  That
-    means while your @nolocking state function is running at least one other
-    thread (more if the next ones happen to be @nolocking) could also be
-    running.
-
-    It's your job to keep things straight if you do that.
+    RoutingBase assumes that both your STATE_STORE and handlers are
+    thread-safe. For handlers that cannot be made thread-safe, use @locking and
+    RoutingBase will use locks to make sure that handler is only called one
+    call at a time. Please note that this will have a negative impact on
+    performance.
 
     NOTE: See @state_key_generator for a way to change what the key is to
     STATE_STORE for different state control options.
@@ -351,11 +344,11 @@ class RoutingBase:
         for func, matchkw in self._collect_matches(message):
             LOG.debug("Matched %r against %s.", message.To, func.__name__)
 
-            if salmon_setting(func, 'nolocking'):
-                self.call_safely(func, message,  matchkw)
-            else:
+            if salmon_setting(func, 'locking'):
                 with self.call_lock:
                     self.call_safely(func, message, matchkw)
+            else:
+                self.call_safely(func, message,  matchkw)
 
             called_count += 1
 
@@ -516,29 +509,25 @@ class route:
 
     def setup_accounting(self, func):
         """Sets up an accounting map attached to the func for routing decorators."""
-        attach_salmon_settings(func)
-        func._salmon_settings['format'] = self.format
-        func._salmon_settings['captures'] = self.captures
+        salmon_setting(func, 'format', self.format)
+        salmon_setting(func, 'captures', self.captures)
 
 
-def salmon_setting(func, key):
-    """Simple way to get the salmon setting off the function, or None."""
-    return func._salmon_settings.get(key)
+def salmon_setting(func, key, value=_DEFAULT_VALUE):
+    """Get or set a salmon setting on a handler function"""
+    try:
+        salmon_settings = getattr(func, SALMON_SETTINGS_VARIABLE_NAME)
+    except AttributeError:
+        salmon_settings = {}
+        setattr(func, SALMON_SETTINGS_VARIABLE_NAME, salmon_settings)
+    if value is not _DEFAULT_VALUE:
+        salmon_settings[key] = value
+    else:
+        return salmon_settings.get(key)
 
 
 def has_salmon_settings(func):
-    return "_salmon_settings" in func.__dict__
-
-
-def assert_salmon_settings(func):
-    """Used to make sure that the func has been setup by a routing decorator."""
-    assert has_salmon_settings(func), "Function %s has not be setup with a @route first." % func.__name__
-
-
-def attach_salmon_settings(func):
-    """Use this to setup the _salmon_settings if they aren't already there."""
-    if '_salmon_settings' not in func.__dict__:
-        func._salmon_settings = {}
+    return hasattr(func, SALMON_SETTINGS_VARIABLE_NAME)
 
 
 class route_like(route):
@@ -548,10 +537,10 @@ class route_like(route):
     modules.
     """
     def __init__(self, func):
-        if not has_salmon_settings(func):
+        self.format = salmon_setting(func, 'format')
+        self.captures = salmon_setting(func, 'captures')
+        if self.format is None or self.captures is None:
             raise TypeError("{} is missing a @route".format(func))
-        self.format = func._salmon_settings['format']
-        self.captures = func._salmon_settings['captures']
 
 
 def stateless(func):
@@ -566,30 +555,26 @@ def stateless(func):
 
     Stateless handlers are NOT guaranteed to run before the handler with state.
     """
-    if has_salmon_settings(func) and salmon_setting(func, 'format'):
-        raise TypeError("You must use @stateless after @route or @route_like")
-
-    attach_salmon_settings(func)
-    func._salmon_settings['stateless'] = True
-
+    salmon_setting(func, 'stateless', True)
     return func
 
 
 def nolocking(func):
     """
-    Normally salmon.routing.Router has a lock around each call to all handlers
-    to prevent them from stepping on each other.  It's assumed that 95% of the
-    time this is what you want, so it's the default.  You probably want
-    everything to go in order and not step on other things going off from other
-    threads in the system.
-
-    However, sometimes you know better what you are doing and this is where
-    @nolocking comes in.  Put this decorator on your state functions that you
-    don't care about threading issues or that you have found a need to
-    manually tune, and it will run it without any locks.
+    Does nothing, as no locking is the default now
     """
-    attach_salmon_settings(func)
-    func._salmon_settings['nolocking'] = True
+    warnings.warn("@nolocking is redundant and can be safely removed from your handler %s" % func,
+                  category=DeprecationWarning, stacklevel=2)
+    return func
+
+
+def locking(func):
+    """
+    Salmon assumes your handlers are thread-safe, but is not always the case.
+    Put this decorator on any state functions that are not thread-safe for
+    whatever reason.
+    """
+    salmon_setting(func, 'locking', True)
     return func
 
 

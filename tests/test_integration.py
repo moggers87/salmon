@@ -5,10 +5,11 @@ import subprocess
 import sys
 import time
 
+from test_app.config import settings as server_settings
+
 from salmon import queue
 
 from .setup_env import SalmonTestCase, dirs
-from test_app.config import settings as server_settings
 
 
 class IntegrationTestCase(SalmonTestCase):

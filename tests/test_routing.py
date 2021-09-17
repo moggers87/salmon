@@ -1,14 +1,19 @@
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 from salmon import routing
 from salmon.mail import MailRequest
-from salmon.routing import MemoryStorage, Router, ShelveStorage, StateStorage, route
+from salmon.routing import (MemoryStorage, Router, ShelveStorage, StateStorage, has_salmon_settings, locking, nolocking,
+                            route, route_like, salmon_setting)
 
 from .handlers import simple_fsm_mod
 from .setup_env import SalmonTestCase, setup_router
 
 
 class RoutingTestCase(SalmonTestCase):
+    def setUp(self):
+        super().setUp()
+        setup_router(['tests.handlers.simple_fsm_mod'])
+
     def test_MemoryStorage(self):
         store = MemoryStorage()
         store.set(self.__module__, "tester@localhost", "TESTED")
@@ -33,14 +38,18 @@ class RoutingTestCase(SalmonTestCase):
         self.assertEqual(store.get(self.__module__, "tester@localhost"), "START")
 
     def test_RoutingBase(self):
+        Router.clear_routes()
+        Router.clear_states()
+        Router.HANDLERS.clear()
+
         # check that Router is in a pristine state
         self.assertEqual(len(Router.ORDER), 0)
         self.assertEqual(len(Router.REGISTERED), 0)
 
         setup_router(['tests.handlers.simple_fsm_mod'])
 
-        self.assertEqual(len(Router.ORDER), 5)
-        self.assertEqual(len(Router.REGISTERED), 5)
+        self.assertEqual(len(Router.ORDER), 4)
+        self.assertEqual(len(Router.REGISTERED), 4)
 
         message = MailRequest('fakepeer', 'zedshaw@localhost', 'users-subscribe@localhost', "")
         Router.deliver(message)
@@ -74,8 +83,8 @@ class RoutingTestCase(SalmonTestCase):
 
         Router.reload()
         assert 'tests.handlers.simple_fsm_mod' in Router.HANDLERS
-        self.assertEqual(len(Router.ORDER), 5)
-        self.assertEqual(len(Router.REGISTERED), 5)
+        self.assertEqual(len(Router.ORDER), 4)
+        self.assertEqual(len(Router.REGISTERED), 4)
 
     def test_Router_undeliverable_queue(self):
         Router.clear_routes()
@@ -136,3 +145,56 @@ class RoutingTestCase(SalmonTestCase):
         with self.assertRaises(ImportError):
             Router.load(['fake.handler'])
         self.assertEqual(routing.LOG.exception.call_count, 0)
+
+    def test_route_like_typeerror(self):
+        def func():
+            pass
+
+        with self.assertRaises(TypeError):
+            route_like(func)
+
+    def test_locking_decorator(self):
+        def func():
+            pass
+
+        new_func = locking(func)
+        self.assertTrue(has_salmon_settings(new_func))
+        self.assertTrue(salmon_setting(new_func, "locking"))
+
+    def test_nolocking_decorator(self):
+        def func():
+            pass
+
+        with self.assertWarns(DeprecationWarning):
+            new_func = nolocking(func)
+        self.assertFalse(has_salmon_settings(new_func))
+        self.assertIsNone(salmon_setting(new_func, "locking"))
+
+    def test_locking_locks_router(self):
+        Router.clear_routes()
+        Router.clear_states()
+        Router.HANDLERS.clear()
+
+        @route(".*")
+        @locking
+        def START(message):
+            pass
+
+        message = MailRequest('peer', 'me@localhost', 'you@localhost', "")
+        with patch.object(Router, "call_lock", new=MagicMock()) as lock_mock:
+            Router.deliver(message)
+            self.assertEqual(lock_mock.__enter__.call_count, 1)
+
+    def test_no_locks_router(self):
+        Router.clear_routes()
+        Router.clear_states()
+        Router.HANDLERS.clear()
+
+        @route(".*")
+        def START(message):
+            pass
+
+        message = MailRequest('peer', 'me@localhost', 'you@localhost', "")
+        with patch.object(Router, "call_lock", new=MagicMock()) as lock_mock:
+            Router.deliver(message)
+            self.assertEqual(lock_mock.__enter__.call_count, 0)
