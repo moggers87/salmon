@@ -247,7 +247,7 @@ class MessageTestCase(TestCase):
         )
         sample.update({"Test": "update"})
 
-        sample.attach(filename="tests/message_tests.py", content_type="text/plain", disposition="attachment")
+        sample.attach(filename="tests/test_message.py", content_type="text/plain", disposition="attachment")
 
         inmsg = mail.MailRequest("fakepeer", None, None, str(sample))
         assert "Test" in sample.keys()
