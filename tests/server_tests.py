@@ -15,7 +15,7 @@ def generate_mail(factory=mail.MailRequest, peer="localhost", From="from@localho
                   Data="body", attachment=False):
     msg = factory(peer, From, To, Data)
     if attachment:
-        msg.attach("./README.rst", content_type="text/plain", disposition="inline")
+        msg.attach("./LICENSE", content_type="text/plain", disposition="inline")
     return msg
 
 

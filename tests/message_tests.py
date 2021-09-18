@@ -123,13 +123,13 @@ class MessageTestCase(TestCase):
             From="sender@localhost",
             Body="Test from test_mail_response_attachments.",
         )
-        with open("./README.rst") as file_obj:
+        with open("./LICENSE") as file_obj:
             readme_data = file_obj.read()
 
         with self.assertRaises(ValueError):
             sample.attach(data=readme_data, disposition="inline")
 
-        sample.attach(filename="./README.rst", content_type="text/plain", disposition="inline")
+        sample.attach(filename="./LICENSE", content_type="text/plain", disposition="inline")
         self.assertEqual(len(sample.attachments), 1)
         assert sample.multipart
 
@@ -140,7 +140,7 @@ class MessageTestCase(TestCase):
         self.assertEqual(len(sample.attachments), 0)
         assert not sample.multipart
 
-        sample.attach(data=readme_data, filename="./README.rst", content_type="text/plain")
+        sample.attach(data=readme_data, filename="./LICENSE", content_type="text/plain")
 
         msg = sample.to_message()
         self.assertEqual(len(msg.get_payload()), 2)
@@ -162,7 +162,7 @@ class MessageTestCase(TestCase):
         msg_parts = msg.all_parts()
         sample_parts = sample.all_parts()
 
-        with open("./README.rst") as file_obj:
+        with open("./LICENSE") as file_obj:
             readme = file_obj.read()
 
         assert msg_parts[0].body == sample_parts[0].body
