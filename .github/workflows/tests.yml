@@ -8,7 +8,7 @@ on:
     branches:
       - 🐟
   schedule:
-    - cron: '02 08 * * *'
+    - cron: '2 8 * * 1'
 
 jobs:
   unit-tests:
