@@ -16,7 +16,7 @@ Apache or Nginx. It has all the features of a web application stack (templates,
 routing, handlers, state machine) and plays well with other libraries, such as
 Django and SQLAlchemy.
 
-Salmon has been released uner the GNU GPLv3, as published by the FSF.
+Salmon has been released under the GNU GPLv3, as published by the FSF.
 
 Features
 ========
