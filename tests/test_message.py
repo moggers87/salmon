@@ -23,12 +23,12 @@ class MessageTestCase(TestCase):
 
         self.assertEqual(msg['From'], "somedude@localhost")
 
-        assert("From" in msg)
+        self.assertIn("From", msg)
         del msg["From"]
-        assert("From" not in msg)
+        self.assertNotIn("From", msg)
 
         msg["From"] = "nobody@localhost"
-        assert("From" in msg)
+        self.assertIn("From", msg)
         self.assertEqual(msg["From"], "nobody@localhost")
         msg["From"] = "somebody@localhost"
         self.assertEqual(msg["From"], "somebody@localhost")
@@ -43,9 +43,9 @@ class MessageTestCase(TestCase):
                                        ("To", "nobody@example.com")])
 
         # validate that upper and lower case work for headers
-        assert("FroM" in msg)
-        assert("from" in msg)
-        assert("From" in msg)
+        self.assertIn("FroM", msg)
+        self.assertIn("from", msg)
+        self.assertIn("From", msg)
         self.assertEqual(msg['From'], msg['fRom'])
         self.assertEqual(msg['From'], msg['from'])
         self.assertEqual(msg['from'], msg['fRom'])
@@ -205,9 +205,9 @@ class MessageTestCase(TestCase):
     def test_mail_response_headers(self):
         msg = self.test_mail_response_plain_text()
         # validate that upper and lower case work for headers
-        assert("FroM" in msg)
-        assert("from" in msg)
-        assert("From" in msg)
+        self.assertIn("FroM", msg)
+        self.assertIn("from", msg)
+        self.assertIn("From", msg)
         self.assertEqual(msg['From'], msg['fRom'])
         self.assertEqual(msg['From'], msg['from'])
         self.assertEqual(msg['from'], msg['fRom'])
