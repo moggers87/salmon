@@ -18,11 +18,11 @@ jobs:
         python-version: ["3.7", "3.8", "3.9", "3.10"]
         os: [ubuntu-latest, macos-latest]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install tox
@@ -30,7 +30,7 @@ jobs:
       - name: Run tox
         run: tox
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
 
   misc:
     runs-on: ubuntu-latest
@@ -38,9 +38,9 @@ jobs:
       matrix:
         tox_env: [lint, isort, docs]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: 3.8
       - name: Install tox
