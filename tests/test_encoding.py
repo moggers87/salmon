@@ -59,8 +59,8 @@ class EncodingTestCase(SalmonTestCase):
         for k in m:
             assert m[k] == m2[k], "%s: %r != %r" % (k, m[k], m2[k])
 
-        assert("To" in m)
-        assert("Bob" not in m)
+        self.assertIn("To", m)
+        self.assertNotIn("Bob", m)
         self.assertEqual(m["To"], "testing@localhost")
         m["To"] = "somebody@localhost"
         self.assertEqual(m["To"], "somebody@localhost")
@@ -323,7 +323,7 @@ class EncodingTestCase(SalmonTestCase):
         msg = encoding.MailBase()
         msg["To"] = "somedude@localhost"
         msg["From"] = "nobody@localhost"
-        assert("From" in msg)
+        self.assertIn("From", msg)
         self.assertEqual(msg["From"], "nobody@localhost")
         msg["From"] = "somebody@localhost"
         self.assertEqual(msg["From"], "somebody@localhost")
