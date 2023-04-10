@@ -12,7 +12,7 @@ there's usually only one.
 The salmon.routing.StateStorage is what you need to implement if you want
 Salmon to store the state in a different way.  By default the
 salmon.routing.Router object just uses a default MemoryStorage to do its job.
-If you want to use a custom storage, then in your boot modiule you would set
+If you want to use a custom storage, then in your boot module you would set
 salmon.routing.Router.STATE_STORE to what you want to use.
 
 Finally, when you write a state handler, it has functions that act as state

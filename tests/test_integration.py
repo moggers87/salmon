@@ -41,7 +41,7 @@ class IntegrationTestCase(SalmonTestCase):
 
     def setUp(self):
         super().setUp()
-        # re-create destoryed queues
+        # re-create destroyed queues
         queue.Queue(os.path.join(self._cwd, server_settings.UNDELIVERABLE_QUEUE)).clear()
         queue.Queue(os.path.join(self._cwd, server_settings.QUEUE_PATH)).clear()
 

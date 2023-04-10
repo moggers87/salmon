@@ -18,7 +18,7 @@ from salmon import routing, server, utils
 import salmon
 
 # squash warning about unicode literals. if there are bugs here, then it's
-# quite likely to have afffected us before switching to click.
+# quite likely to have affected us before switching to click.
 click.disable_unicode_literals_warning = True
 
 DEFAULT_PID_FILE = "./run/smtp.pid"
@@ -266,7 +266,7 @@ def routes(modules, test, path):
     messages not getting to your handlers.  Path has the search paths you want
     separated by a ':' character, and it's added to the sys.path.
 
-    MODULE should be a configureation module and can be given multiple times.
+    MODULE should be a configuration module and can be given multiple times.
     """
     _import_router_modules(modules, path)
     test_case_matches = []

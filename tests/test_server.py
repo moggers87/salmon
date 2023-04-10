@@ -318,7 +318,7 @@ class ServerTestCase(SalmonTestCase):
         args = receiver.workers.apply_async.call_args[1]["args"]
         del receiver.workers.apply_async.call_args[1]["args"]
 
-        # onlly the "args" kwarg should be present
+        # only the "args" kwarg should be present
         self.assertEqual(receiver.workers.apply_async.call_args[1], {})
 
         # we can't compare two Mail* objects, so we'll just check the type
