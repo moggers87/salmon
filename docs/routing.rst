@@ -18,9 +18,12 @@ handlers should process the message:
 1. Match all handlers whose ``@route`` decorator matches the ``to`` header
 2. Iterate over these and call the following
 
-    1. any handlers that have been marked as ``@stateless``
-    2. the first (and only) stateful handler. If it returns a handler
+    - any handlers that have been marked as ``@stateless``
+    - the first (and only) stateful handler. If it returns a handler
        reference, the state for that sender will be updated.
+
+    Keep in mind these could be called in any order and you should not rely on
+    them being called in a particular order.
 
 3. If no valid handlers were found, the message is sent to the undeliverable
    queue
@@ -135,6 +138,77 @@ our application might look like this:
         "['myapp', 'user2@example.com']": <function START at 0x7f64194fa398>
     }
 
+Handlers and thread safety
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note::
+
+    This only applies to Salmon v4.0.0 or later. Previous version of Salmon
+    used a lock on every handler call, which reduced performance.
+
+Salmon uses threads to process multiple incoming messages more efficiently.
+This means it is important to write handlers in a thread-safe manner. If you're
+already familiar with frameworks such as Django, this shouldn't be a surprise
+to you.
+
+Some APIs are already thread-safe, such as saving mail to a Maildir. Others can
+be made thread-safe by being mindful of which parts are designed to be accessed
+concurrently and which can't (such as SQLAlchemy's ``Session`` objects, as
+noted in `their documentation
+<https://docs.sqlalchemy.org/en/14/orm/session_basics.html#is-the-session-thread-safe>`_.
+However, there are occasions where there is no way make the API work with
+concurrent execution. For these situations you can either:
+
+#. Use ``threading.RLock`` from Python's threading library on a block of unsafe code:
+
+    .. code-block:: python
+
+       from threading import RLock
+
+       from salmon.routing import route
+
+       LOCK = RLock()
+       HEADER_LOG_FILENAME = "somefile.txt"
+
+
+       @route(".*")
+       def START(message):
+           # do something that's thread-safe
+           header_names = "\n".join(message.keys())
+
+           # now append to a file
+           with LOCK:
+               with open(HEADER_LOG_FILENAME, "a") as log_file:
+                   log_file.write(header_names)
+                   log_file.write("\n")
+
+    This approach has the advantage that it can have a lesser impact on
+    performance, although that does come at the cost of code complexity.
+
+#. Use the :func:`~salmon.routing.locking` decorator to lock on every call to that handler:
+
+    .. code-block:: python
+
+       from salmon.routing import locking, route
+
+       HEADER_LOG_FILENAME = "somefile.txt"
+
+
+       @route(".*")
+       @locking
+       def START(message):
+           # do something that's thread-safe
+           header_names = "\n".join(message.keys())
+
+           # now append to a file
+           with open(HEADER_LOG_FILENAME, "a") as log_file:
+               log_file.write(header_names)
+               log_file.write("\n")
+
+    Here, the whole function is called from within a lock rather than just the
+    thread-unsafe parts.
+
+
 Stateless Processing
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -211,4 +285,12 @@ capable. For example, Django's ORM could be used:
 
 .. note::
 
-    This example is incomplete, it's only there to give an idea of how to implement a state storage class.
+    This example is incomplete, it's only there to give an idea of how to
+    implement a state storage class.
+
+.. note::
+
+    State storage must be thread-safe. In this example, all the calls to
+    Django's ORM are either atomic (e.g. ``SalmonState.objects.get()``) or Django
+    automatically wraps them in a transaction (e.g.
+    ``SalmonState.objects.all().delete()``)

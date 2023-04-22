@@ -1,10 +1,11 @@
 from unittest.mock import Mock, patch
 
+import jinja2
+
 from salmon import mail, view
 from salmon.confirm import ConfirmationEngine, ConfirmationStorage
 from salmon.queue import Queue
 from salmon.testing import delivered, relay
-import jinja2
 
 from .setup_env import SalmonTestCase
 

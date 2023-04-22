@@ -6,7 +6,7 @@ import sys
 
 from click import testing
 
-from salmon import queue, commands, encoding, mail, routing, utils
+from salmon import commands, encoding, mail, queue, routing, utils
 
 from .setup_env import SalmonTestCase
 

@@ -1,4 +1,4 @@
-from salmon.routing import Router, nolocking, route, route_like, state_key_generator, stateless
+from salmon.routing import Router, route, route_like, state_key_generator, stateless
 
 
 @state_key_generator
@@ -47,28 +47,5 @@ def END(message, anything=None, host=None):
 
 @route(".*")
 @stateless
-@nolocking
 def PASSING(message, *args, **kw):
     print("PASSING", args, kw)
-
-
-try:
-    # `@stateless` needs to be "inside" `@route` or `@route_like`
-    @stateless
-    @route("badstateless@(host)")
-    def BAD_STATELESS(message, *args, **kw):
-        print("BAD_STATELESS", args, kw)
-except TypeError:
-    pass
-else:
-    raise AssertionError("No TypeError raised on misordered decorators")
-
-try:
-    # `@route_like should reference another function that has had `route_like` or `route`
-    @route_like(simple_key_gen)
-    def BAD_ROUTLIKE(message, *args, **kwargs):
-        pass
-except TypeError:
-    pass
-else:
-    raise AssertionError("No TypeError raised when route_like was used on a non-routed function")

@@ -140,3 +140,8 @@ def assert_in_state(module, To, From, state):
     state_key = routing.Router.state_key(module, fake)
     assert routing.Router.STATE_STORE.get(state_key, From) == state, \
         "%r != %r" % (routing.Router.STATE_STORE.get(state_key, From), state)
+
+
+def assert_salmon_settings(func):
+    """Used to make sure that the func has been setup by a routing decorator."""
+    assert routing.has_salmon_settings(func), "Function %s has not be setup with a @route first." % func.__name__

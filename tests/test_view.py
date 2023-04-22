@@ -1,7 +1,8 @@
 from unittest import TestCase
 
-from salmon import view
 import jinja2
+
+from salmon import view
 
 
 class ViewsTestCase(TestCase):
